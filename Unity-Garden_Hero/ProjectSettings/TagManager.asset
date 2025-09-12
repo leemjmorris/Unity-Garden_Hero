@@ -9,6 +9,7 @@ TagManager:
   - GridVisualizer
   - FileHandler
   - MetronomeGenerator
+  - Note
   layers:
   - Default
   - TransparentFX
