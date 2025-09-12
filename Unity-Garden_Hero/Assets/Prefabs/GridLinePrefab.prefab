@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 34323657478029982}
   m_Layer: 5
   m_Name: GridLinePrefab
-  m_TagString: Untagged
+  m_TagString: GridLine
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
