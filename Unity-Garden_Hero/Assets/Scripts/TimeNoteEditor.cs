@@ -1,0 +1,807 @@
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using System.IO;
+
+public class TimeNoteEditor : MonoBehaviour
+{
+    [System.Serializable]
+    public class Note
+    {
+        public string id;
+        public float time;
+        public NoteType type;
+        public TrackDirection direction;
+        public float duration;
+        public GameObject visualObject;
+        public bool isHit;
+
+        public Note(float time, NoteType type, TrackDirection direction, float duration = 0f)
+        {
+            this.id = System.Guid.NewGuid().ToString();
+            this.time = time;
+            this.type = type;
+            this.direction = direction;
+            this.duration = duration;
+            this.isHit = false;
+        }
+    }
+
+    public enum NoteType
+    {
+        Normal,
+        Charged,
+        Special,
+        Defense
+    }
+
+    public enum TrackDirection
+    {
+        Left,
+        Up,
+        Right
+    }
+
+    [Header("Timeline Settings")]
+    [SerializeField] private float totalDuration = 60f;
+    [SerializeField] private float pixelsPerSecond = 200f;
+    [SerializeField] private float playbackSpeed = 1f;
+
+    [Header("UI References")]
+    [SerializeField] private RectTransform timelineContent;
+    [SerializeField] private RectTransform[] tracks;
+    [SerializeField] private RectTransform playhead;
+    [SerializeField] private RectTransform ruler;
+    [SerializeField] private TMP_InputField patternNameInput;
+    [SerializeField] private TextMeshProUGUI noteCountText;
+    [SerializeField] private TextMeshProUGUI currentTimeText;
+    [SerializeField] private TextMeshProUGUI totalTimeText;
+    [SerializeField] private TextMeshProUGUI speedText;
+    [SerializeField] private TextMeshProUGUI statusText;
+    [SerializeField] private TextMeshProUGUI historyCountText;
+    [SerializeField] private Slider speedSlider;
+    [SerializeField] private Toggle snapToggle;
+    [SerializeField] private TMP_Dropdown snapValueDropdown;
+    [SerializeField] private Button[] noteTypeButtons;
+    [SerializeField] private Button playButton;
+    [SerializeField] private Button pauseButton;
+    [SerializeField] private Button stopButton;
+    [SerializeField] private Button resetButton;
+    [SerializeField] private Button undoButton;
+    [SerializeField] private Button exportButton;
+    [SerializeField] private Button importButton;
+    [SerializeField] private Button[] hitButtons;
+
+    [Header("Note Prefabs")]
+    [SerializeField] private GameObject notePrefab;
+    [SerializeField] private GameObject dragPreviewPrefab;
+    [SerializeField] private GameObject hitMarkerPrefab;
+    [SerializeField] private GameObject gridLinePrefab;
+
+    [Header("Note Colors")]
+    [SerializeField] private Color normalNoteColor = new Color(0, 1, 0, 0.7f);
+    [SerializeField] private Color chargedNoteColor = new Color(0, 0.4f, 1, 0.7f);
+    [SerializeField] private Color specialNoteColor = new Color(1, 1, 0, 0.7f);
+    [SerializeField] private Color defenseNoteColor = new Color(1, 0, 1, 0.7f);
+
+    private List<Note> notes = new List<Note>();
+    private List<string> history = new List<string>();
+    private const int MAX_HISTORY = 50;
+    private bool isPlaying = false;
+    private float currentTime = 0f;
+    private NoteType selectedNoteType = NoteType.Normal;
+    private bool isDragging = false;
+    private float dragStartTime;
+    private int currentTrackIndex = -1;
+    private GameObject dragPreview;
+    private HashSet<string> hitNotes = new HashSet<string>();
+    private List<GameObject> hitMarkers = new List<GameObject>();
+
+    void Start()
+    {
+        InitializeUI();
+        DrawGrid();
+        UpdateHistoryUI();
+    }
+
+    void Update()
+    {
+        if (isPlaying)
+        {
+            currentTime += Time.deltaTime * playbackSpeed;
+            if (currentTime >= totalDuration)
+            {
+                Stop();
+            }
+            else
+            {
+                UpdatePlayhead();
+                UpdateTimeDisplay();
+            }
+        }
+
+        HandleKeyboardInput();
+        HandleMouseInput();
+    }
+
+    void InitializeUI()
+    {
+        // LMJ: Set up UI callbacks
+        playButton.onClick.AddListener(Play);
+        pauseButton.onClick.AddListener(Pause);
+        stopButton.onClick.AddListener(Stop);
+        resetButton.onClick.AddListener(ResetAllNotes);
+        undoButton.onClick.AddListener(Undo);
+        exportButton.onClick.AddListener(ExportJSON);
+        importButton.onClick.AddListener(ImportJSON);
+
+        speedSlider.onValueChanged.AddListener(OnSpeedChanged);
+
+        for (int i = 0; i < noteTypeButtons.Length; i++)
+        {
+            int index = i;
+            noteTypeButtons[i].onClick.AddListener(() => SelectNoteType((NoteType)index));
+        }
+
+        for (int i = 0; i < hitButtons.Length; i++)
+        {
+            int index = i;
+            hitButtons[i].onClick.AddListener(() => CheckNotesAtPosition((TrackDirection)index));
+        }
+
+        SetHitButtonsInteractable(false);
+        SelectNoteType(NoteType.Normal);
+    }
+
+    void DrawGrid()
+{
+    // LMJ: Clear existing grid elements
+    foreach (Transform child in timelineContent)
+    {
+        if (child.CompareTag("GridLine"))
+            Destroy(child.gameObject);
+    }
+    
+    foreach (Transform child in ruler)
+    {
+        if (child.CompareTag("TimeLabel"))
+            Destroy(child.gameObject);
+    }
+
+    // LMJ: Set timeline width based on duration
+    float totalWidth = totalDuration * pixelsPerSecond;
+    timelineContent.sizeDelta = new Vector2(totalWidth, timelineContent.sizeDelta.y);
+    
+    // LMJ: Get timeline height for grid lines
+    float timelineHeight = timelineContent.rect.height;
+
+    for (int i = 0; i <= totalDuration; i++)
+    {
+        float x = i * pixelsPerSecond;
+
+        // LMJ: Create major grid line (every second)
+        GameObject majorLine = Instantiate(gridLinePrefab, timelineContent);
+        majorLine.tag = "GridLine";
+        RectTransform lineRect = majorLine.GetComponent<RectTransform>();
+        
+        // LMJ: Fix grid line positioning and size
+        lineRect.anchorMin = new Vector2(0, 0);
+        lineRect.anchorMax = new Vector2(0, 1);
+        lineRect.pivot = new Vector2(0.5f, 0.5f);
+        lineRect.anchoredPosition = new Vector2(x, 0);
+        lineRect.sizeDelta = new Vector2(2, 0); // Width 2, height stretches
+        
+        Image lineImage = majorLine.GetComponent<Image>();
+        lineImage.color = new Color(1, 1, 1, 0.3f);
+
+        // LMJ: Create time label on ruler
+        GameObject label = new GameObject($"TimeLabel_{i}");
+        label.tag = "TimeLabel";
+        label.transform.SetParent(ruler);
+        
+        TextMeshProUGUI labelText = label.AddComponent<TextMeshProUGUI>();
+        labelText.text = $"{i}s";
+        labelText.fontSize = 10;
+        labelText.color = new Color(0.5f, 0.5f, 0.5f);
+        labelText.alignment = TextAlignmentOptions.Center;
+        
+        RectTransform labelRect = label.GetComponent<RectTransform>();
+        labelRect.anchorMin = new Vector2(0, 0.5f);
+        labelRect.anchorMax = new Vector2(0, 0.5f);
+        labelRect.pivot = new Vector2(0.5f, 0.5f);
+        labelRect.anchoredPosition = new Vector2(x, 0);
+        labelRect.sizeDelta = new Vector2(30, 20);
+
+        // LMJ: Create minor grid lines (every 0.1 second)
+        if (i < totalDuration)
+        {
+            for (int j = 1; j < 10; j++)
+            {
+                GameObject minorLine = Instantiate(gridLinePrefab, timelineContent);
+                minorLine.tag = "GridLine";
+                RectTransform minorRect = minorLine.GetComponent<RectTransform>();
+                
+                // LMJ: Fix minor grid line positioning
+                minorRect.anchorMin = new Vector2(0, 0);
+                minorRect.anchorMax = new Vector2(0, 1);
+                minorRect.pivot = new Vector2(0.5f, 0.5f);
+                minorRect.anchoredPosition = new Vector2(x + j * (pixelsPerSecond / 10), 0);
+                minorRect.sizeDelta = new Vector2(1, 0); // Width 1, height stretches
+                
+                Image minorImage = minorLine.GetComponent<Image>();
+                minorImage.color = new Color(1, 1, 1, 0.1f);
+            }
+        }
+    }
+}
+
+    void HandleMouseInput()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector2 mousePos = Input.mousePosition;
+            for (int i = 0; i < tracks.Length; i++)
+            {
+                if (RectTransformUtility.RectangleContainsScreenPoint(tracks[i], mousePos))
+                {
+                    HandleTrackClick(i, mousePos);
+                    break;
+                }
+            }
+        }
+        else if (Input.GetMouseButton(0) && isDragging)
+        {
+            UpdateDragPreview();
+        }
+        else if (Input.GetMouseButtonUp(0) && isDragging)
+        {
+            FinishDrag();
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            TryDeleteNote();
+        }
+    }
+
+    void HandleTrackClick(int trackIndex, Vector2 mousePos)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            tracks[trackIndex], mousePos, null, out Vector2 localPoint);
+
+        float clickTime = (localPoint.x + tracks[trackIndex].sizeDelta.x / 2) / pixelsPerSecond;
+        float snapValue = GetSnapValue();
+
+        if (snapToggle.isOn)
+        {
+            clickTime = Mathf.Floor(clickTime / snapValue) * snapValue;
+        }
+
+        TrackDirection direction = (TrackDirection)trackIndex;
+
+        if (CheckNoteOverlap(direction, clickTime, clickTime + snapValue))
+        {
+            statusText.text = "Cannot place note - position already occupied";
+            return;
+        }
+
+        currentTrackIndex = trackIndex;
+        dragStartTime = clickTime;
+
+        if (selectedNoteType == NoteType.Charged)
+        {
+            isDragging = true;
+            dragPreview = Instantiate(dragPreviewPrefab, tracks[trackIndex]);
+            RectTransform previewRect = dragPreview.GetComponent<RectTransform>();
+            previewRect.anchoredPosition = new Vector2(clickTime * pixelsPerSecond, 0);
+            previewRect.sizeDelta = new Vector2(0, 40);
+        }
+        else
+        {
+            CreateNote(clickTime, selectedNoteType, direction, 0);
+            statusText.text = $"Placed {selectedNoteType} note at {clickTime:F2}s on {direction} track";
+        }
+    }
+
+    void UpdateDragPreview()
+    {
+        if (dragPreview == null || currentTrackIndex < 0) return;
+
+        Vector2 mousePos = Input.mousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            tracks[currentTrackIndex], mousePos, null, out Vector2 localPoint);
+
+        float currentDragTime = (localPoint.x + tracks[currentTrackIndex].sizeDelta.x / 2) / pixelsPerSecond;
+        float snapValue = GetSnapValue();
+
+        if (snapToggle.isOn)
+        {
+            currentDragTime = Mathf.Round(currentDragTime / snapValue) * snapValue;
+        }
+
+        float duration = Mathf.Abs(currentDragTime - dragStartTime);
+        float startTime = Mathf.Min(dragStartTime, currentDragTime);
+
+        RectTransform previewRect = dragPreview.GetComponent<RectTransform>();
+        previewRect.anchoredPosition = new Vector2(startTime * pixelsPerSecond, 0);
+        previewRect.sizeDelta = new Vector2(duration * pixelsPerSecond, 40);
+    }
+
+    void FinishDrag()
+    {
+        if (!isDragging || dragPreview == null) return;
+
+        Vector2 mousePos = Input.mousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            tracks[currentTrackIndex], mousePos, null, out Vector2 localPoint);
+
+        float endTime = (localPoint.x + tracks[currentTrackIndex].sizeDelta.x / 2) / pixelsPerSecond;
+        float snapValue = GetSnapValue();
+
+        if (snapToggle.isOn)
+        {
+            endTime = Mathf.Round(endTime / snapValue) * snapValue;
+        }
+
+        float duration = Mathf.Abs(endTime - dragStartTime);
+        float startTime = Mathf.Min(dragStartTime, endTime);
+
+        if (duration > 0.05f)
+        {
+            TrackDirection direction = (TrackDirection)currentTrackIndex;
+            if (!CheckNoteOverlap(direction, startTime, startTime + duration))
+            {
+                CreateNote(startTime, NoteType.Charged, direction, duration);
+                statusText.text = $"Placed charged note at {startTime:F2}s - {startTime + duration:F2}s on {direction} track";
+            }
+            else
+            {
+                statusText.text = "Cannot place charged note - overlaps with existing note";
+            }
+        }
+
+        Destroy(dragPreview);
+        dragPreview = null;
+        isDragging = false;
+        currentTrackIndex = -1;
+    }
+
+    bool CheckNoteOverlap(TrackDirection direction, float startTime, float endTime, string excludeId = null)
+    {
+        return notes.Any(note =>
+        {
+            if (note.direction != direction || note.id == excludeId) return false;
+
+            float noteStart = note.time;
+            float noteEnd = note.type == NoteType.Charged ? note.time + note.duration : note.time;
+
+            if (note.type != NoteType.Charged && endTime == startTime)
+            {
+                return noteStart == startTime;
+            }
+
+            return !(endTime <= noteStart || startTime >= noteEnd);
+        });
+    }
+
+    void CreateNote(float time, NoteType type, TrackDirection direction, float duration = 0f, bool skipHistory = false)
+    {
+        if (!skipHistory) SaveToHistory();
+
+        Note note = new Note(time, type, direction, duration);
+        notes.Add(note);
+        RenderNote(note);
+        UpdateNoteCount();
+    }
+
+    void RenderNote(Note note)
+    {
+        GameObject noteObj = Instantiate(notePrefab, tracks[(int)note.direction]);
+        note.visualObject = noteObj;
+
+        RectTransform noteRect = noteObj.GetComponent<RectTransform>();
+        float snapValue = GetSnapValue();
+        float noteWidth = pixelsPerSecond * snapValue;
+
+        noteRect.anchoredPosition = new Vector2(note.time * pixelsPerSecond, 0);
+
+        if (note.type == NoteType.Charged && note.duration > 0)
+        {
+            noteRect.sizeDelta = new Vector2(note.duration * pixelsPerSecond, 40);
+        }
+        else
+        {
+            noteRect.sizeDelta = new Vector2(noteWidth, 40);
+        }
+
+        Image noteImage = noteObj.GetComponent<Image>();
+        noteImage.color = GetNoteColor(note.type);
+
+        if (note.isHit)
+        {
+            Color hitColor = noteImage.color;
+            hitColor.a = 0.3f;
+            noteImage.color = hitColor;
+        }
+
+        TextMeshProUGUI noteText = noteObj.GetComponentInChildren<TextMeshProUGUI>();
+        if (noteText != null)
+        {
+            noteText.text = GetNoteIcon(note.type);
+        }
+    }
+
+    Color GetNoteColor(NoteType type)
+    {
+        switch (type)
+        {
+            case NoteType.Normal: return normalNoteColor;
+            case NoteType.Charged: return chargedNoteColor;
+            case NoteType.Special: return specialNoteColor;
+            case NoteType.Defense: return defenseNoteColor;
+            default: return Color.white;
+        }
+    }
+
+    string GetNoteIcon(NoteType type)
+    {
+        switch (type)
+        {
+            case NoteType.Normal: return "N";
+            case NoteType.Charged: return "C";
+            case NoteType.Special: return "S";
+            case NoteType.Defense: return "D";
+            default: return "";
+        }
+    }
+
+    void TryDeleteNote()
+    {
+        Vector2 mousePos = Input.mousePosition;
+
+        foreach (Note note in notes)
+        {
+            if (note.visualObject != null &&
+                RectTransformUtility.RectangleContainsScreenPoint(
+                    note.visualObject.GetComponent<RectTransform>(), mousePos))
+            {
+                DeleteNote(note.id);
+                break;
+            }
+        }
+    }
+
+    void DeleteNote(string noteId)
+    {
+        SaveToHistory();
+
+        Note noteToDelete = notes.Find(n => n.id == noteId);
+        if (noteToDelete != null)
+        {
+            if (noteToDelete.visualObject != null)
+            {
+                Destroy(noteToDelete.visualObject);
+            }
+            notes.Remove(noteToDelete);
+            hitNotes.Remove(noteId);
+            UpdateNoteCount();
+        }
+    }
+
+    void UpdateNoteCount()
+    {
+        noteCountText.text = notes.Count.ToString();
+    }
+
+    void SaveToHistory()
+    {
+        PatternData currentState = new PatternData
+        {
+            patternName = patternNameInput.text,
+            totalDuration = totalDuration,
+            notes = notes.Select(n => new NoteData
+            {
+                time = n.time,
+                type = n.type.ToString(),
+                direction = n.direction.ToString(),
+                duration = n.duration
+            }).ToList()
+        };
+
+        string json = JsonUtility.ToJson(currentState);
+
+        if (history.Count >= MAX_HISTORY)
+        {
+            history.RemoveAt(0);
+        }
+        history.Add(json);
+
+        UpdateHistoryUI();
+    }
+
+    void UpdateHistoryUI()
+    {
+        historyCountText.text = $"{history.Count}/{MAX_HISTORY}";
+        undoButton.interactable = history.Count > 0;
+    }
+
+    void Undo()
+    {
+        if (history.Count == 0) return;
+
+        string lastState = history[history.Count - 1];
+        history.RemoveAt(history.Count - 1);
+
+        PatternData data = JsonUtility.FromJson<PatternData>(lastState);
+
+        ClearAllNotes();
+
+        foreach (NoteData noteData in data.notes)
+        {
+            NoteType type = (NoteType)System.Enum.Parse(typeof(NoteType), noteData.type);
+            TrackDirection direction = (TrackDirection)System.Enum.Parse(typeof(TrackDirection), noteData.direction);
+            CreateNote(noteData.time, type, direction, noteData.duration, true);
+        }
+
+        UpdateHistoryUI();
+        statusText.text = "Undo completed";
+    }
+
+    void ResetAllNotes()
+    {
+        if (notes.Count == 0)
+        {
+            statusText.text = "No notes to reset";
+            return;
+        }
+
+        SaveToHistory();
+        ClearAllNotes();
+        statusText.text = "All notes have been reset";
+    }
+
+    void ClearAllNotes()
+    {
+        foreach (Note note in notes)
+        {
+            if (note.visualObject != null)
+            {
+                Destroy(note.visualObject);
+            }
+        }
+        notes.Clear();
+        hitNotes.Clear();
+        UpdateNoteCount();
+    }
+
+    void Play()
+    {
+        if (isPlaying) return;
+        isPlaying = true;
+        SetHitButtonsInteractable(true);
+    }
+
+    void Pause()
+    {
+        isPlaying = false;
+        SetHitButtonsInteractable(false);
+    }
+
+    void Stop()
+    {
+        isPlaying = false;
+        currentTime = 0f;
+        UpdatePlayhead();
+        UpdateTimeDisplay();
+
+        hitNotes.Clear();
+        foreach (Note note in notes)
+        {
+            note.isHit = false;
+            if (note.visualObject != null)
+            {
+                Image img = note.visualObject.GetComponent<Image>();
+                Color color = GetNoteColor(note.type);
+                img.color = color;
+            }
+        }
+
+        foreach (GameObject marker in hitMarkers)
+        {
+            Destroy(marker);
+        }
+        hitMarkers.Clear();
+
+        SetHitButtonsInteractable(false);
+    }
+
+    void SetHitButtonsInteractable(bool interactable)
+    {
+        foreach (Button btn in hitButtons)
+        {
+            btn.interactable = interactable;
+        }
+    }
+
+    void UpdatePlayhead()
+    {
+        playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, 0);
+    }
+
+    void UpdateTimeDisplay()
+    {
+        int mins = Mathf.FloorToInt(currentTime / 60);
+        float secs = currentTime % 60;
+        currentTimeText.text = $"{mins:00}:{secs:00.0}";
+    }
+
+    void CheckNotesAtPosition(TrackDirection direction)
+    {
+        if (!isPlaying) return;
+
+        AddHitMarker(direction.ToString());
+
+        float tolerance = 0.2f;
+
+        foreach (Note note in notes)
+        {
+            if (note.direction != direction) continue;
+
+            float noteStart = note.time;
+            float noteEnd = note.type == NoteType.Charged ? note.time + note.duration : note.time;
+
+            if (currentTime >= noteStart - tolerance && currentTime <= noteEnd + tolerance)
+            {
+                hitNotes.Add(note.id);
+                note.isHit = true;
+
+                if (note.visualObject != null)
+                {
+                    Image img = note.visualObject.GetComponent<Image>();
+                    Color color = img.color;
+                    color.a = 0.3f;
+                    img.color = color;
+                }
+            }
+        }
+    }
+
+    void AddHitMarker(string key)
+    {
+        GameObject marker = Instantiate(hitMarkerPrefab, timelineContent);
+        RectTransform markerRect = marker.GetComponent<RectTransform>();
+        markerRect.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, 0);
+
+        TextMeshProUGUI markerText = marker.GetComponentInChildren<TextMeshProUGUI>();
+        if (markerText != null)
+        {
+            markerText.text = key;
+        }
+
+        hitMarkers.Add(marker);
+    }
+
+    void HandleKeyboardInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (isPlaying) Pause();
+            else Play();
+        }
+
+        if (isPlaying)
+        {
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                CheckNotesAtPosition(TrackDirection.Left);
+            }
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                CheckNotesAtPosition(TrackDirection.Up);
+            }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                CheckNotesAtPosition(TrackDirection.Right);
+            }
+        }
+
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
+        {
+            Undo();
+        }
+    }
+
+    void SelectNoteType(NoteType type)
+    {
+        selectedNoteType = type;
+
+        for (int i = 0; i < noteTypeButtons.Length; i++)
+        {
+            ColorBlock colors = noteTypeButtons[i].colors;
+            colors.normalColor = (i == (int)type) ? new Color(0.4f, 0.6f, 0.4f) : new Color(0.3f, 0.3f, 0.3f);
+            noteTypeButtons[i].colors = colors;
+        }
+    }
+
+    void OnSpeedChanged(float value)
+    {
+        playbackSpeed = value;
+        speedText.text = $"{value:F1}x";
+    }
+
+    float GetSnapValue()
+    {
+        string[] snapValues = { "0.1", "0.25", "0.5", "1.0" };
+        return float.Parse(snapValues[snapValueDropdown.value]);
+    }
+
+    void ExportJSON()
+    {
+        PatternData data = new PatternData
+        {
+            patternName = patternNameInput.text,
+            totalDuration = totalDuration,
+            notes = notes.Select(n => new NoteData
+            {
+                time = n.time,
+                type = n.type.ToString(),
+                direction = n.direction.ToString(),
+                duration = n.duration
+            }).ToList()
+        };
+
+        string json = JsonUtility.ToJson(data, true);
+        string path = Path.Combine(Application.persistentDataPath, "pattern.json");
+        File.WriteAllText(path, json);
+
+        statusText.text = $"Exported to: {path}";
+    }
+
+    void ImportJSON()
+    {
+        string path = Path.Combine(Application.persistentDataPath, "pattern.json");
+
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            PatternData data = JsonUtility.FromJson<PatternData>(json);
+
+            ClearAllNotes();
+
+            patternNameInput.text = data.patternName;
+            totalDuration = data.totalDuration;
+
+            foreach (NoteData noteData in data.notes)
+            {
+                NoteType type = (NoteType)System.Enum.Parse(typeof(NoteType), noteData.type);
+                TrackDirection direction = (TrackDirection)System.Enum.Parse(typeof(TrackDirection), noteData.direction);
+                CreateNote(noteData.time, type, direction, noteData.duration, true);
+            }
+
+            statusText.text = $"Successfully imported {notes.Count} notes";
+        }
+        else
+        {
+            statusText.text = "No pattern.json file found";
+        }
+    }
+
+    [System.Serializable]
+    public class PatternData
+    {
+        public string patternName;
+        public float totalDuration;
+        public List<NoteData> notes;
+    }
+
+    [System.Serializable]
+    public class NoteData
+    {
+        public float time;
+        public string type;
+        public string direction;
+        public float duration;
+    }
+}
