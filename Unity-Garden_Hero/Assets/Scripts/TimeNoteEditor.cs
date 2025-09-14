@@ -46,7 +46,7 @@ public class TimeNoteEditor : MonoBehaviour
 
     [Header("Timeline Settings")]
     [SerializeField] private float totalDuration = 60f;
-    [SerializeField] private float pixelsPerSecond = 200f;
+    [SerializeField] private float pixelsPerSecond = 100f;
     [SerializeField] private float playbackSpeed = 1f;
 
     [Header("UI References")]
@@ -102,8 +102,49 @@ public class TimeNoteEditor : MonoBehaviour
     void Start()
     {
         InitializeUI();
+        SetupRuler(); // LMJ: Setup ruler position
         DrawGrid();
         UpdateHistoryUI();
+    }
+
+    void SetupRuler()
+    {
+        // LMJ: Position ruler above tracks
+        if (ruler != null && timelineContent != null)
+        {
+            ruler.SetParent(timelineContent);
+
+            ruler.anchorMin = new Vector2(0, 1);
+            ruler.anchorMax = new Vector2(0, 1);
+            ruler.pivot = new Vector2(0, 1);
+            ruler.sizeDelta = new Vector2(totalDuration * pixelsPerSecond, 30);
+            ruler.anchoredPosition = new Vector2(0, 30); // LMJ: Move up above tracks
+
+            Image rulerImage = ruler.GetComponent<Image>();
+            if (rulerImage == null)
+            {
+                rulerImage = ruler.gameObject.AddComponent<Image>();
+            }
+            rulerImage.color = new Color(0.25f, 0.25f, 0.25f, 1f);
+        }
+    }
+
+    void SetupPlayhead()
+    {
+        // LMJ: Setup playhead to stretch full height
+        if (playhead != null)
+        {
+            playhead.anchorMin = new Vector2(0, 0);
+            playhead.anchorMax = new Vector2(0, 1);
+            playhead.pivot = new Vector2(0.5f, 0.5f);
+            playhead.sizeDelta = new Vector2(2, 0); // LMJ: Width 2px, height stretches
+
+            Image playheadImage = playhead.GetComponent<Image>();
+            if (playheadImage != null)
+            {
+                playheadImage.color = new Color(1, 0, 0, 0.8f); // LMJ: Red semi-transparent
+            }
+        }
     }
 
     void Update()
@@ -120,6 +161,14 @@ public class TimeNoteEditor : MonoBehaviour
                 UpdatePlayhead();
                 UpdateTimeDisplay();
             }
+        }
+
+        // LMJ: Sync TimeLabels with scroll
+        Transform labelsContainer = timelineContent.parent.Find("TimeLabelsContainer");
+        if (labelsContainer != null)
+        {
+            RectTransform labelsRect = labelsContainer.GetComponent<RectTransform>();
+            labelsRect.anchoredPosition = new Vector2(timelineContent.anchoredPosition.x, 240);
         }
 
         HandleKeyboardInput();
@@ -156,86 +205,160 @@ public class TimeNoteEditor : MonoBehaviour
     }
 
     void DrawGrid()
-{
-    // LMJ: Clear existing grid elements
-    foreach (Transform child in timelineContent)
     {
-        if (child.CompareTag("GridLine"))
-            Destroy(child.gameObject);
-    }
-    
-    foreach (Transform child in ruler)
-    {
-        if (child.CompareTag("TimeLabel"))
-            Destroy(child.gameObject);
-    }
-
-    // LMJ: Set timeline width based on duration
-    float totalWidth = totalDuration * pixelsPerSecond;
-    timelineContent.sizeDelta = new Vector2(totalWidth, timelineContent.sizeDelta.y);
-    
-    // LMJ: Get timeline height for grid lines
-    float timelineHeight = timelineContent.rect.height;
-
-    for (int i = 0; i <= totalDuration; i++)
-    {
-        float x = i * pixelsPerSecond;
-
-        // LMJ: Create major grid line (every second)
-        GameObject majorLine = Instantiate(gridLinePrefab, timelineContent);
-        majorLine.tag = "GridLine";
-        RectTransform lineRect = majorLine.GetComponent<RectTransform>();
-        
-        // LMJ: Fix grid line positioning and size
-        lineRect.anchorMin = new Vector2(0, 0);
-        lineRect.anchorMax = new Vector2(0, 1);
-        lineRect.pivot = new Vector2(0.5f, 0.5f);
-        lineRect.anchoredPosition = new Vector2(x, 0);
-        lineRect.sizeDelta = new Vector2(2, 0); // Width 2, height stretches
-        
-        Image lineImage = majorLine.GetComponent<Image>();
-        lineImage.color = new Color(1, 1, 1, 0.3f);
-
-        // LMJ: Create time label on ruler
-        GameObject label = new GameObject($"TimeLabel_{i}");
-        label.tag = "TimeLabel";
-        label.transform.SetParent(ruler);
-        
-        TextMeshProUGUI labelText = label.AddComponent<TextMeshProUGUI>();
-        labelText.text = $"{i}s";
-        labelText.fontSize = 10;
-        labelText.color = new Color(0.5f, 0.5f, 0.5f);
-        labelText.alignment = TextAlignmentOptions.Center;
-        
-        RectTransform labelRect = label.GetComponent<RectTransform>();
-        labelRect.anchorMin = new Vector2(0, 0.5f);
-        labelRect.anchorMax = new Vector2(0, 0.5f);
-        labelRect.pivot = new Vector2(0.5f, 0.5f);
-        labelRect.anchoredPosition = new Vector2(x, 0);
-        labelRect.sizeDelta = new Vector2(30, 20);
-
-        // LMJ: Create minor grid lines (every 0.1 second)
-        if (i < totalDuration)
+        // LMJ: Clear existing elements
+        foreach (RectTransform track in tracks)
         {
-            for (int j = 1; j < 10; j++)
+            foreach (Transform child in track)
             {
-                GameObject minorLine = Instantiate(gridLinePrefab, timelineContent);
-                minorLine.tag = "GridLine";
-                RectTransform minorRect = minorLine.GetComponent<RectTransform>();
-                
-                // LMJ: Fix minor grid line positioning
-                minorRect.anchorMin = new Vector2(0, 0);
-                minorRect.anchorMax = new Vector2(0, 1);
-                minorRect.pivot = new Vector2(0.5f, 0.5f);
-                minorRect.anchoredPosition = new Vector2(x + j * (pixelsPerSecond / 10), 0);
-                minorRect.sizeDelta = new Vector2(1, 0); // Width 1, height stretches
-                
-                Image minorImage = minorLine.GetComponent<Image>();
-                minorImage.color = new Color(1, 1, 1, 0.1f);
+                if (child.name.StartsWith("GridLine"))
+                    Destroy(child.gameObject);
             }
         }
+
+        Transform oldContainer = timelineContent.Find("TimeLabelsContainer");
+        if (oldContainer != null)
+            Destroy(oldContainer.gameObject);
+
+        float totalWidth = totalDuration * pixelsPerSecond;
+        timelineContent.sizeDelta = new Vector2(totalWidth, timelineContent.sizeDelta.y);
+
+        // LMJ: Update track width only, keep Inspector position
+        for (int i = 0; i < tracks.Length; i++)
+        {
+            tracks[i].sizeDelta = new Vector2(totalWidth, tracks[i].sizeDelta.y);
+        }
+
+        // LMJ: Create container for time labels
+        GameObject timeLabelsContainer = new GameObject("TimeLabelsContainer");
+        RectTransform labelsRect = timeLabelsContainer.AddComponent<RectTransform>();
+        timeLabelsContainer.transform.SetParent(timelineContent);
+
+        labelsRect.anchorMin = new Vector2(0, 1);
+        labelsRect.anchorMax = new Vector2(0, 1);
+        labelsRect.pivot = new Vector2(0, 1);
+        labelsRect.anchoredPosition = new Vector2(0, 0);
+        labelsRect.sizeDelta = new Vector2(totalWidth, 25);
+        labelsRect.localScale = Vector3.one;
+
+        // LMJ: Add background image to TimeLabelsContainer
+        Image bgImage = timeLabelsContainer.AddComponent<Image>();
+        bgImage.color = new Color(0, 0, 0, 1f);
+        bgImage.raycastTarget = false;
+
+        for (int i = 0; i <= totalDuration; i++)
+        {
+            float x = i * pixelsPerSecond;
+
+            // LMJ: Grid lines
+            for (int trackIdx = 0; trackIdx < tracks.Length; trackIdx++)
+            {
+                GameObject gridLine = new GameObject($"GridLine_{i}_{trackIdx}");
+                gridLine.transform.SetParent(tracks[trackIdx]);
+
+                Image gridImage = gridLine.AddComponent<Image>();
+                gridImage.color = new Color(0.5f, 0.5f, 0.5f, 0.3f);
+                gridImage.raycastTarget = false;
+
+                RectTransform gridRect = gridLine.GetComponent<RectTransform>();
+                gridRect.anchorMin = new Vector2(0, 0);
+                gridRect.anchorMax = new Vector2(0, 1);
+                gridRect.pivot = new Vector2(0, 0.5f);
+                gridRect.anchoredPosition = new Vector2(x, 0);
+                gridRect.sizeDelta = new Vector2(2, 0);
+            }
+
+            // LMJ: Time labels
+            GameObject label = new GameObject($"TimeLabel_{i}");
+            label.transform.SetParent(timeLabelsContainer.transform);
+
+            RectTransform labelRect = label.AddComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.zero;
+            labelRect.pivot = new Vector2(0.5f, 0.5f);
+            labelRect.anchoredPosition = new Vector2(x, 10);
+            labelRect.sizeDelta = new Vector2(40, 20);
+            labelRect.localScale = Vector3.one;
+
+            TextMeshProUGUI labelText = label.AddComponent<TextMeshProUGUI>();
+            labelText.text = $"{i}s";
+            labelText.fontSize = 12;
+            labelText.color = Color.white;
+            labelText.alignment = TextAlignmentOptions.Center;
+            labelText.raycastTarget = false;
+
+            // LMJ: Minor grid lines
+            if (i < totalDuration)
+            {
+                for (int j = 1; j < 10; j++)
+                {
+                    float minorX = x + j * (pixelsPerSecond / 10);
+
+                    for (int trackIdx = 0; trackIdx < tracks.Length; trackIdx++)
+                    {
+                        GameObject minorLine = new GameObject($"GridLine_Minor_{i}_{j}_{trackIdx}");
+                        minorLine.transform.SetParent(tracks[trackIdx]);
+
+                        Image minorImage = minorLine.AddComponent<Image>();
+                        minorImage.color = new Color(0.4f, 0.4f, 0.4f, 0.15f);
+                        minorImage.raycastTarget = false;
+
+                        RectTransform minorRect = minorLine.GetComponent<RectTransform>();
+                        minorRect.anchorMin = new Vector2(0, 0);
+                        minorRect.anchorMax = new Vector2(0, 1);
+                        minorRect.pivot = new Vector2(0, 0.5f);
+                        minorRect.anchoredPosition = new Vector2(minorX, 0);
+                        minorRect.sizeDelta = new Vector2(1, 0);
+                    }
+                }
+            }
+        }
+
+        if (playhead != null)
+            playhead.SetAsLastSibling();
     }
-}
+
+    // void EnsureHierarchyOrder()
+    // {
+    //     // LMJ: Hierarchy order in TimelineContent
+    //     // 1. Ruler (index 0)
+    //     // 2. Grid lines (index 1+)
+    //     // 3. Tracks (after grids)
+    //     // 4. Playhead (last)
+
+    //     int index = 0;
+
+    //     if (ruler != null && ruler.parent == timelineContent)
+    //         ruler.SetSiblingIndex(index++);
+
+    //     // LMJ: Grid lines stay where they are
+    //     foreach (Transform child in timelineContent)
+    //     {
+    //         if (child.name.StartsWith("GridLine"))
+    //             index++;
+    //     }
+
+    //     // LMJ: Position tracks
+    //     foreach (RectTransform track in tracks)
+    //     {
+    //         if (track.parent == timelineContent)
+    //         {
+    //             track.SetSiblingIndex(index++);
+
+    //             // LMJ: Adjust track Y position to be below ruler
+    //             track.anchorMin = new Vector2(0, 1);
+    //             track.anchorMax = new Vector2(0, 1);
+    //             track.sizeDelta = new Vector2(totalDuration * pixelsPerSecond, 80);
+
+    //             int trackIndex = System.Array.IndexOf(tracks, track);
+    //             track.anchoredPosition = new Vector2(0, -(trackIndex * 80));
+    //         }
+    //     }
+
+    //     // LMJ: Playhead on top
+    //     if (playhead != null && playhead.parent == timelineContent)
+    //         playhead.SetAsLastSibling();
+    // }
 
     void HandleMouseInput()
     {
@@ -269,15 +392,17 @@ public class TimeNoteEditor : MonoBehaviour
     void HandleTrackClick(int trackIndex, Vector2 mousePos)
     {
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            tracks[trackIndex], mousePos, null, out Vector2 localPoint);
+            timelineContent, mousePos, null, out Vector2 localPoint); // LMJ: Changed to timelineContent
 
-        float clickTime = (localPoint.x + tracks[trackIndex].sizeDelta.x / 2) / pixelsPerSecond;
+        float clickTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
 
         if (snapToggle.isOn)
         {
-            clickTime = Mathf.Floor(clickTime / snapValue) * snapValue;
+            clickTime = Mathf.Round(clickTime / snapValue) * snapValue;
         }
+
+        clickTime = Mathf.Clamp(clickTime, 0, totalDuration);
 
         TrackDirection direction = (TrackDirection)trackIndex;
 
@@ -311,9 +436,9 @@ public class TimeNoteEditor : MonoBehaviour
 
         Vector2 mousePos = Input.mousePosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            tracks[currentTrackIndex], mousePos, null, out Vector2 localPoint);
+            timelineContent, mousePos, null, out Vector2 localPoint); // LMJ: Changed to timelineContent
 
-        float currentDragTime = (localPoint.x + tracks[currentTrackIndex].sizeDelta.x / 2) / pixelsPerSecond;
+        float currentDragTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
 
         if (snapToggle.isOn)
@@ -325,6 +450,9 @@ public class TimeNoteEditor : MonoBehaviour
         float startTime = Mathf.Min(dragStartTime, currentDragTime);
 
         RectTransform previewRect = dragPreview.GetComponent<RectTransform>();
+        previewRect.anchorMin = new Vector2(0, 0.5f);
+        previewRect.anchorMax = new Vector2(0, 0.5f);
+        previewRect.pivot = new Vector2(0, 0.5f);
         previewRect.anchoredPosition = new Vector2(startTime * pixelsPerSecond, 0);
         previewRect.sizeDelta = new Vector2(duration * pixelsPerSecond, 40);
     }
@@ -335,9 +463,9 @@ public class TimeNoteEditor : MonoBehaviour
 
         Vector2 mousePos = Input.mousePosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            tracks[currentTrackIndex], mousePos, null, out Vector2 localPoint);
+            timelineContent, mousePos, null, out Vector2 localPoint); // LMJ: Changed to timelineContent
 
-        float endTime = (localPoint.x + tracks[currentTrackIndex].sizeDelta.x / 2) / pixelsPerSecond;
+        float endTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
 
         if (snapToggle.isOn)
@@ -627,6 +755,7 @@ public class TimeNoteEditor : MonoBehaviour
 
     void UpdatePlayhead()
     {
+        // LMJ: Update X position only, height is already stretched
         playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, 0);
     }
 

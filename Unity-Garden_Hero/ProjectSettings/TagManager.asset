@@ -10,6 +10,10 @@ TagManager:
   - FileHandler
   - MetronomeGenerator
   - Note
+  - GridLine
+  - Undefined
+  - Track
+  - TimeLabel
   layers:
   - Default
   - TransparentFX
@@ -46,6 +50,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: BackPanel
+    uniqueID: 884021965
     locked: 0
   m_RenderingLayers:
   - Default
