@@ -48,13 +48,14 @@ public class TimeNoteEditor : MonoBehaviour
     [SerializeField] private float totalDuration = 60f;
     [SerializeField] private float pixelsPerSecond = 100f;
     [SerializeField] private float playbackSpeed = 1f;
+    [SerializeField] private bool syncEndTimeInput = true;
 
     [Header("UI References")]
     [SerializeField] private RectTransform timelineContent;
     [SerializeField] private RectTransform[] tracks;
-    [SerializeField] private RectTransform playhead;
-    [SerializeField] private RectTransform ruler;
+    [SerializeField] private RectTransform playhead; 
     [SerializeField] private TMP_InputField patternNameInput;
+    [SerializeField] private TMP_InputField endTimeInput;
     [SerializeField] private TextMeshProUGUI noteCountText;
     [SerializeField] private TextMeshProUGUI currentTimeText;
     [SerializeField] private TextMeshProUGUI totalTimeText;
@@ -86,6 +87,7 @@ public class TimeNoteEditor : MonoBehaviour
     [SerializeField] private Color specialNoteColor = new Color(1, 1, 0, 0.7f);
     [SerializeField] private Color defenseNoteColor = new Color(1, 0, 1, 0.7f);
 
+    private RectTransform ruler;
     private List<Note> notes = new List<Note>();
     private List<string> history = new List<string>();
     private const int MAX_HISTORY = 50;
@@ -102,14 +104,17 @@ public class TimeNoteEditor : MonoBehaviour
     void Start()
     {
         InitializeUI();
-        SetupRuler(); // LMJ: Setup ruler position
+        SetupRuler();
         DrawGrid();
         UpdateHistoryUI();
+        if (syncEndTimeInput)
+        {
+            UpdateEndTimeDisplay();
+        }
     }
 
     void SetupRuler()
     {
-        // LMJ: Position ruler above tracks
         if (ruler != null && timelineContent != null)
         {
             ruler.SetParent(timelineContent);
@@ -118,7 +123,7 @@ public class TimeNoteEditor : MonoBehaviour
             ruler.anchorMax = new Vector2(0, 1);
             ruler.pivot = new Vector2(0, 1);
             ruler.sizeDelta = new Vector2(totalDuration * pixelsPerSecond, 30);
-            ruler.anchoredPosition = new Vector2(0, 30); // LMJ: Move up above tracks
+            ruler.anchoredPosition = new Vector2(0, 30);
 
             Image rulerImage = ruler.GetComponent<Image>();
             if (rulerImage == null)
@@ -131,18 +136,17 @@ public class TimeNoteEditor : MonoBehaviour
 
     void SetupPlayhead()
     {
-        // LMJ: Setup playhead to stretch full height
         if (playhead != null)
         {
             playhead.anchorMin = new Vector2(0, 0);
             playhead.anchorMax = new Vector2(0, 1);
             playhead.pivot = new Vector2(0.5f, 0.5f);
-            playhead.sizeDelta = new Vector2(2, 0); // LMJ: Width 2px, height stretches
+            playhead.sizeDelta = new Vector2(2, 0);
 
             Image playheadImage = playhead.GetComponent<Image>();
             if (playheadImage != null)
             {
-                playheadImage.color = new Color(1, 0, 0, 0.8f); // LMJ: Red semi-transparent
+                playheadImage.color = new Color(1, 0, 0, 0.8f);
             }
         }
     }
@@ -163,7 +167,6 @@ public class TimeNoteEditor : MonoBehaviour
             }
         }
 
-        // LMJ: Sync TimeLabels with scroll
         Transform labelsContainer = timelineContent.parent.Find("TimeLabelsContainer");
         if (labelsContainer != null)
         {
@@ -177,7 +180,6 @@ public class TimeNoteEditor : MonoBehaviour
 
     void InitializeUI()
     {
-        // LMJ: Set up UI callbacks
         playButton.onClick.AddListener(Play);
         pauseButton.onClick.AddListener(Pause);
         stopButton.onClick.AddListener(Stop);
@@ -187,26 +189,99 @@ public class TimeNoteEditor : MonoBehaviour
         importButton.onClick.AddListener(ImportJSON);
 
         speedSlider.onValueChanged.AddListener(OnSpeedChanged);
+        
+        if (syncEndTimeInput && endTimeInput != null)
+        {
+            endTimeInput.onEndEdit.AddListener(OnEndTimeChanged);
+        }
 
         for (int i = 0; i < noteTypeButtons.Length; i++)
         {
             int index = i;
             noteTypeButtons[i].onClick.AddListener(() => SelectNoteType((NoteType)index));
         }
-
         for (int i = 0; i < hitButtons.Length; i++)
         {
             int index = i;
             hitButtons[i].onClick.AddListener(() => CheckNotesAtPosition((TrackDirection)index));
         }
-
         SetHitButtonsInteractable(false);
         SelectNoteType(NoteType.Normal);
     }
 
+    float ParseTimeInput(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return totalDuration;
+        input = input.Trim();
+
+        if (input.Contains(":"))
+        {
+            string[] parts = input.Split(':');
+            if (parts.Length == 2 && float.TryParse(parts[0], out float minutes) && float.TryParse(parts[1], out float seconds))
+            {
+                return minutes * 60f + seconds;
+            }
+        }
+        else if (float.TryParse(input, out float seconds))
+        {
+            return Mathf.Max(1f, seconds);
+        }
+
+        return totalDuration;
+    }
+
+    void OnEndTimeChanged(string value)
+    {
+        if (!syncEndTimeInput) return;
+        
+        float newDuration = ParseTimeInput(value);
+        
+        if (Mathf.Abs(newDuration - totalDuration) > 0.01f)
+        {
+            totalDuration = newDuration;
+            
+            if (currentTime >= totalDuration)
+            {
+                Stop();
+            }
+            
+            DrawGrid();
+            statusText.text = $"Timeline duration updated to {totalDuration:F1} seconds";
+        }
+    }
+
+    void UpdateEndTimeDisplay()
+    {
+        if (endTimeInput != null)
+        {
+            endTimeInput.text = totalDuration.ToString("F1");
+        }
+    }
+
+    void OnValidate()
+    {
+        totalDuration = Mathf.Max(1f, totalDuration); // LMJ: Minimum 1 second
+        
+        // LMJ: Update InputField if in play mode and sync is enabled
+        if (Application.isPlaying && syncEndTimeInput && endTimeInput != null)
+        {
+            endTimeInput.text = totalDuration.ToString("F1");
+            // LMJ: Schedule DrawGrid for next frame to avoid OnValidate restrictions
+            if (gameObject.activeInHierarchy)
+            {
+                StartCoroutine(DelayedDrawGrid());
+            }
+        }
+    }
+
+    System.Collections.IEnumerator DelayedDrawGrid()
+    {
+        yield return null; // LMJ: Wait one frame
+        DrawGrid();
+    }
+
     void DrawGrid()
     {
-        // LMJ: Clear existing elements
         foreach (RectTransform track in tracks)
         {
             foreach (Transform child in track)
@@ -215,51 +290,43 @@ public class TimeNoteEditor : MonoBehaviour
                     Destroy(child.gameObject);
             }
         }
-
         Transform oldContainer = timelineContent.Find("TimeLabelsContainer");
         if (oldContainer != null)
             Destroy(oldContainer.gameObject);
-
         float totalWidth = totalDuration * pixelsPerSecond;
         timelineContent.sizeDelta = new Vector2(totalWidth, timelineContent.sizeDelta.y);
-
-        // LMJ: Update track width only, keep Inspector position
         for (int i = 0; i < tracks.Length; i++)
         {
+            tracks[i].anchorMin = new Vector2(0, tracks[i].anchorMin.y);
+            tracks[i].anchorMax = new Vector2(0, tracks[i].anchorMax.y);
+            tracks[i].pivot = new Vector2(0, tracks[i].pivot.y);
             tracks[i].sizeDelta = new Vector2(totalWidth, tracks[i].sizeDelta.y);
+            Vector2 currentPos = tracks[i].anchoredPosition;
+            tracks[i].anchoredPosition = new Vector2(0, currentPos.y);
         }
-
-        // LMJ: Create container for time labels
         GameObject timeLabelsContainer = new GameObject("TimeLabelsContainer");
         RectTransform labelsRect = timeLabelsContainer.AddComponent<RectTransform>();
         timeLabelsContainer.transform.SetParent(timelineContent);
-
         labelsRect.anchorMin = new Vector2(0, 1);
         labelsRect.anchorMax = new Vector2(0, 1);
         labelsRect.pivot = new Vector2(0, 1);
         labelsRect.anchoredPosition = new Vector2(0, 0);
         labelsRect.sizeDelta = new Vector2(totalWidth, 25);
         labelsRect.localScale = Vector3.one;
-
-        // LMJ: Add background image to TimeLabelsContainer
         Image bgImage = timeLabelsContainer.AddComponent<Image>();
         bgImage.color = new Color(0, 0, 0, 1f);
         bgImage.raycastTarget = false;
-
-        for (int i = 0; i <= totalDuration; i++)
+        int maxGridCount = Mathf.FloorToInt(totalDuration);
+        for (int i = 0; i <= maxGridCount; i++)
         {
             float x = i * pixelsPerSecond;
-
-            // LMJ: Grid lines
             for (int trackIdx = 0; trackIdx < tracks.Length; trackIdx++)
             {
                 GameObject gridLine = new GameObject($"GridLine_{i}_{trackIdx}");
                 gridLine.transform.SetParent(tracks[trackIdx]);
-
                 Image gridImage = gridLine.AddComponent<Image>();
                 gridImage.color = new Color(0.5f, 0.5f, 0.5f, 0.3f);
                 gridImage.raycastTarget = false;
-
                 RectTransform gridRect = gridLine.GetComponent<RectTransform>();
                 gridRect.anchorMin = new Vector2(0, 0);
                 gridRect.anchorMax = new Vector2(0, 1);
@@ -267,11 +334,8 @@ public class TimeNoteEditor : MonoBehaviour
                 gridRect.anchoredPosition = new Vector2(x, 0);
                 gridRect.sizeDelta = new Vector2(2, 0);
             }
-
-            // LMJ: Time labels
             GameObject label = new GameObject($"TimeLabel_{i}");
             label.transform.SetParent(timeLabelsContainer.transform);
-
             RectTransform labelRect = label.AddComponent<RectTransform>();
             labelRect.anchorMin = Vector2.zero;
             labelRect.anchorMax = Vector2.zero;
@@ -279,30 +343,24 @@ public class TimeNoteEditor : MonoBehaviour
             labelRect.anchoredPosition = new Vector2(x, 10);
             labelRect.sizeDelta = new Vector2(40, 20);
             labelRect.localScale = Vector3.one;
-
             TextMeshProUGUI labelText = label.AddComponent<TextMeshProUGUI>();
             labelText.text = $"{i}s";
             labelText.fontSize = 12;
             labelText.color = Color.white;
             labelText.alignment = TextAlignmentOptions.Center;
             labelText.raycastTarget = false;
-
-            // LMJ: Minor grid lines
-            if (i < totalDuration)
+            if (i < Mathf.FloorToInt(totalDuration))
             {
                 for (int j = 1; j < 10; j++)
                 {
                     float minorX = x + j * (pixelsPerSecond / 10);
-
                     for (int trackIdx = 0; trackIdx < tracks.Length; trackIdx++)
                     {
                         GameObject minorLine = new GameObject($"GridLine_Minor_{i}_{j}_{trackIdx}");
                         minorLine.transform.SetParent(tracks[trackIdx]);
-
                         Image minorImage = minorLine.AddComponent<Image>();
                         minorImage.color = new Color(0.4f, 0.4f, 0.4f, 0.15f);
                         minorImage.raycastTarget = false;
-
                         RectTransform minorRect = minorLine.GetComponent<RectTransform>();
                         minorRect.anchorMin = new Vector2(0, 0);
                         minorRect.anchorMax = new Vector2(0, 1);
@@ -313,52 +371,9 @@ public class TimeNoteEditor : MonoBehaviour
                 }
             }
         }
-
         if (playhead != null)
             playhead.SetAsLastSibling();
     }
-
-    // void EnsureHierarchyOrder()
-    // {
-    //     // LMJ: Hierarchy order in TimelineContent
-    //     // 1. Ruler (index 0)
-    //     // 2. Grid lines (index 1+)
-    //     // 3. Tracks (after grids)
-    //     // 4. Playhead (last)
-
-    //     int index = 0;
-
-    //     if (ruler != null && ruler.parent == timelineContent)
-    //         ruler.SetSiblingIndex(index++);
-
-    //     // LMJ: Grid lines stay where they are
-    //     foreach (Transform child in timelineContent)
-    //     {
-    //         if (child.name.StartsWith("GridLine"))
-    //             index++;
-    //     }
-
-    //     // LMJ: Position tracks
-    //     foreach (RectTransform track in tracks)
-    //     {
-    //         if (track.parent == timelineContent)
-    //         {
-    //             track.SetSiblingIndex(index++);
-
-    //             // LMJ: Adjust track Y position to be below ruler
-    //             track.anchorMin = new Vector2(0, 1);
-    //             track.anchorMax = new Vector2(0, 1);
-    //             track.sizeDelta = new Vector2(totalDuration * pixelsPerSecond, 80);
-
-    //             int trackIndex = System.Array.IndexOf(tracks, track);
-    //             track.anchoredPosition = new Vector2(0, -(trackIndex * 80));
-    //         }
-    //     }
-
-    //     // LMJ: Playhead on top
-    //     if (playhead != null && playhead.parent == timelineContent)
-    //         playhead.SetAsLastSibling();
-    // }
 
     void HandleMouseInput()
     {
@@ -392,7 +407,7 @@ public class TimeNoteEditor : MonoBehaviour
     void HandleTrackClick(int trackIndex, Vector2 mousePos)
     {
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            timelineContent, mousePos, null, out Vector2 localPoint); // LMJ: Changed to timelineContent
+            timelineContent, mousePos, null, out Vector2 localPoint);
 
         float clickTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
@@ -436,7 +451,7 @@ public class TimeNoteEditor : MonoBehaviour
 
         Vector2 mousePos = Input.mousePosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            timelineContent, mousePos, null, out Vector2 localPoint); // LMJ: Changed to timelineContent
+            timelineContent, mousePos, null, out Vector2 localPoint);
 
         float currentDragTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
@@ -463,7 +478,7 @@ public class TimeNoteEditor : MonoBehaviour
 
         Vector2 mousePos = Input.mousePosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            timelineContent, mousePos, null, out Vector2 localPoint); // LMJ: Changed to timelineContent
+            timelineContent, mousePos, null, out Vector2 localPoint);
 
         float endTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
@@ -755,7 +770,6 @@ public class TimeNoteEditor : MonoBehaviour
 
     void UpdatePlayhead()
     {
-        // LMJ: Update X position only, height is already stretched
         playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, 0);
     }
 
@@ -901,6 +915,11 @@ public class TimeNoteEditor : MonoBehaviour
 
             patternNameInput.text = data.patternName;
             totalDuration = data.totalDuration;
+            
+            if (syncEndTimeInput) // LMJ: Update EndTime display after import
+            {
+                UpdateEndTimeDisplay();
+            }
 
             foreach (NoteData noteData in data.notes)
             {
@@ -909,6 +928,7 @@ public class TimeNoteEditor : MonoBehaviour
                 CreateNote(noteData.time, type, direction, noteData.duration, true);
             }
 
+            DrawGrid(); // LMJ: Redraw grid with imported duration
             statusText.text = $"Successfully imported {notes.Count} notes";
         }
         else

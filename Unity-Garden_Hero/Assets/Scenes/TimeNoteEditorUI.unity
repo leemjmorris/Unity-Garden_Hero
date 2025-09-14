@@ -490,14 +490,15 @@ MonoBehaviour:
   totalDuration: 60
   pixelsPerSecond: 100
   playbackSpeed: 1
+  syncEndTimeInput: 1
   timelineContent: {fileID: 933927798}
   tracks:
   - {fileID: 310459889}
   - {fileID: 958940819}
   - {fileID: 116737229}
   playhead: {fileID: 1412487797}
-  ruler: {fileID: 0}
   patternNameInput: {fileID: 726858034}
+  endTimeInput: {fileID: 1644713542}
   noteCountText: {fileID: 1951284379}
   currentTimeText: {fileID: 697073586}
   totalTimeText: {fileID: 1888333316}
@@ -1013,15 +1014,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1932105065293923613, guid: 8c22385e1985ba24b8e90465be63da59, type: 3}
       propertyPath: m_ContentType
-      value: 3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1932105065293923613, guid: 8c22385e1985ba24b8e90465be63da59, type: 3}
       propertyPath: m_KeyboardType
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1932105065293923613, guid: 8c22385e1985ba24b8e90465be63da59, type: 3}
       propertyPath: m_CharacterValidation
-      value: 3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3056021886376594357, guid: 8c22385e1985ba24b8e90465be63da59, type: 3}
       propertyPath: m_Name
@@ -1923,7 +1924,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2671476489059988643, guid: 5df32524777398345892c3efb940ae47, type: 3}
       propertyPath: m_text
-      value: P
+      value: '>'
       objectReference: {fileID: 0}
     - target: {fileID: 2671476489059988643, guid: 5df32524777398345892c3efb940ae47, type: 3}
       propertyPath: m_fontSize
@@ -4830,6 +4831,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5898136435944019491, guid: 05635b63ffff9ce49ba8266c81495d8c, type: 3}
   m_PrefabInstance: {fileID: 1588907051}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1644713542 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1932105065293923613, guid: 8c22385e1985ba24b8e90465be63da59, type: 3}
+  m_PrefabInstance: {fileID: 366491485}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2da0c512f12947e489f739169773d7ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1717114636
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6961,6 +6973,14 @@ PrefabInstance:
       propertyPath: m_text
       value: "(T \u2192 D)"
       objectReference: {fileID: 0}
+    - target: {fileID: 9192863037700610742, guid: 78b51f871acc9034cbe10ee834c4c473, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 9192863037700610742, guid: 78b51f871acc9034cbe10ee834c4c473, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7070,6 +7090,14 @@ PrefabInstance:
       propertyPath: m_text
       value: "(R \u2192 L)"
       objectReference: {fileID: 0}
+    - target: {fileID: 9192863037700610742, guid: 78b51f871acc9034cbe10ee834c4c473, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 9192863037700610742, guid: 78b51f871acc9034cbe10ee834c4c473, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7304,6 +7332,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: LeftTrack
       objectReference: {fileID: 0}
+    - target: {fileID: 9192863037700610742, guid: 78b51f871acc9034cbe10ee834c4c473, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 9192863037700610742, guid: 78b51f871acc9034cbe10ee834c4c473, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
