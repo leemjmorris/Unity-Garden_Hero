@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.IO;
+using System;
 
 public class TimeNoteEditor : MonoBehaviour
 {
@@ -53,9 +54,10 @@ public class TimeNoteEditor : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private RectTransform timelineContent;
     [SerializeField] private RectTransform[] tracks;
-    [SerializeField] private RectTransform playhead; 
+    [SerializeField] private RectTransform playhead;
     [SerializeField] private TMP_InputField patternNameInput;
     [SerializeField] private TMP_InputField endTimeInput;
+    [SerializeField] private TMP_InputField currentTimeInput;
     [SerializeField] private TextMeshProUGUI noteCountText;
     [SerializeField] private TextMeshProUGUI currentTimeText;
     [SerializeField] private TextMeshProUGUI totalTimeText;
@@ -189,10 +191,15 @@ public class TimeNoteEditor : MonoBehaviour
         importButton.onClick.AddListener(ImportJSON);
 
         speedSlider.onValueChanged.AddListener(OnSpeedChanged);
-        
+
         if (syncEndTimeInput && endTimeInput != null)
         {
             endTimeInput.onEndEdit.AddListener(OnEndTimeChanged);
+        }
+
+        if (currentTimeInput != null)
+        {
+            currentTimeInput.onEndEdit.AddListener(OnCurrentTimeChanged);
         }
 
         for (int i = 0; i < noteTypeButtons.Length; i++)
@@ -207,6 +214,26 @@ public class TimeNoteEditor : MonoBehaviour
         }
         SetHitButtonsInteractable(false);
         SelectNoteType(NoteType.Normal);
+    }
+
+    private void OnCurrentTimeChanged(string value)
+    {
+        float newTime = ParseTimeInput(value);
+        newTime = Mathf.Clamp(newTime, 0, totalDuration);
+
+        currentTime = newTime;
+        UpdatePlayhead();
+        UpdateTimeDisplay();
+
+        statusText.text = $"Current time set to {currentTime:F1} seconds";
+    }
+
+    void UpdateCurrentTimeDisplay()
+    {
+        if (currentTimeInput != null)
+        {
+            currentTimeInput.text = currentTime.ToString("F1");
+        }
     }
 
     float ParseTimeInput(string input)
@@ -233,18 +260,18 @@ public class TimeNoteEditor : MonoBehaviour
     void OnEndTimeChanged(string value)
     {
         if (!syncEndTimeInput) return;
-        
+
         float newDuration = ParseTimeInput(value);
-        
+
         if (Mathf.Abs(newDuration - totalDuration) > 0.01f)
         {
             totalDuration = newDuration;
-            
+
             if (currentTime >= totalDuration)
             {
                 Stop();
             }
-            
+
             DrawGrid();
             statusText.text = $"Timeline duration updated to {totalDuration:F1} seconds";
         }
@@ -261,7 +288,7 @@ public class TimeNoteEditor : MonoBehaviour
     void OnValidate()
     {
         totalDuration = Mathf.Max(1f, totalDuration); // LMJ: Minimum 1 second
-        
+
         // LMJ: Update InputField if in play mode and sync is enabled
         if (Application.isPlaying && syncEndTimeInput && endTimeInput != null)
         {
@@ -778,6 +805,8 @@ public class TimeNoteEditor : MonoBehaviour
         int mins = Mathf.FloorToInt(currentTime / 60);
         float secs = currentTime % 60;
         currentTimeText.text = $"{mins:00}:{secs:00.0}";
+
+        UpdateCurrentTimeDisplay();
     }
 
     void CheckNotesAtPosition(TrackDirection direction)
@@ -915,7 +944,7 @@ public class TimeNoteEditor : MonoBehaviour
 
             patternNameInput.text = data.patternName;
             totalDuration = data.totalDuration;
-            
+
             if (syncEndTimeInput) // LMJ: Update EndTime display after import
             {
                 UpdateEndTimeDisplay();

@@ -201,7 +201,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000015258789}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0.000030518}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &191460508
@@ -499,6 +499,7 @@ MonoBehaviour:
   playhead: {fileID: 1412487797}
   patternNameInput: {fileID: 726858034}
   endTimeInput: {fileID: 1644713542}
+  currentTimeInput: {fileID: 1819767172}
   noteCountText: {fileID: 1951284379}
   currentTimeText: {fileID: 697073586}
   totalTimeText: {fileID: 1888333316}
@@ -5736,6 +5737,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1819767172 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1932105065293923613, guid: 8c22385e1985ba24b8e90465be63da59, type: 3}
+  m_PrefabInstance: {fileID: 361462667}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2da0c512f12947e489f739169773d7ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1830633611
