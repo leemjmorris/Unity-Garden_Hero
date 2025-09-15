@@ -1,0 +1,60 @@
+{
+  "patternName": "dummy nomal2",
+  "totalDuration": 60.0,
+  "notes": [
+    {
+      "time": 1.0,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0
+    },
+    {
+      "time": 2.0,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0
+    },
+    {
+      "time": 3.0,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0
+    },
+    {
+      "time": 5.0,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0
+    },
+    {
+      "time": 4.0,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0
+    },
+    {
+      "time": 6.0,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0
+    },
+    {
+      "time": 7.0,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0
+    },
+    {
+      "time": 8.0,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0
+    },
+    {
+      "time": 9.0,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0
+    }
+  ]
+}
