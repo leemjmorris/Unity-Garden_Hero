@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System;
+using Newtonsoft.Json;
 
 public class TimeNoteEditor : MonoBehaviour
 {
@@ -76,6 +77,8 @@ public class TimeNoteEditor : MonoBehaviour
     [SerializeField] private Button exportButton;
     [SerializeField] private Button importButton;
     [SerializeField] private Button[] hitButtons;
+    [SerializeField] private TMP_Dropdown fileSelectDropdown;
+    [SerializeField] private Button refreshFilesButton;
 
     [Header("Note Prefabs")]
     [SerializeField] private GameObject notePrefab;
@@ -107,12 +110,14 @@ public class TimeNoteEditor : MonoBehaviour
     {
         InitializeUI();
         SetupRuler();
+        //SetupPlayhead();
         DrawGrid();
         UpdateHistoryUI();
         if (syncEndTimeInput)
         {
             UpdateEndTimeDisplay();
         }
+        RefreshFileList();
     }
 
     void SetupRuler()
@@ -188,7 +193,7 @@ public class TimeNoteEditor : MonoBehaviour
         resetButton.onClick.AddListener(ResetAllNotes);
         undoButton.onClick.AddListener(Undo);
         exportButton.onClick.AddListener(ExportJSON);
-        importButton.onClick.AddListener(ImportJSON);
+        importButton.onClick.AddListener(ImportSelectedJSON);
 
         speedSlider.onValueChanged.AddListener(OnSpeedChanged);
 
@@ -200,6 +205,11 @@ public class TimeNoteEditor : MonoBehaviour
         if (currentTimeInput != null)
         {
             currentTimeInput.onEndEdit.AddListener(OnCurrentTimeChanged);
+        }
+
+        if (refreshFilesButton != null)
+        {
+            refreshFilesButton.onClick.AddListener(RefreshFileList);
         }
 
         for (int i = 0; i < noteTypeButtons.Length; i++)
@@ -214,6 +224,22 @@ public class TimeNoteEditor : MonoBehaviour
         }
         SetHitButtonsInteractable(false);
         SelectNoteType(NoteType.Normal);
+    }
+
+    private void RefreshFileList()
+    {
+        if (fileSelectDropdown == null) return;
+
+        fileSelectDropdown.options.Clear();
+        string[] jsonFiles = Directory.GetFiles(Application.persistentDataPath, "*.json");
+        foreach (string file in jsonFiles)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            fileSelectDropdown.options.Add(new TMP_Dropdown.OptionData(fileName));
+        }
+
+        fileSelectDropdown.RefreshShownValue();
+        statusText.text = $"Found {jsonFiles.Length} JSON files";
     }
 
     private void OnCurrentTimeChanged(string value)
@@ -398,8 +424,12 @@ public class TimeNoteEditor : MonoBehaviour
                 }
             }
         }
-        if (playhead != null)
-            playhead.SetAsLastSibling();
+        if (playhead != null) playhead.SetAsLastSibling();
+
+        foreach (GameObject marker in hitMarkers)
+        {
+            if (marker != null) marker.transform.SetAsLastSibling();
+        }
     }
 
     void HandleMouseInput()
@@ -797,7 +827,12 @@ public class TimeNoteEditor : MonoBehaviour
 
     void UpdatePlayhead()
     {
-        playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, 0);
+        if (playhead != null)
+        {
+            // LMJ: Only update X position, keep Y position unchanged
+            Vector2 currentPos = playhead.anchoredPosition;
+            playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, currentPos.y);
+        }
     }
 
     void UpdateTimeDisplay()
@@ -842,17 +877,28 @@ public class TimeNoteEditor : MonoBehaviour
 
     void AddHitMarker(string key)
     {
-        GameObject marker = Instantiate(hitMarkerPrefab, timelineContent);
-        RectTransform markerRect = marker.GetComponent<RectTransform>();
-        markerRect.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, 0);
-
-        TextMeshProUGUI markerText = marker.GetComponentInChildren<TextMeshProUGUI>();
-        if (markerText != null)
+        // LMJ: Create hit marker for each track
+        for (int i = 0; i < tracks.Length; i++)
         {
-            markerText.text = key;
-        }
+            GameObject marker = new GameObject($"HitMarker_{currentTime:F2}_{key}_Track{i}");
+            marker.transform.SetParent(tracks[i], false);
 
-        hitMarkers.Add(marker);
+            // LMJ: Add Image component for visual representation
+            Image markerImage = marker.AddComponent<Image>();
+            markerImage.color = new Color(1, 1, 0, 0.8f); // LMJ: Yellow color for hit markers
+            markerImage.raycastTarget = false;
+
+            // LMJ: Setup RectTransform to cover full track height
+            RectTransform markerRect = marker.GetComponent<RectTransform>();
+            markerRect.anchorMin = new Vector2(0, 0);
+            markerRect.anchorMax = new Vector2(0, 1); // LMJ: Full height of track
+            markerRect.pivot = new Vector2(0.5f, 0.5f);
+            markerRect.sizeDelta = new Vector2(2, 0); // LMJ: Width 2, height follows anchor
+            markerRect.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, 0);
+            markerRect.localScale = Vector3.one;
+
+            hitMarkers.Add(marker);
+        }
     }
 
     void HandleKeyboardInput()
@@ -911,6 +957,17 @@ public class TimeNoteEditor : MonoBehaviour
 
     void ExportJSON()
     {
+        string fileName = patternNameInput.text;
+        if (string.IsNullOrEmpty(fileName))
+        {
+            fileName = "pattern";
+        }
+
+        foreach (char c in Path.GetInvalidFileNameChars())
+        {
+            fileName = fileName.Replace(c, '_');
+        }
+
         PatternData data = new PatternData
         {
             patternName = patternNameInput.text,
@@ -924,47 +981,105 @@ public class TimeNoteEditor : MonoBehaviour
             }).ToList()
         };
 
-        string json = JsonUtility.ToJson(data, true);
-        string path = Path.Combine(Application.persistentDataPath, "pattern.json");
+        string json = JsonConvert.SerializeObject(data, Formatting.Indented); // LMJ: Use Newtonsoft.Json
+        string path = Path.Combine(Application.persistentDataPath, fileName + ".json");
         File.WriteAllText(path, json);
 
-        statusText.text = $"Exported to: {path}";
+        statusText.text = $"Exported to: {fileName}.json";
     }
 
-    void ImportJSON()
+    void ImportSelectedJSON()
     {
-        string path = Path.Combine(Application.persistentDataPath, "pattern.json");
-
-        if (File.Exists(path))
+        if (fileSelectDropdown == null || fileSelectDropdown.options.Count == 0)
         {
-            string json = File.ReadAllText(path);
-            PatternData data = JsonUtility.FromJson<PatternData>(json);
+            statusText.text = "No files available. Click Refresh Files.";
+            return;
+        }
+
+        string selectedFileName = fileSelectDropdown.options[fileSelectDropdown.value].text + ".json";
+        string path = Path.Combine(Application.persistentDataPath, selectedFileName);
+
+        ImportFromPath(path);
+    }
+
+    void ImportFromPath(string filePath)
+    {
+        try
+        {
+            string json = File.ReadAllText(filePath);
+            PatternData data = JsonConvert.DeserializeObject<PatternData>(json);
 
             ClearAllNotes();
 
             patternNameInput.text = data.patternName;
             totalDuration = data.totalDuration;
 
-            if (syncEndTimeInput) // LMJ: Update EndTime display after import
+            if (syncEndTimeInput)
             {
                 UpdateEndTimeDisplay();
             }
 
             foreach (NoteData noteData in data.notes)
             {
-                NoteType type = (NoteType)System.Enum.Parse(typeof(NoteType), noteData.type);
-                TrackDirection direction = (TrackDirection)System.Enum.Parse(typeof(TrackDirection), noteData.direction);
+                NoteType type = (NoteType)Enum.Parse(typeof(NoteType), noteData.type);
+                TrackDirection direction = (TrackDirection)Enum.Parse(typeof(TrackDirection), noteData.direction);
                 CreateNote(noteData.time, type, direction, noteData.duration, true);
             }
 
-            DrawGrid(); // LMJ: Redraw grid with imported duration
-            statusText.text = $"Successfully imported {notes.Count} notes";
+            DrawGrid();
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+            statusText.text = $"Successfully imported {fileName}: {notes.Count} notes";
         }
-        else
+        catch (Exception e)
         {
-            statusText.text = "No pattern.json file found";
+            statusText.text = $"Import failed: {e.Message}";
         }
     }
+
+    // void ImportJSON()
+    // {
+    //     string[] jsonFiles = Directory.GetFiles(Application.persistentDataPath, "*.json");
+
+    //     if (jsonFiles.Length == 0)
+    //     {
+    //         statusText.text = "No JSON files found";
+    //         return;
+    //     }
+
+    //     // LMJ: Simple selection - you can extend this with UI dropdown
+    //     string selectedFile = jsonFiles[0];
+
+    //     try
+    //     {
+    //         string json = File.ReadAllText(selectedFile);
+    //         PatternData data = JsonConvert.DeserializeObject<PatternData>(json); // LMJ: Use Newtonsoft.Json
+
+    //         ClearAllNotes();
+
+    //         patternNameInput.text = data.patternName;
+    //         totalDuration = data.totalDuration;
+
+    //         if (syncEndTimeInput)
+    //         {
+    //             UpdateEndTimeDisplay();
+    //         }
+
+    //         foreach (NoteData noteData in data.notes)
+    //         {
+    //             NoteType type = (NoteType)Enum.Parse(typeof(NoteType), noteData.type);
+    //             TrackDirection direction = (TrackDirection)Enum.Parse(typeof(TrackDirection), noteData.direction);
+    //             CreateNote(noteData.time, type, direction, noteData.duration, true);
+    //         }
+
+    //         DrawGrid();
+    //         string fileName = Path.GetFileNameWithoutExtension(selectedFile);
+    //         statusText.text = $"Successfully imported {fileName}: {notes.Count} notes";
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         statusText.text = $"Import failed: {e.Message}";
+    //     }
+    // }
 
     [System.Serializable]
     public class PatternData
