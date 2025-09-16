@@ -401,7 +401,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 5
   m_Viewport: {fileID: 1067823089}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}
@@ -669,14 +669,16 @@ MonoBehaviour:
   pixelsPerSecond: 100
   playbackSpeed: 1
   syncEndTimeInput: 1
-  perfectTolerance: 0.15
-  goodTolerance: 0.3
+  playheadFixedTime: 2
+  perfectTolerance: 0.2
+  goodTolerance: 0.4
   timelineContent: {fileID: 933927798}
   tracks:
   - {fileID: 310459889}
   - {fileID: 958940819}
   - {fileID: 116737229}
   playhead: {fileID: 1412487797}
+  timelineScrollRect: {fileID: 191460508}
   patternNameInput: {fileID: 726858034}
   endTimeInput: {fileID: 1644713542}
   currentTimeInput: {fileID: 1819767172}

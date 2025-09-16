@@ -8,26 +8,7 @@ using System;
 using Newtonsoft.Json;
 
 public class TimeNoteEditor : MonoBehaviour
-{    
-    [System.Serializable]
-    public class PatternData
-    {
-        public string patternName;
-        public float totalDuration;
-        public float perfectTolerance;
-        public float goodTolerance;
-        public List<NoteData> notes;
-    }
-
-    [System.Serializable]
-    public class NoteData
-    {
-        public float time;
-        public string type;
-        public string direction;
-        public float duration;
-    }
-
+{
     [System.Serializable]
     public class Note
     {
@@ -36,17 +17,19 @@ public class TimeNoteEditor : MonoBehaviour
         public NoteType type;
         public TrackDirection direction;
         public float duration;
+        public float snapValue; // LMJ: Store snapValue when note was created
         public GameObject visualObject;
         public bool isHit;
         public JudgmentResult judgment;
 
-        public Note(float time, NoteType type, TrackDirection direction, float duration = 0f)
+        public Note(float time, NoteType type, TrackDirection direction, float duration = 0f, float snapValue = 1f)
         {
             this.id = System.Guid.NewGuid().ToString();
             this.time = time;
             this.type = type;
             this.direction = direction;
             this.duration = duration;
+            this.snapValue = snapValue; // LMJ: Store the snapValue used when creating this note
             this.isHit = false;
             this.judgment = JudgmentResult.None;
         }
@@ -80,15 +63,17 @@ public class TimeNoteEditor : MonoBehaviour
     [SerializeField] private float pixelsPerSecond = 100f;
     [SerializeField] private float playbackSpeed = 1f;
     [SerializeField] private bool syncEndTimeInput = true;
+    [SerializeField] private float playheadFixedTime = 2f; // LMJ: Time position where playhead becomes fixed
 
     [Header("Judgment Settings")]
-    [SerializeField] private float perfectTolerance = 0.15f;
-    [SerializeField] private float goodTolerance = 0.3f;
+    [SerializeField] private float perfectTolerance = 0.2f;
+    [SerializeField] private float goodTolerance = 0.4f;
 
     [Header("UI References")]
     [SerializeField] private RectTransform timelineContent;
     [SerializeField] private RectTransform[] tracks;
     [SerializeField] private RectTransform playhead;
+    [SerializeField] private ScrollRect timelineScrollRect; // LMJ: Reference to timeline ScrollRect
     [SerializeField] private TMP_InputField patternNameInput;
     [SerializeField] private TMP_InputField endTimeInput;
     [SerializeField] private TMP_InputField currentTimeInput;
@@ -147,7 +132,6 @@ public class TimeNoteEditor : MonoBehaviour
     private HashSet<string> hitNotes = new HashSet<string>();
     private List<GameObject> hitMarkers = new List<GameObject>();
 
-    // LMJ: Judgment statistics
     private int perfectCount = 0;
     private int goodCount = 0;
     private int missCount = 0;
@@ -156,6 +140,7 @@ public class TimeNoteEditor : MonoBehaviour
     {
         InitializeUI();
         SetupRuler();
+        SetupPlayhead(); // LMJ: Call SetupPlayhead to ensure proper parent hierarchy
         DrawGrid();
         UpdateHistoryUI();
         UpdateJudgmentStats();
@@ -191,6 +176,12 @@ public class TimeNoteEditor : MonoBehaviour
     {
         if (playhead != null)
         {
+            // LMJ: Ensure playhead is not a child of timelineContent to prevent moving with content
+            if (playhead.parent == timelineContent)
+            {
+                playhead.SetParent(timelineContent.parent);
+            }
+
             playhead.anchorMin = new Vector2(0, 0);
             playhead.anchorMax = new Vector2(0, 1);
             playhead.pivot = new Vector2(0.5f, 0.5f);
@@ -253,7 +244,6 @@ public class TimeNoteEditor : MonoBehaviour
             currentTimeInput.onEndEdit.AddListener(OnCurrentTimeChanged);
         }
 
-        // LMJ: Initialize judgment tolerance input fields
         if (perfectToleranceInput != null)
         {
             perfectToleranceInput.text = perfectTolerance.ToString("F2");
@@ -596,7 +586,8 @@ public class TimeNoteEditor : MonoBehaviour
         }
         else
         {
-            CreateNote(clickTime, selectedNoteType, direction, 0);
+            // LMJ: Pass snapValue when creating new note
+            CreateNote(clickTime, selectedNoteType, direction, 0, snapValue);
             statusText.text = $"Placed {selectedNoteType} note at {clickTime:F2}s on {direction} track";
         }
     }
@@ -652,7 +643,8 @@ public class TimeNoteEditor : MonoBehaviour
             TrackDirection direction = (TrackDirection)currentTrackIndex;
             if (!CheckNoteOverlap(direction, startTime, startTime + duration))
             {
-                CreateNote(startTime, NoteType.Charged, direction, duration);
+                // LMJ: Pass snapValue when creating charged note
+                CreateNote(startTime, NoteType.Charged, direction, duration, snapValue);
                 statusText.text = $"Placed charged note at {startTime:F2}s - {startTime + duration:F2}s on {direction} track";
             }
             else
@@ -685,24 +677,25 @@ public class TimeNoteEditor : MonoBehaviour
         });
     }
 
-    void CreateNote(float time, NoteType type, TrackDirection direction, float duration = 0f, bool skipHistory = false)
+    // LMJ: Updated CreateNote to accept snapValue parameter
+    void CreateNote(float time, NoteType type, TrackDirection direction, float duration = 0f, float snapValue = 1f, bool skipHistory = false)
     {
         if (!skipHistory) SaveToHistory();
 
-        Note note = new Note(time, type, direction, duration);
+        Note note = new Note(time, type, direction, duration, snapValue);
         notes.Add(note);
         RenderNote(note);
         UpdateNoteCount();
     }
 
+    // LMJ: Updated RenderNote to use stored snapValue from note
     void RenderNote(Note note)
     {
         GameObject noteObj = Instantiate(notePrefab, tracks[(int)note.direction]);
         note.visualObject = noteObj;
 
         RectTransform noteRect = noteObj.GetComponent<RectTransform>();
-        float snapValue = GetSnapValue();
-        float noteWidth = pixelsPerSecond * snapValue;
+        float noteWidth = pixelsPerSecond * note.snapValue; // LMJ: Use note's stored snapValue
 
         noteRect.anchoredPosition = new Vector2(note.time * pixelsPerSecond, 0);
 
@@ -730,7 +723,6 @@ public class TimeNoteEditor : MonoBehaviour
         }
     }
 
-    // LMJ: Apply visual feedback based on judgment result
     void ApplyJudgmentVisual(Note note)
     {
         if (note.visualObject == null) return;
@@ -832,7 +824,8 @@ public class TimeNoteEditor : MonoBehaviour
                 time = n.time,
                 type = n.type.ToString(),
                 direction = n.direction.ToString(),
-                duration = n.duration
+                duration = n.duration,
+                snapValue = n.snapValue // LMJ: Include snapValue in save data
             }).ToList()
         };
 
@@ -868,7 +861,9 @@ public class TimeNoteEditor : MonoBehaviour
         {
             NoteType type = (NoteType)System.Enum.Parse(typeof(NoteType), noteData.type);
             TrackDirection direction = (TrackDirection)System.Enum.Parse(typeof(TrackDirection), noteData.direction);
-            CreateNote(noteData.time, type, direction, noteData.duration, true);
+            // LMJ: Use stored snapValue when restoring notes, default to 1f if not present
+            float snapValue = noteData.snapValue > 0 ? noteData.snapValue : 1f;
+            CreateNote(noteData.time, type, direction, noteData.duration, snapValue, true);
         }
 
         UpdateHistoryUI();
@@ -928,6 +923,10 @@ public class TimeNoteEditor : MonoBehaviour
     {
         isPlaying = false;
         currentTime = 0f;
+        
+        // LMJ: Reset timeline position when stopping
+        ResetTimelinePosition();
+        
         UpdatePlayhead();
         UpdateTimeDisplay();
 
@@ -966,8 +965,46 @@ public class TimeNoteEditor : MonoBehaviour
     {
         if (playhead != null)
         {
-            Vector2 currentPos = playhead.anchoredPosition;
-            playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, currentPos.y);
+            // LMJ: Calculate playhead's screen position (fixed at playheadFixedTime pixel position)
+            float fixedPlayheadX = playheadFixedTime * pixelsPerSecond;
+            
+            if (currentTime <= playheadFixedTime)
+            {
+                // LMJ: Move playhead normally until it reaches the fixed position
+                Vector2 currentPos = playhead.anchoredPosition;
+                playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, currentPos.y);
+                
+                // LMJ: Reset timeline content position when playhead is moving
+                if (timelineContent != null)
+                {
+                    Vector2 contentPos = timelineContent.anchoredPosition;
+                    timelineContent.anchoredPosition = new Vector2(0, contentPos.y);
+                }
+            }
+            else
+            {
+                // LMJ: Keep playhead at fixed screen position
+                Vector2 currentPos = playhead.anchoredPosition;
+                playhead.anchoredPosition = new Vector2(fixedPlayheadX, currentPos.y);
+                
+                // LMJ: Move timeline content to simulate scrolling
+                if (timelineContent != null)
+                {
+                    float offset = (currentTime - playheadFixedTime) * pixelsPerSecond;
+                    Vector2 contentPos = timelineContent.anchoredPosition;
+                    timelineContent.anchoredPosition = new Vector2(-offset, contentPos.y);
+                }
+            }
+        }
+    }
+
+    // LMJ: Reset timeline position when stopping playback
+    void ResetTimelinePosition()
+    {
+        if (timelineContent != null)
+        {
+            Vector2 contentPos = timelineContent.anchoredPosition;
+            timelineContent.anchoredPosition = new Vector2(0, contentPos.y);
         }
     }
 
@@ -993,16 +1030,14 @@ public class TimeNoteEditor : MonoBehaviour
             float noteStart = note.time;
             float noteEnd = note.type == NoteType.Charged ? note.time + note.duration : note.time;
 
-            // LMJ: Calculate judgment based on timing accuracy
             JudgmentResult judgment = CalculateJudgment(note, currentTime);
-            
+
             if (judgment != JudgmentResult.None)
             {
                 hitNotes.Add(note.id);
                 note.isHit = true;
                 note.judgment = judgment;
 
-                // LMJ: Update judgment statistics
                 switch (judgment)
                 {
                     case JudgmentResult.Perfect:
@@ -1024,30 +1059,26 @@ public class TimeNoteEditor : MonoBehaviour
         }
     }
 
-    // LMJ: Calculate judgment result based on timing accuracy
     JudgmentResult CalculateJudgment(Note note, float hitTime)
     {
         float noteStart = note.time;
         float noteEnd = note.type == NoteType.Charged ? note.time + note.duration : note.time;
 
         float timeDifference;
-        
+
         if (note.type == NoteType.Charged)
         {
-            // LMJ: For charged notes, check if hit time is within the note duration
             if (hitTime >= noteStart && hitTime <= noteEnd)
             {
-                timeDifference = 0f; // LMJ: Perfect if within the duration
+                timeDifference = 0f;
             }
             else
             {
-                // LMJ: Calculate difference from nearest edge
                 timeDifference = Mathf.Min(Mathf.Abs(hitTime - noteStart), Mathf.Abs(hitTime - noteEnd));
             }
         }
         else
         {
-            // LMJ: For normal notes, calculate difference from exact time
             timeDifference = Mathf.Abs(hitTime - noteStart);
         }
 
@@ -1059,7 +1090,7 @@ public class TimeNoteEditor : MonoBehaviour
         {
             return JudgmentResult.Good;
         }
-        else if (timeDifference <= goodTolerance + 0.2f) // LMJ: Allow some margin for miss judgment
+        else if (timeDifference <= goodTolerance + 0.2f)
         {
             return JudgmentResult.Miss;
         }
@@ -1124,6 +1155,12 @@ public class TimeNoteEditor : MonoBehaviour
     {
         selectedNoteType = type;
 
+        // LMJ: Disable horizontal scroll when Charged note is selected for dragging
+        if (timelineScrollRect != null)
+        {
+            timelineScrollRect.horizontal = (type != NoteType.Charged);
+        }
+
         for (int i = 0; i < noteTypeButtons.Length; i++)
         {
             ColorBlock colors = noteTypeButtons[i].colors;
@@ -1168,7 +1205,8 @@ public class TimeNoteEditor : MonoBehaviour
                 time = n.time,
                 type = n.type.ToString(),
                 direction = n.direction.ToString(),
-                duration = n.duration
+                duration = n.duration,
+                snapValue = n.snapValue // LMJ: Export snapValue
             }).ToList()
         };
 
@@ -1206,7 +1244,6 @@ public class TimeNoteEditor : MonoBehaviour
             patternNameInput.text = data.patternName;
             totalDuration = data.totalDuration;
 
-            // LMJ: Import judgment tolerances if available
             if (data.perfectTolerance > 0)
             {
                 perfectTolerance = data.perfectTolerance;
@@ -1230,7 +1267,9 @@ public class TimeNoteEditor : MonoBehaviour
             {
                 NoteType type = (NoteType)Enum.Parse(typeof(NoteType), noteData.type);
                 TrackDirection direction = (TrackDirection)Enum.Parse(typeof(TrackDirection), noteData.direction);
-                CreateNote(noteData.time, type, direction, noteData.duration, true);
+                // LMJ: Use imported snapValue, default to 1f for backward compatibility
+                float snapValue = noteData.snapValue > 0 ? noteData.snapValue : 1f;
+                CreateNote(noteData.time, type, direction, noteData.duration, snapValue, true);
             }
 
             DrawGrid();
@@ -1243,4 +1282,23 @@ public class TimeNoteEditor : MonoBehaviour
         }
     }
 
+    [System.Serializable]
+    public class PatternData
+    {
+        public string patternName;
+        public float totalDuration;
+        public float perfectTolerance;
+        public float goodTolerance;
+        public List<NoteData> notes;
+    }
+
+    [System.Serializable]
+    public class NoteData
+    {
+        public float time;
+        public string type;
+        public string direction;
+        public float duration;
+        public float snapValue; // LMJ: Added snapValue to save/load data
+    }
 }
