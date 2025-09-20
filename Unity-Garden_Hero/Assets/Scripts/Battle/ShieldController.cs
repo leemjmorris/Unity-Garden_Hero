@@ -2,91 +2,144 @@ using UnityEngine;
 
 public class ShieldController : MonoBehaviour
 {
+    [Header("Shield References")]
     [SerializeField] private GameObject rightShield;
     [SerializeField] private GameObject leftShield;
     [SerializeField] private GameObject frontShield;
 
-    [Header("Hit Lines")]
-    public Material hitLineMaterial;
-    public float lineOffset = 0.3f;
-    public Vector3 lineScale = new Vector3(0.8f, 0.03f, 0.8f);
+    [Header("Particle Effects")]
+    [SerializeField] private ParticleSystem rightShieldBrokenEffect;
+    [SerializeField] private ParticleSystem leftShieldBrokenEffect;
+    [SerializeField] private ParticleSystem frontShieldBrokenEffect;
 
-    private GameObject leftHitLine;
-    private GameObject rightHitLine;
-    private GameObject frontHitLine;
+    [Header("Systems")]
+    [SerializeField] private TouchInputManager touchInputManager;
+    [SerializeField] private ShieldDurabilitySystem durabilitySystem;
 
     void Start()
     {
-        CreateHitLines();
+        if (leftShield != null) leftShield.SetActive(false);
+        if (rightShield != null) rightShield.SetActive(false);
+        if (frontShield != null) frontShield.SetActive(false);
+
+        if (rightShieldBrokenEffect != null) rightShieldBrokenEffect.Stop();
+        if (leftShieldBrokenEffect != null) leftShieldBrokenEffect.Stop();
+        if (frontShieldBrokenEffect != null) frontShieldBrokenEffect.Stop();
     }
 
-    void CreateHitLines()
+    public void ShowLeftShield(bool show)
     {
-        // LMJ: Create hit lines near each shield
-        if (leftShield != null)
-        {
-            Vector3 pos = leftShield.transform.position;
-            pos.x += lineOffset; // Move towards center
-            leftHitLine = CreateHitLine("LeftHitLine", pos, Color.red);
-        }
+        if (leftShield == null) return;
 
-        if (rightShield != null)
-        {
-            Vector3 pos = rightShield.transform.position;
-            pos.x -= lineOffset; // Move towards center
-            rightHitLine = CreateHitLine("RightHitLine", pos, Color.blue);
-        }
+        // LMJ: 비활성화 상태면 입력 무시 (이미 표시된 상태 유지)
+        if (durabilitySystem != null && durabilitySystem.IsShieldDisabled("Left"))
+            return;
 
-        if (frontShield != null)
+        leftShield.SetActive(show);
+    }
+
+    public void ShowRightShield(bool show)
+    {
+        if (rightShield == null) return;
+
+        // LMJ: 비활성화 상태면 입력 무시 (이미 표시된 상태 유지)
+        if (durabilitySystem != null && durabilitySystem.IsShieldDisabled("Right"))
+            return;
+
+        rightShield.SetActive(show);
+    }
+
+    public void ShowFrontShield(bool show)
+    {
+        if (frontShield == null) return;
+
+        // LMJ: 비활성화 상태면 입력 무시 (이미 표시된 상태 유지)
+        if (durabilitySystem != null && durabilitySystem.IsShieldDisabled("Up"))
+            return;
+
+        frontShield.SetActive(show);
+    }
+
+    // LMJ: 비활성화 상태 시각화
+    public void SetShieldDisabledVisual(string direction, bool disabled)
+    {
+        GameObject shield = GetShieldByDirection(direction);
+        ParticleSystem brokenEffect = GetBrokenEffectByDirection(direction);
+
+        if (shield == null) return;
+
+        if (disabled)
         {
-            Vector3 pos = frontShield.transform.position;
-            pos.z -= lineOffset; // Move towards center
-            frontHitLine = CreateHitLine("FrontHitLine", pos, Color.green);
+            // LMJ: 비활성화: 불투명하게 계속 표시 + 파티클 재생
+            shield.SetActive(true);
+            SetShieldOpacity(shield, 0.3f); // 불투명
+
+            if (brokenEffect != null)
+            {
+                brokenEffect.Play(); // LMJ: 파티클 재생
+            }
+        }
+        else
+        {
+            // LMJ: 복구: 투명도 원래대로, 숨김 상태로 + 파티클 정지
+            SetShieldOpacity(shield, 1.0f);
+            shield.SetActive(false);
+
+            if (brokenEffect != null)
+            {
+                brokenEffect.Stop(); // LMJ: 파티클 정지
+            }
         }
     }
 
-    GameObject CreateHitLine(string name, Vector3 position, Color color)
+    ParticleSystem GetBrokenEffectByDirection(string direction)
     {
-        GameObject line = GameObject.CreatePrimitive(PrimitiveType.Cube); // LMJ: Cylinder -> Cube
-        line.name = name;
-        line.transform.position = position;
-
-        // LMJ: Make it look like a thin line
-        Vector3 scale = lineScale;
-        if (name.Contains("Left") || name.Contains("Right"))
+        switch (direction)
         {
-            scale = new Vector3(0.05f, 2.0f, 0.05f); // Vertical line
+            case "Left": return leftShieldBrokenEffect;
+            case "Right": return rightShieldBrokenEffect;
+            case "Up": return frontShieldBrokenEffect;
+            default: return null;
         }
-        else // Up direction
-        {
-            scale = new Vector3(2.0f, 0.05f, 0.05f); // Horizontal line
-        }
-        line.transform.localScale = scale;
-
-        Renderer renderer = line.GetComponent<Renderer>();
-        Material mat = new Material(Shader.Find("Standard"));
-        mat.color = color;
-        mat.SetFloat("_Mode", 2);
-        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-        mat.SetInt("_ZWrite", 0);
-        mat.DisableKeyword("_ALPHATEST_ON");
-        mat.EnableKeyword("_ALPHABLEND_ON");
-        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-        mat.renderQueue = 3000;
-        Color transparentColor = color;
-        transparentColor.a = 0.8f; // LMJ: More visible
-        mat.color = transparentColor;
-        renderer.material = mat;
-
-        Destroy(line.GetComponent<Collider>());
-        return line;
     }
 
-    void Update()
+    GameObject GetShieldByDirection(string direction)
     {
-        leftShield.SetActive(Input.GetKey(KeyCode.A));
-        rightShield.SetActive(Input.GetKey(KeyCode.D));
-        frontShield.SetActive(Input.GetKey(KeyCode.W));
+        switch (direction)
+        {
+            case "Left": return leftShield;
+            case "Right": return rightShield;
+            case "Up": return frontShield;
+            default: return null;
+        }
+    }
+
+    void SetShieldOpacity(GameObject shield, float alpha)
+    {
+        Renderer renderer = shield.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            Color color = renderer.material.color;
+            color.a = alpha;
+            renderer.material.color = color;
+
+            // LMJ: 투명도 설정을 위한 렌더링 모드 조정
+            if (alpha < 1.0f)
+            {
+                renderer.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                renderer.material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                renderer.material.SetInt("_ZWrite", 0);
+                renderer.material.EnableKeyword("_ALPHABLEND_ON");
+                renderer.material.renderQueue = 3000;
+            }
+            else
+            {
+                renderer.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                renderer.material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                renderer.material.SetInt("_ZWrite", 1);
+                renderer.material.DisableKeyword("_ALPHABLEND_ON");
+                renderer.material.renderQueue = -1;
+            }
+        }
     }
 }

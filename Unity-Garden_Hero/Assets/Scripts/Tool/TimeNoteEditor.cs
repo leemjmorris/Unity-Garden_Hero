@@ -17,7 +17,7 @@ public class TimeNoteEditor : MonoBehaviour
         public NoteType type;
         public TrackDirection direction;
         public float duration;
-        public float snapValue; // LMJ: Store snapValue when note was created
+        public float snapValue;
         public GameObject visualObject;
         public bool isHit;
         public JudgmentResult judgment;
@@ -29,7 +29,7 @@ public class TimeNoteEditor : MonoBehaviour
             this.type = type;
             this.direction = direction;
             this.duration = duration;
-            this.snapValue = snapValue; // LMJ: Store the snapValue used when creating this note
+            this.snapValue = snapValue;
             this.isHit = false;
             this.judgment = JudgmentResult.None;
         }
@@ -63,7 +63,7 @@ public class TimeNoteEditor : MonoBehaviour
     [SerializeField] private float pixelsPerSecond = 100f;
     [SerializeField] private float playbackSpeed = 1f;
     [SerializeField] private bool syncEndTimeInput = true;
-    [SerializeField] private float playheadFixedTime = 2f; // LMJ: Time position where playhead becomes fixed
+    [SerializeField] private float playheadFixedTime = 2f;
 
     [Header("Judgment Settings")]
     [SerializeField] private float perfectTolerance = 0.2f;
@@ -73,7 +73,7 @@ public class TimeNoteEditor : MonoBehaviour
     [SerializeField] private RectTransform timelineContent;
     [SerializeField] private RectTransform[] tracks;
     [SerializeField] private RectTransform playhead;
-    [SerializeField] private ScrollRect timelineScrollRect; // LMJ: Reference to timeline ScrollRect
+    [SerializeField] private ScrollRect timelineScrollRect;
     [SerializeField] private TMP_InputField patternNameInput;
     [SerializeField] private TMP_InputField endTimeInput;
     [SerializeField] private TMP_InputField currentTimeInput;
@@ -136,11 +136,22 @@ public class TimeNoteEditor : MonoBehaviour
     private int goodCount = 0;
     private int missCount = 0;
 
+    // LMJ: Get MonsterPatterns directory path and create if not exists
+    private string GetPatternsDirectory()
+    {
+        string path = Path.Combine(Application.dataPath, "MonsterPatterns");
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+        return path;
+    }
+
     void Start()
     {
         InitializeUI();
         SetupRuler();
-        SetupPlayhead(); // LMJ: Call SetupPlayhead to ensure proper parent hierarchy
+        SetupPlayhead();
         DrawGrid();
         UpdateHistoryUI();
         UpdateJudgmentStats();
@@ -176,7 +187,6 @@ public class TimeNoteEditor : MonoBehaviour
     {
         if (playhead != null)
         {
-            // LMJ: Ensure playhead is not a child of timelineContent to prevent moving with content
             if (playhead.parent == timelineContent)
             {
                 playhead.SetParent(timelineContent.parent);
@@ -304,12 +314,15 @@ public class TimeNoteEditor : MonoBehaviour
         }
     }
 
+    // LMJ: Updated to use MonsterPatterns directory
     private void RefreshFileList()
     {
         if (fileSelectDropdown == null) return;
 
         fileSelectDropdown.options.Clear();
-        string[] jsonFiles = Directory.GetFiles(Application.persistentDataPath, "*.json");
+        string patternsPath = GetPatternsDirectory();
+        string[] jsonFiles = Directory.GetFiles(patternsPath, "*.json");
+        
         foreach (string file in jsonFiles)
         {
             string fileName = Path.GetFileNameWithoutExtension(file);
@@ -586,7 +599,6 @@ public class TimeNoteEditor : MonoBehaviour
         }
         else
         {
-            // LMJ: Pass snapValue when creating new note
             CreateNote(clickTime, selectedNoteType, direction, 0, snapValue);
             statusText.text = $"Placed {selectedNoteType} note at {clickTime:F2}s on {direction} track";
         }
@@ -643,7 +655,6 @@ public class TimeNoteEditor : MonoBehaviour
             TrackDirection direction = (TrackDirection)currentTrackIndex;
             if (!CheckNoteOverlap(direction, startTime, startTime + duration))
             {
-                // LMJ: Pass snapValue when creating charged note
                 CreateNote(startTime, NoteType.Charged, direction, duration, snapValue);
                 statusText.text = $"Placed charged note at {startTime:F2}s - {startTime + duration:F2}s on {direction} track";
             }
@@ -677,7 +688,6 @@ public class TimeNoteEditor : MonoBehaviour
         });
     }
 
-    // LMJ: Updated CreateNote to accept snapValue parameter
     void CreateNote(float time, NoteType type, TrackDirection direction, float duration = 0f, float snapValue = 1f, bool skipHistory = false)
     {
         if (!skipHistory) SaveToHistory();
@@ -688,14 +698,13 @@ public class TimeNoteEditor : MonoBehaviour
         UpdateNoteCount();
     }
 
-    // LMJ: Updated RenderNote to use stored snapValue from note
     void RenderNote(Note note)
     {
         GameObject noteObj = Instantiate(notePrefab, tracks[(int)note.direction]);
         note.visualObject = noteObj;
 
         RectTransform noteRect = noteObj.GetComponent<RectTransform>();
-        float noteWidth = pixelsPerSecond * note.snapValue; // LMJ: Use note's stored snapValue
+        float noteWidth = pixelsPerSecond * note.snapValue;
 
         noteRect.anchoredPosition = new Vector2(note.time * pixelsPerSecond, 0);
 
@@ -825,7 +834,7 @@ public class TimeNoteEditor : MonoBehaviour
                 type = n.type.ToString(),
                 direction = n.direction.ToString(),
                 duration = n.duration,
-                snapValue = n.snapValue // LMJ: Include snapValue in save data
+                snapValue = n.snapValue
             }).ToList()
         };
 
@@ -861,7 +870,6 @@ public class TimeNoteEditor : MonoBehaviour
         {
             NoteType type = (NoteType)System.Enum.Parse(typeof(NoteType), noteData.type);
             TrackDirection direction = (TrackDirection)System.Enum.Parse(typeof(TrackDirection), noteData.direction);
-            // LMJ: Use stored snapValue when restoring notes, default to 1f if not present
             float snapValue = noteData.snapValue > 0 ? noteData.snapValue : 1f;
             CreateNote(noteData.time, type, direction, noteData.duration, snapValue, true);
         }
@@ -924,7 +932,6 @@ public class TimeNoteEditor : MonoBehaviour
         isPlaying = false;
         currentTime = 0f;
         
-        // LMJ: Reset timeline position when stopping
         ResetTimelinePosition();
         
         UpdatePlayhead();
@@ -965,16 +972,13 @@ public class TimeNoteEditor : MonoBehaviour
     {
         if (playhead != null)
         {
-            // LMJ: Calculate playhead's screen position (fixed at playheadFixedTime pixel position)
             float fixedPlayheadX = playheadFixedTime * pixelsPerSecond;
             
             if (currentTime <= playheadFixedTime)
             {
-                // LMJ: Move playhead normally until it reaches the fixed position
                 Vector2 currentPos = playhead.anchoredPosition;
                 playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, currentPos.y);
                 
-                // LMJ: Reset timeline content position when playhead is moving
                 if (timelineContent != null)
                 {
                     Vector2 contentPos = timelineContent.anchoredPosition;
@@ -983,11 +987,9 @@ public class TimeNoteEditor : MonoBehaviour
             }
             else
             {
-                // LMJ: Keep playhead at fixed screen position
                 Vector2 currentPos = playhead.anchoredPosition;
                 playhead.anchoredPosition = new Vector2(fixedPlayheadX, currentPos.y);
                 
-                // LMJ: Move timeline content to simulate scrolling
                 if (timelineContent != null)
                 {
                     float offset = (currentTime - playheadFixedTime) * pixelsPerSecond;
@@ -998,7 +1000,6 @@ public class TimeNoteEditor : MonoBehaviour
         }
     }
 
-    // LMJ: Reset timeline position when stopping playback
     void ResetTimelinePosition()
     {
         if (timelineContent != null)
@@ -1155,7 +1156,6 @@ public class TimeNoteEditor : MonoBehaviour
     {
         selectedNoteType = type;
 
-        // LMJ: Disable horizontal scroll when Charged note is selected for dragging
         if (timelineScrollRect != null)
         {
             timelineScrollRect.horizontal = (type != NoteType.Charged);
@@ -1181,6 +1181,7 @@ public class TimeNoteEditor : MonoBehaviour
         return float.Parse(snapValues[snapValueDropdown.value]);
     }
 
+    // LMJ: Updated to save to MonsterPatterns directory
     void ExportJSON()
     {
         string fileName = patternNameInput.text;
@@ -1206,17 +1207,19 @@ public class TimeNoteEditor : MonoBehaviour
                 type = n.type.ToString(),
                 direction = n.direction.ToString(),
                 duration = n.duration,
-                snapValue = n.snapValue // LMJ: Export snapValue
+                snapValue = n.snapValue
             }).ToList()
         };
 
         string json = JsonConvert.SerializeObject(data, Formatting.Indented);
-        string path = Path.Combine(Application.persistentDataPath, fileName + ".json");
+        string path = Path.Combine(GetPatternsDirectory(), fileName + ".json");
         File.WriteAllText(path, json);
 
-        statusText.text = $"Exported to: {fileName}.json";
+        statusText.text = $"Exported to: Assets/MonsterPatterns/{fileName}.json";
+        RefreshFileList(); // LMJ: Refresh file list after export
     }
 
+    // LMJ: Updated to load from MonsterPatterns directory
     void ImportSelectedJSON()
     {
         if (fileSelectDropdown == null || fileSelectDropdown.options.Count == 0)
@@ -1226,7 +1229,7 @@ public class TimeNoteEditor : MonoBehaviour
         }
 
         string selectedFileName = fileSelectDropdown.options[fileSelectDropdown.value].text + ".json";
-        string path = Path.Combine(Application.persistentDataPath, selectedFileName);
+        string path = Path.Combine(GetPatternsDirectory(), selectedFileName);
 
         ImportFromPath(path);
     }
@@ -1267,7 +1270,6 @@ public class TimeNoteEditor : MonoBehaviour
             {
                 NoteType type = (NoteType)Enum.Parse(typeof(NoteType), noteData.type);
                 TrackDirection direction = (TrackDirection)Enum.Parse(typeof(TrackDirection), noteData.direction);
-                // LMJ: Use imported snapValue, default to 1f for backward compatibility
                 float snapValue = noteData.snapValue > 0 ? noteData.snapValue : 1f;
                 CreateNote(noteData.time, type, direction, noteData.duration, snapValue, true);
             }
@@ -1299,6 +1301,6 @@ public class TimeNoteEditor : MonoBehaviour
         public string type;
         public string direction;
         public float duration;
-        public float snapValue; // LMJ: Added snapValue to save/load data
+        public float snapValue;
     }
 }

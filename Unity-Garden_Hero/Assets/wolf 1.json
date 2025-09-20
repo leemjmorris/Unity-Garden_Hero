@@ -1,0 +1,50 @@
+{
+  "patternName": "wolf 1",
+  "totalDuration": 5.0,
+  "perfectTolerance": 0.15,
+  "goodTolerance": 0.3,
+  "notes": [
+    {
+      "time": 1.0,
+      "type": "Charged",
+      "direction": "Left",
+      "duration": 3.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 2.0,
+      "type": "Charged",
+      "direction": "Right",
+      "duration": 3.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 3.0,
+      "type": "Charged",
+      "direction": "Left",
+      "duration": 3.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 4.0,
+      "type": "Defense",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 4.0,
+      "type": "Defense",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 4.0,
+      "type": "Defense",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 1.0
+    }
+  ]
+}

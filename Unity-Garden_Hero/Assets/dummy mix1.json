@@ -1,0 +1,113 @@
+{
+  "patternName": "dummy mix1",
+  "totalDuration": 6.0,
+  "perfectTolerance": 0.15,
+  "goodTolerance": 0.3,
+  "notes": [
+    {
+      "time": 3.75,
+      "type": "Charged",
+      "direction": "Up",
+      "duration": 1.5,
+      "snapValue": 1.0
+    },
+    {
+      "time": 0.75,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 1.25,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 1.75,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 2.75,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 2.25,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 3.25,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 4.25,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 5.0,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 4.5,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 5.0,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 5.75,
+      "type": "Defense",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 5.75,
+      "type": "Defense",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 5.75,
+      "type": "Defense",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 5.75,
+      "type": "Defense",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.25
+    }
+  ]
+}
