@@ -60,42 +60,31 @@ public class RhythmPatternManager : MonoBehaviour
                 if (pattern != null)
                 {
                     allPatterns.Add(pattern);
-                    Debug.Log($"Loaded pattern: {pattern.patternName}");
                 }
             }
         }
-
-        Debug.Log($"Total patterns loaded: {allPatterns.Count}");
     }
 
     void GenerateInitialPatternSet()
     {
         if (allPatterns.Count == 0)
         {
-            Debug.LogWarning("No patterns loaded!");
             return;
         }
 
-        // LMJ: First pattern set starts with delay
         nextPatternStartTime = startDelay;
-
         CreateRandomPatternSet();
-        Debug.Log($"Initial pattern set created. {allNotes.Count} notes generated. Next set will start at: {nextPatternStartTime}");
     }
 
     void CreateRandomPatternSet()
     {
         List<int> shuffledIndices = GetShuffledPatternIndices();
 
-        Debug.Log($"Creating new pattern set. Order: {string.Join(", ", shuffledIndices)}");
-
-        // LMJ: Create notes for each pattern in shuffled order
         foreach (int patternIndex in shuffledIndices)
         {
             RhythmPattern pattern = allPatterns[patternIndex];
             CreateNotesForPattern(pattern);
 
-            // LMJ: Move start time to end of this pattern
             float patternDuration = GetPatternDuration(pattern);
             nextPatternStartTime += patternDuration;
         }
@@ -112,7 +101,6 @@ public class RhythmPatternManager : MonoBehaviour
 
         if (randomOrder)
         {
-            // LMJ: Fisher-Yates shuffle
             for (int i = 0; i < indices.Count; i++)
             {
                 int randomIndex = Random.Range(i, indices.Count);
@@ -142,7 +130,6 @@ public class RhythmPatternManager : MonoBehaviour
                     note = noteObj.AddComponent<RhythmNote>();
                 }
 
-                // LMJ: Hit time is based on current pattern start time
                 float actualHitTime = nextPatternStartTime + noteData.time;
                 note.Initialize(noteData.direction, actualHitTime, noteData.type, gameSystem.noteSpeed, noteData.duration);
 
@@ -164,54 +151,41 @@ public class RhythmPatternManager : MonoBehaviour
                 maxTime = noteEndTime;
         }
 
-        // LMJ: Add buffer time between patterns
         return maxTime + 1f;
     }
 
     void StartGame()
     {
-        float gameStartTime = Time.time;
+        float gameStartTime = NoteTimeManager.Instance.GetNoteTime();
         gameSystem.StartGame(gameStartTime, allNotes);
         gameStarted = true;
-        Debug.Log($"Game started with {allNotes.Count} notes");
     }
 
-    // LMJ: Monitor when to add next pattern set
     IEnumerator MonitorForNextPatternSet()
     {
         while (gameStarted)
         {
-            yield return new WaitForSeconds(2f); // Check every 2 seconds
+            yield return new WaitForSeconds(2f);
 
-            float currentGameTime = Time.time;
+            // LMJ: Use custom note time instead of Time.time
+            float currentGameTime = NoteTimeManager.Instance.GetNoteTime();
             float timeUntilNextSet = nextPatternStartTime - currentGameTime;
 
-            // LMJ: When 8 seconds left, generate and append next pattern set
             if (timeUntilNextSet <= 8f && timeUntilNextSet > 0f)
             {
-                Debug.Log($"Adding next pattern set. Time until current set ends: {timeUntilNextSet:F1}s");
-
                 List<RhythmNote> previousNotes = new List<RhythmNote>(allNotes);
                 int previousCount = allNotes.Count;
 
-                // LMJ: Generate next pattern set (appends to allNotes)
                 CreateRandomPatternSet();
 
-                // LMJ: Get only the new notes that were added
                 List<RhythmNote> newNotes = allNotes.GetRange(previousCount, allNotes.Count - previousCount);
-
-                // LMJ: Add new notes to game system without resetting
                 gameSystem.AddNotes(newNotes);
 
-                Debug.Log($"Next pattern set added. New notes: {newNotes.Count}, Total: {allNotes.Count}. Next set at: {nextPatternStartTime}");
-
-                // LMJ: Wait to avoid multiple generations
                 yield return new WaitForSeconds(5f);
             }
         }
     }
 
-    // LMJ: Manual controls for testing
     [ContextMenu("Add Next Pattern Set Now")]
     public void AddNextPatternSetNow()
     {
@@ -222,13 +196,10 @@ public class RhythmPatternManager : MonoBehaviour
 
         List<RhythmNote> newNotes = allNotes.GetRange(previousCount, allNotes.Count - previousCount);
         gameSystem.AddNotes(newNotes);
-
-        Debug.Log($"Manually added pattern set. New notes: {newNotes.Count}");
     }
 
     void OnDestroy()
     {
-        // LMJ: Stop all coroutines and clean up
         StopAllCoroutines();
         gameStarted = false;
         allNotes.Clear();

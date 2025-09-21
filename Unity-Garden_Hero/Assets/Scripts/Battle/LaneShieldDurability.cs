@@ -5,14 +5,14 @@ public class LaneShieldDurability : MonoBehaviour
 {
     [Header("Required References")]
     [SerializeField] private MMProgressBar durabilityBar;
-    [SerializeField] private ShieldDurabilitySystem durabilitySystem;
+    [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
     
     void Update()
     {
-        if (durabilitySystem == null || durabilityBar == null) return;
+        if (directionalShieldSystem == null || durabilityBar == null) return;
         
-        // LMJ: All lanes show same durability
-        float durability = durabilitySystem.GetShieldDurabilityPercent();
+        // LMJ: Show current direction shield durability
+        float durability = directionalShieldSystem.GetShieldDurabilityPercent();
         durabilityBar.UpdateBar01(durability);
     }
 }

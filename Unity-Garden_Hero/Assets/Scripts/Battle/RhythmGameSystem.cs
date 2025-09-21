@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-// HoldEffectAnimation 클래스 추가
 public class HoldEffectAnimation : MonoBehaviour
 {
     private float duration;
@@ -29,7 +28,6 @@ public class HoldEffectAnimation : MonoBehaviour
             return;
         }
 
-        // 확대 및 페이드 아웃
         float scale = Mathf.Lerp(1f, 2f, t);
         rectTransform.localScale = Vector3.one * scale;
 
@@ -37,12 +35,10 @@ public class HoldEffectAnimation : MonoBehaviour
         color.a = Mathf.Lerp(1f, 0f, t);
         image.color = color;
 
-        // 회전
         rectTransform.Rotate(0f, 0f, 180f * Time.deltaTime);
     }
 }
 
-// PulseAnimation 클래스
 public class PulseAnimation : MonoBehaviour
 {
     private float animationTime = 0.3f;
@@ -86,7 +82,6 @@ public class PulseAnimation : MonoBehaviour
     }
 }
 
-// RhythmGameSystem 메인 클래스
 public partial class RhythmGameSystem : MonoBehaviour
 {
     [Header("UI References")]
@@ -115,7 +110,7 @@ public partial class RhythmGameSystem : MonoBehaviour
     [Header("Manager References")]
     [SerializeField] private MonsterManager monsterManager;
     [SerializeField] private PlayerManager playerManager;
-    [SerializeField] private ShieldDurabilitySystem shieldDurabilitySystem; // LMJ: 필드명 변경
+    [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
     [Header("Long Note Settings")]
     [SerializeField] private float longNoteHeadMultiplier = 0.5f;
@@ -206,7 +201,6 @@ public partial class RhythmGameSystem : MonoBehaviour
     public void AddNotes(List<RhythmNote> newNotes)
     {
         allNotes.AddRange(newNotes);
-        Debug.Log($"Added {newNotes.Count} notes. Total notes: {allNotes.Count}");
     }
 
     void Update()
@@ -220,7 +214,8 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void UpdateNotePositions()
     {
-        float currentGameTime = Time.time - GameStartTime;
+        // LMJ: Use custom note time instead of Time.time
+        float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         foreach (var note in allNotes)
         {
@@ -231,11 +226,6 @@ public partial class RhythmGameSystem : MonoBehaviour
 
             Vector2 targetPos = GetSpawnPosition(note.direction, distanceFromJudgment);
             note.GetComponent<RectTransform>().anchoredPosition = targetPos;
-
-            if (note.direction == "Up" && note.IsLongNote())
-            {
-                Debug.Log($"Up Note Position - TimeUntilHit: {timeUntilHit:F2}, Distance: {distanceFromJudgment:F1}, Pos: {targetPos}");
-            }
         }
     }
 
@@ -260,52 +250,59 @@ public partial class RhythmGameSystem : MonoBehaviour
         ReleaseLongNote(direction);
     }
 
-    // 롱노트 처리가 추가된 CheckHit
     public void CheckHitWithLongNote(string direction)
     {
-        // LMJ: 쉴드 비활성화 상태면 입력 무시
-        if (shieldDurabilitySystem != null && shieldDurabilitySystem.IsShieldDisabled(direction))
+        // LMJ: Shield disabled check - input ignored, visual feedback only
+        if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction))
         {
-            CreateHitEffect(direction); // 시각적 피드백은 주되
-            ShowJudgment(direction, JudgmentResult.Miss); // Miss 표시
-            return; // 노트 처리는 안함
+            CreateHitEffect(direction);
+            ShowJudgment(direction, JudgmentResult.Miss);
+            return;
         }
-        
-        float currentGameTime = Time.time - GameStartTime;
-        RhythmNote closestNote = null;
-        float minTimeDiff = float.MaxValue;
 
-        foreach (var note in allNotes)
-        {
-            if (note.direction != direction || note.IsHolding()) continue;
-
-            float timeDiff = Mathf.Abs(currentGameTime - note.hitTime);
-
-            // LMJ: Use same logic for all lanes
-            if (timeDiff <= missTolerance && timeDiff < minTimeDiff)
-            {
-                minTimeDiff = timeDiff;
-                closestNote = note;
-            }
-        }
+        // LMJ: Use custom note time instead of Time.time
+        float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
+        RhythmNote closestNote = FindClosestNote(direction, currentGameTime);
 
         CreateHitEffect(direction);
 
         if (closestNote != null)
         {
+            float timeDiff = Mathf.Abs(currentGameTime - closestNote.hitTime);
+
             if (closestNote.IsLongNote() && !closestNote.HasStartedHold())
             {
-                ProcessLongNoteStart(closestNote, minTimeDiff, direction);
+                ProcessLongNoteStart(closestNote, timeDiff, direction);
             }
             else if (!closestNote.IsLongNote())
             {
-                JudgmentResult result = GetJudgment(minTimeDiff);
+                JudgmentResult result = GetJudgment(timeDiff);
                 ProcessNoteDamage(closestNote, result);
                 allNotes.Remove(closestNote);
                 Destroy(closestNote.gameObject);
                 ShowJudgment(direction, result);
             }
         }
+    }
+
+    RhythmNote FindClosestNote(string direction, float currentGameTime)
+    {
+        RhythmNote closestNote = null;
+        float minTimeDiff = missTolerance;
+
+        foreach (var note in allNotes)
+        {
+            if (note.direction != direction || note.IsHolding()) continue;
+
+            float timeDiff = Mathf.Abs(currentGameTime - note.hitTime);
+            if (timeDiff < minTimeDiff)
+            {
+                minTimeDiff = timeDiff;
+                closestNote = note;
+            }
+        }
+
+        return closestNote;
     }
 
     void ProcessLongNoteStart(RhythmNote note, float timeDiff, string direction)
@@ -316,7 +313,6 @@ public partial class RhythmGameSystem : MonoBehaviour
         {
             note.StartHold();
             heldNotes[direction] = note;
-
             ProcessLongNoteHeadDamage(note, result);
             ShowJudgment(direction, result);
             CreateHoldStartEffect(direction);
@@ -333,11 +329,10 @@ public partial class RhythmGameSystem : MonoBehaviour
         if (!heldNotes.ContainsKey(direction)) return;
 
         RhythmNote longNote = heldNotes[direction];
-
-        // LMJ: Mark as processed to prevent double judgment
         longNote.SetHit();
 
-        float currentGameTime = Time.time - GameStartTime;
+        // LMJ: Use custom note time instead of Time.time
+        float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
         float timeDiff = Mathf.Abs(currentGameTime - longNote.GetHoldEndTime());
         JudgmentResult result = GetLongNoteTailJudgment(timeDiff);
 
@@ -354,7 +349,8 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void UpdateHeldNotes()
     {
-        float currentGameTime = Time.time - GameStartTime;
+        // LMJ: Use custom note time instead of Time.time
+        float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         foreach (var kvp in new Dictionary<string, RhythmNote>(heldNotes))
         {
@@ -411,11 +407,10 @@ public partial class RhythmGameSystem : MonoBehaviour
         {
             int damage = Mathf.RoundToInt(playerManager.GetAttackPower() * longNoteHeadMultiplier);
             monsterManager.TakeNoteHit(damage, "Long_Head", result);
-            
-            // LMJ: 롱노트 헤드도 쉴드 데미지 적용
-            if (shieldDurabilitySystem != null)
+
+            if (directionalShieldSystem != null)
             {
-                shieldDurabilitySystem.ProcessNoteResult(note.direction, result);
+                directionalShieldSystem.ProcessNoteResult(note.direction, result);
             }
         }
     }
@@ -430,12 +425,9 @@ public partial class RhythmGameSystem : MonoBehaviour
 
             monsterManager.TakeNoteHit(totalDamage, "Long_Tail", result);
 
-            Debug.Log($"Long Note Tail - Base: {baseDamage}, Bonus: {holdBonus}, Total: {totalDamage}");
-            
-            // LMJ: 롱노트 테일도 쉴드 데미지 적용
-            if (shieldDurabilitySystem != null)
+            if (directionalShieldSystem != null)
             {
-                shieldDurabilitySystem.ProcessNoteResult(note.direction, result);
+                directionalShieldSystem.ProcessNoteResult(note.direction, result);
             }
         }
     }
@@ -487,7 +479,8 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void CheckMissedLongNotes()
     {
-        float currentGameTime = Time.time - GameStartTime;
+        // LMJ: Use custom note time instead of Time.time
+        float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         for (int i = allNotes.Count - 1; i >= 0; i--)
         {
@@ -510,31 +503,29 @@ public partial class RhythmGameSystem : MonoBehaviour
         {
             string noteType = note.noteType;
 
-            // LMJ: 몬스터 데미지 (히트 성공시)
             if (result != JudgmentResult.Miss && noteType != "Dodge")
             {
                 monsterManager.TakeNoteHit(playerManager.GetAttackPower(), noteType, result);
             }
 
-            // LMJ: 플레이어 데미지 (Miss시 또는 Dodge 히트시)
             playerManager.ProcessNoteResult(monsterManager.GetAttackPower(), noteType, result);
-            
-            // LMJ: 쉴드 데미지 (히트 성공시만, 비활성화 상태가 아닐 때만)
-            if (shieldDurabilitySystem != null)
+
+            if (directionalShieldSystem != null)
             {
-                shieldDurabilitySystem.ProcessNoteResult(note.direction, result);
+                directionalShieldSystem.ProcessNoteResult(note.direction, result);
             }
         }
     }
 
     void CheckMissedNotes()
     {
-        float currentGameTime = Time.time - GameStartTime;
+        // LMJ: Use custom note time instead of Time.time
+        float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         for (int i = allNotes.Count - 1; i >= 0; i--)
         {
             RhythmNote note = allNotes[i];
-            if (note == null || note.IsHit()) continue;  // LMJ: Skip already processed notes
+            if (note == null || note.IsHit()) continue;
 
             if (currentGameTime > note.hitTime + missTolerance && !note.IsHolding())
             {
@@ -624,6 +615,6 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     public float GetCurrentGameTime()
     {
-        return Time.time - GameStartTime;
+        return NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
     }
 }

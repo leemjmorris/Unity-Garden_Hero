@@ -123,7 +123,7 @@ public class ShieldDurabilitySystem : MonoBehaviour
         StartCoroutine(ShieldBreakEffectAll());
     }
     
-    void RestoreAllShields()
+    public void RestoreAllShields()
     {
         isSystemDisabled = false;
         currentDurability = maxDurability;

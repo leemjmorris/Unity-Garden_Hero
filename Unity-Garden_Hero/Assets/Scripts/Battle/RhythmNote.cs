@@ -34,7 +34,6 @@ public class RhythmNote : MonoBehaviour
     private float originalBodyLength;
     private Vector2 originalBodyPosition;
 
-    // Colors
     private readonly Color headColor = new Color(1f, 0.9f, 0.2f, 1f);
     private readonly Color bodyColor = new Color(0.9f, 0.8f, 0.1f, 0.7f);
     private readonly Color tailColor = new Color(1f, 0.85f, 0.15f, 1f);
@@ -65,12 +64,6 @@ public class RhythmNote : MonoBehaviour
         {
             holdEndTime = hitTime + duration;
             CreateDJMaxLongNote();
-
-            // LMJ: Debug info for Up lane
-            if (direction == "Up")
-            {
-                Debug.Log($"Up Lane Long Note - hitTime: {hitTime}, holdEndTime: {holdEndTime}, duration: {duration}");
-            }
         }
         else
         {
@@ -99,14 +92,13 @@ public class RhythmNote : MonoBehaviour
         normalRect.pivot = new Vector2(0.5f, 0.5f);
         normalRect.anchoredPosition = Vector2.zero;
 
-        // LMJ: Different size based on direction
         if (direction == "Up")
         {
-            normalRect.sizeDelta = new Vector2(100, 20); // LMJ: Wide horizontal note
+            normalRect.sizeDelta = new Vector2(100, 20);
         }
         else
         {
-            normalRect.sizeDelta = new Vector2(20, 100); // LMJ: Tall vertical note
+            normalRect.sizeDelta = new Vector2(20, 100);
         }
 
         Image noteImage = normalNote.AddComponent<Image>();
@@ -130,10 +122,9 @@ public class RhythmNote : MonoBehaviour
         headRect.anchorMin = headRect.anchorMax = new Vector2(0.5f, 0.5f);
         headRect.pivot = new Vector2(0.5f, 0.5f);
 
-        // LMJ: Up lane needs width/height swapped due to 90° rotation
         if (direction == "Up")
         {
-            headRect.sizeDelta = new Vector2(100, 20); // LMJ: Swapped for rotation
+            headRect.sizeDelta = new Vector2(100, 20);
         }
         else
         {
@@ -157,10 +148,9 @@ public class RhythmNote : MonoBehaviour
 
         originalBodyLength = duration * speed;
 
-        // LMJ: Up lane needs width/height swapped due to 90° rotation
         if (direction == "Up")
         {
-            bodyRect.sizeDelta = new Vector2(80, originalBodyLength); // LMJ: Swapped for rotation
+            bodyRect.sizeDelta = new Vector2(80, originalBodyLength);
         }
         else
         {
@@ -180,10 +170,9 @@ public class RhythmNote : MonoBehaviour
         tailRect.anchorMin = tailRect.anchorMax = new Vector2(0.5f, 0.5f);
         tailRect.pivot = new Vector2(0.5f, 0.5f);
 
-        // LMJ: Up lane needs width/height swapped due to 90° rotation
         if (direction == "Up")
         {
-            tailRect.sizeDelta = new Vector2(100, 20); // LMJ: Swapped for rotation
+            tailRect.sizeDelta = new Vector2(100, 20);
         }
         else
         {
@@ -215,7 +204,6 @@ public class RhythmNote : MonoBehaviour
         }
         else if (direction == "Up")
         {
-            // LMJ: Same as Left lane since we rotate the whole thing
             tailRect.anchoredPosition = Vector2.zero;
             bodyRect.anchoredPosition = new Vector2(0, -bodyLength / 2);
             headRect.anchoredPosition = new Vector2(0, -bodyLength);
@@ -236,7 +224,8 @@ public class RhythmNote : MonoBehaviour
     {
         if (!isHolding || bodyObject == null) return;
 
-        float timeSinceHoldStart = Time.time - holdStartTime;
+        // LMJ: Use custom note time instead of Time.time
+        float timeSinceHoldStart = NoteTimeManager.Instance.GetNoteTime() - holdStartTime;
         float remainingDuration = duration - timeSinceHoldStart;
         float progress = Mathf.Clamp01(timeSinceHoldStart / duration);
         float remainingLength = remainingDuration * speed;
@@ -262,7 +251,6 @@ public class RhythmNote : MonoBehaviour
 
         if (direction == "Up")
         {
-            // LMJ: Shrink from head side
             bodyRect.sizeDelta = new Vector2(80, remainingLength);
             bodyRect.anchoredPosition = new Vector2(0, -consumedLength - remainingLength / 2);
 
@@ -278,7 +266,6 @@ public class RhythmNote : MonoBehaviour
         }
         else if (direction == "Right")
         {
-            // LMJ: Apply Up lane style - body moves away while shrinking
             bodyRect.sizeDelta = new Vector2(remainingLength, 80);
             bodyRect.anchoredPosition = new Vector2(consumedLength + remainingLength / 2, 0);
 
@@ -287,9 +274,8 @@ public class RhythmNote : MonoBehaviour
                 tailRect.anchoredPosition = new Vector2(consumedLength + remainingLength, 0);
             }
         }
-        else // Left
+        else
         {
-            // LMJ: Apply Up lane style - body moves away while shrinking
             bodyRect.sizeDelta = new Vector2(remainingLength, 80);
             bodyRect.anchoredPosition = new Vector2(-consumedLength - remainingLength / 2, 0);
 
@@ -301,14 +287,13 @@ public class RhythmNote : MonoBehaviour
 
         ApplyHoldGlowEffect();
 
-        // LMJ: Hide the part at judgment line after hold starts
         if (direction != "Up" && headCap != null && timeSinceHoldStart > 0.1f)
         {
             headCap.SetActive(false);
         }
         else if (direction == "Up" && tailCap != null && timeSinceHoldStart > 0.1f)
         {
-            tailCap.SetActive(false);  // LMJ: Hide tail for Up lane
+            tailCap.SetActive(false);
         }
     }
 
@@ -336,16 +321,15 @@ public class RhythmNote : MonoBehaviour
 
         isHolding = true;
         holdStarted = true;
-        holdStartTime = Time.time;
+        holdStartTime = NoteTimeManager.Instance.GetNoteTime();
 
-        // LMJ: Hit effect on the part at judgment line
         if (direction == "Up" && tailCap != null)
         {
-            StartCoroutine(HitEffect(tailImage));  // LMJ: Tail is at judgment for Up lane
+            StartCoroutine(HitEffect(tailImage));
         }
         else if (headCap != null)
         {
-            StartCoroutine(HitEffect(headImage));  // LMJ: Head is at judgment for other lanes
+            StartCoroutine(HitEffect(headImage));
         }
     }
 
@@ -396,25 +380,6 @@ public class RhythmNote : MonoBehaviour
         }
     }
 
-    // public bool IsHeadAtJudgmentLine()
-    // {
-    //     if (!IsLongNote() || headCap == null) return false;
-
-    //     if (direction == "Up")
-    //     {
-    //         // LMJ: Check actual Head position after rotation
-    //         Vector3 headWorldPos = headCap.transform.position;
-    //         Vector3 judgmentWorldPos = GameObject.Find("UpJudgmentLine").transform.position;
-
-    //         float distance = Vector3.Distance(headWorldPos, judgmentWorldPos);
-    //         Debug.Log($"Up Lane Head Distance from Judgment: {distance:F2}");
-
-    //         return distance < 50f; // Threshold for judgment
-    //     }
-
-    //     return false;
-    // }
-
     public bool IsLongNote() => noteType == "Long" || noteType == "Charged";
     public bool IsHolding() => isHolding;
     public bool HasStartedHold() => holdStarted;
@@ -425,7 +390,7 @@ public class RhythmNote : MonoBehaviour
     public float GetHoldProgress()
     {
         if (!isHolding) return 0f;
-        float elapsed = Time.time - holdStartTime;
+        float elapsed = NoteTimeManager.Instance.GetNoteTime() - holdStartTime;
         return Mathf.Clamp01(elapsed / duration);
     }
 }

@@ -14,7 +14,7 @@ public class ShieldController : MonoBehaviour
 
     [Header("Systems")]
     [SerializeField] private TouchInputManager touchInputManager;
-    [SerializeField] private ShieldDurabilitySystem durabilitySystem;
+    [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
     void Start()
     {
@@ -31,8 +31,8 @@ public class ShieldController : MonoBehaviour
     {
         if (leftShield == null) return;
 
-        // LMJ: 비활성화 상태면 입력 무시 (이미 표시된 상태 유지)
-        if (durabilitySystem != null && durabilitySystem.IsShieldDisabled("Left"))
+        // LMJ: Check if current direction shield is disabled
+        if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Left"))
             return;
 
         leftShield.SetActive(show);
@@ -42,8 +42,8 @@ public class ShieldController : MonoBehaviour
     {
         if (rightShield == null) return;
 
-        // LMJ: 비활성화 상태면 입력 무시 (이미 표시된 상태 유지)
-        if (durabilitySystem != null && durabilitySystem.IsShieldDisabled("Right"))
+        // LMJ: Check if current direction shield is disabled
+        if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Right"))
             return;
 
         rightShield.SetActive(show);
@@ -53,14 +53,14 @@ public class ShieldController : MonoBehaviour
     {
         if (frontShield == null) return;
 
-        // LMJ: 비활성화 상태면 입력 무시 (이미 표시된 상태 유지)
-        if (durabilitySystem != null && durabilitySystem.IsShieldDisabled("Up"))
+        // LMJ: Check if current direction shield is disabled
+        if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Up"))
             return;
 
         frontShield.SetActive(show);
     }
 
-    // LMJ: 비활성화 상태 시각화
+    // LMJ: Visual feedback for shield states
     public void SetShieldDisabledVisual(string direction, bool disabled)
     {
         GameObject shield = GetShieldByDirection(direction);
@@ -70,24 +70,24 @@ public class ShieldController : MonoBehaviour
 
         if (disabled)
         {
-            // LMJ: 비활성화: 불투명하게 계속 표시 + 파티클 재생
+            // LMJ: Disabled state: semi-transparent + particle effects
             shield.SetActive(true);
-            SetShieldOpacity(shield, 0.3f); // 불투명
+            SetShieldOpacity(shield, 0.3f);
 
             if (brokenEffect != null)
             {
-                brokenEffect.Play(); // LMJ: 파티클 재생
+                brokenEffect.Play();
             }
         }
         else
         {
-            // LMJ: 복구: 투명도 원래대로, 숨김 상태로 + 파티클 정지
+            // LMJ: Restored state: full opacity, hidden + stop particles
             SetShieldOpacity(shield, 1.0f);
             shield.SetActive(false);
 
             if (brokenEffect != null)
             {
-                brokenEffect.Stop(); // LMJ: 파티클 정지
+                brokenEffect.Stop();
             }
         }
     }
@@ -123,7 +123,6 @@ public class ShieldController : MonoBehaviour
             color.a = alpha;
             renderer.material.color = color;
 
-            // LMJ: 투명도 설정을 위한 렌더링 모드 조정
             if (alpha < 1.0f)
             {
                 renderer.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
