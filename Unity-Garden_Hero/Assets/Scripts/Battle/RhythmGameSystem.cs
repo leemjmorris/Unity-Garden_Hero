@@ -252,11 +252,9 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     public void CheckHitWithLongNote(string direction)
     {
-        // LMJ: Shield disabled check - input ignored, visual feedback only
+        // LMJ: Shield disabled check - completely ignore input
         if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction))
         {
-            CreateHitEffect(direction);
-            ShowJudgment(direction, JudgmentResult.Miss);
             return;
         }
 

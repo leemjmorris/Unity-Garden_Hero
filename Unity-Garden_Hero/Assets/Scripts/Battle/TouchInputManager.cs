@@ -12,6 +12,7 @@ public class TouchInputManager : MonoBehaviour
     [Header("Manager References")]
     [SerializeField] private RhythmGameSystem gameSystem;
     [SerializeField] private ShieldController shieldController;
+    [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
     [Header("Long Note Settings")]
     private bool isLeftHolding = false;
@@ -44,7 +45,7 @@ public class TouchInputManager : MonoBehaviour
             AddButtonEvents(centerButton, "Up");
         }
     }
-    
+
     void ClearButtonEvents(Button button)
     {
         EventTrigger trigger = button.gameObject.GetComponent<EventTrigger>();
@@ -95,46 +96,40 @@ public class TouchInputManager : MonoBehaviour
 
     public void OnButtonPress(string direction)
     {
-        // Set holding state
         SetHoldingState(direction, true);
 
         if (gameSystem != null)
         {
-            // Use new method that handles long notes
             gameSystem.CheckHitWithLongNote(direction);
         }
 
-        // Show shield when button pressed
-        if (shieldController != null)
+        if (shieldController != null &&
+            !(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction)))
         {
             ShowShield(direction, true);
         }
 
-        // Visual feedback
         AnimateButtonPress(direction, true);
     }
 
     public void OnButtonRelease(string direction)
     {
-        // Check if was holding
         if (IsHolding(direction))
         {
             SetHoldingState(direction, false);
 
             if (gameSystem != null)
             {
-                // Release long note
                 gameSystem.ReleaseLongNote(direction);
             }
         }
 
-        // Hide shield when button released
-        if (shieldController != null)
+        if (shieldController != null &&
+            !(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction)))
         {
             ShowShield(direction, false);
         }
 
-        // Visual feedback
         AnimateButtonPress(direction, false);
     }
 
@@ -180,6 +175,13 @@ public class TouchInputManager : MonoBehaviour
 
     void ShowShield(string direction, bool show)
     {
+        // 방패가 부서진 상태라면 키 입력 무시
+        if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction))
+        {
+            Debug.Log($"Shield {direction} is disabled, ignoring input");
+            return;
+        }
+
         switch (direction)
         {
             case "Left":
@@ -241,25 +243,38 @@ public class TouchInputManager : MonoBehaviour
         }
     }
 
-    // Keyboard support for testing
     void Update()
     {
-        // Left lane (A key)
-        if (Input.GetKeyDown(KeyCode.A))
-            OnButtonPress("Left");
-        if (Input.GetKeyUp(KeyCode.A))
-            OnButtonRelease("Left");
+        if (shieldController != null)
+        {
+            if (!IsShieldBroken("Left"))
+            {
+                if (Input.GetKey(KeyCode.A))
+                    shieldController.ShowLeftShield(true);
+                else
+                    shieldController.ShowLeftShield(false);
+            }
 
-        // Right lane (D key)
-        if (Input.GetKeyDown(KeyCode.D))
-            OnButtonPress("Right");
-        if (Input.GetKeyUp(KeyCode.D))
-            OnButtonRelease("Right");
+            if (!IsShieldBroken("Right"))
+            {
+                if (Input.GetKey(KeyCode.D))
+                    shieldController.ShowRightShield(true);
+                else
+                    shieldController.ShowRightShield(false);
+            }
 
-        // Up lane (W key)
-        if (Input.GetKeyDown(KeyCode.W))
-            OnButtonPress("Up");
-        if (Input.GetKeyUp(KeyCode.W))
-            OnButtonRelease("Up");
+            if (!IsShieldBroken("Up"))
+            {
+                if (Input.GetKey(KeyCode.W))
+                    shieldController.ShowFrontShield(true);
+                else
+                    shieldController.ShowFrontShield(false);
+            }
+        }
+    }
+
+    bool IsShieldBroken(string direction)
+    {
+        return directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction);
     }
 }

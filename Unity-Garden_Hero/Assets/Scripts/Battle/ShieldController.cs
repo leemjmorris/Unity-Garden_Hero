@@ -4,7 +4,7 @@ public class ShieldController : MonoBehaviour
 {
     [Header("Shield References")]
     [SerializeField] private GameObject rightShield;
-    [SerializeField] private GameObject leftShield;
+    [SerializeField] public GameObject leftShield;
     [SerializeField] private GameObject frontShield;
 
     [Header("Particle Effects")]
@@ -30,88 +30,96 @@ public class ShieldController : MonoBehaviour
     public void ShowLeftShield(bool show)
     {
         if (leftShield == null) return;
-
-        // LMJ: Check if current direction shield is disabled
-        if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Left"))
-            return;
-
         leftShield.SetActive(show);
     }
 
     public void ShowRightShield(bool show)
     {
         if (rightShield == null) return;
-
-        // LMJ: Check if current direction shield is disabled
-        if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Right"))
-            return;
-
         rightShield.SetActive(show);
     }
 
     public void ShowFrontShield(bool show)
     {
         if (frontShield == null) return;
-
-        // LMJ: Check if current direction shield is disabled
-        if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Up"))
-            return;
-
         frontShield.SetActive(show);
     }
 
-    // LMJ: Visual feedback for shield states
-    public void SetShieldDisabledVisual(string direction, bool disabled)
+    public void SetShieldParticleEffect(string direction, bool showParticles)
     {
-        GameObject shield = GetShieldByDirection(direction);
         ParticleSystem brokenEffect = GetBrokenEffectByDirection(direction);
 
-        if (shield == null) return;
-
-        if (disabled)
+        if (brokenEffect != null)
         {
-            // LMJ: Disabled state: semi-transparent + particle effects
-            shield.SetActive(true);
-            SetShieldOpacity(shield, 0.3f);
-
-            if (brokenEffect != null)
+            if (showParticles)
             {
                 brokenEffect.Play();
             }
-        }
-        else
-        {
-            // LMJ: Restored state: full opacity, hidden + stop particles
-            SetShieldOpacity(shield, 1.0f);
-            shield.SetActive(false);
-
-            if (brokenEffect != null)
+            else
             {
                 brokenEffect.Stop();
             }
         }
     }
 
-    ParticleSystem GetBrokenEffectByDirection(string direction)
+    public void SetShieldBrokenState(string direction, bool isBroken)
     {
-        switch (direction)
+        Debug.Log($"SetShieldBrokenState called: {direction}, isBroken: {isBroken}");
+
+        GameObject shield = GetShieldByDirection(direction);
+        ParticleSystem brokenEffect = GetBrokenEffectByDirection(direction);
+
+        Debug.Log($"Shield GameObject found: {shield != null}");
+        Debug.Log($"Particle System found: {brokenEffect != null}");
+
+        if (shield == null)
         {
-            case "Left": return leftShieldBrokenEffect;
-            case "Right": return rightShieldBrokenEffect;
-            case "Up": return frontShieldBrokenEffect;
-            default: return null;
+            Debug.LogError($"Shield GameObject for {direction} is null!");
+            return;
+        }
+
+        if (isBroken)
+        {
+            Debug.Log($"Setting {direction} shield to broken state");
+            shield.SetActive(true);
+            SetShieldOpacity(shield, 0.3f);
+
+            if (brokenEffect != null)
+            {
+                brokenEffect.Play();
+                Debug.Log($"Particle effect started for {direction}");
+            }
+            else
+            {
+                Debug.LogError($"Particle effect for {direction} is null!");
+            }
+        }
+        else
+        {
+            Debug.Log($"Restoring {direction} shield");
+            SetShieldOpacity(shield, 1.0f);
+
+            if (brokenEffect != null)
+            {
+                brokenEffect.Stop();
+                Debug.Log($"Particle effect stopped for {direction}");
+            }
+
+            shield.SetActive(false);
         }
     }
 
-    GameObject GetShieldByDirection(string direction)
+    public bool IsShieldBroken(string direction)
     {
-        switch (direction)
+        GameObject shield = GetShieldByDirection(direction);
+        if (shield == null) return false;
+
+        Renderer renderer = shield.GetComponent<Renderer>();
+        if (renderer != null)
         {
-            case "Left": return leftShield;
-            case "Right": return rightShield;
-            case "Up": return frontShield;
-            default: return null;
+            return renderer.material.color.a < 1.0f;
         }
+        return false;
     }
 
     void SetShieldOpacity(GameObject shield, float alpha)
@@ -139,6 +147,28 @@ public class ShieldController : MonoBehaviour
                 renderer.material.DisableKeyword("_ALPHABLEND_ON");
                 renderer.material.renderQueue = -1;
             }
+        }
+    }
+
+    ParticleSystem GetBrokenEffectByDirection(string direction)
+    {
+        switch (direction)
+        {
+            case "Left": return leftShieldBrokenEffect;
+            case "Right": return rightShieldBrokenEffect;
+            case "Up": return frontShieldBrokenEffect;
+            default: return null;
+        }
+    }
+
+    GameObject GetShieldByDirection(string direction)
+    {
+        switch (direction)
+        {
+            case "Left": return leftShield;
+            case "Right": return rightShield;
+            case "Up": return frontShield;
+            default: return null;
         }
     }
 }
