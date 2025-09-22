@@ -9,16 +9,12 @@ public class DirectionalShield
     public float currentDurability;
     public float maxDurability;
     public bool isActive;
-    public bool isDisabled;
-    public float disableStartTime;
 
     public DirectionalShield(float maxDur)
     {
         maxDurability = maxDur;
         currentDurability = maxDur;
         isActive = false;
-        isDisabled = false;
-        disableStartTime = 0f;
     }
 
     public float GetDurabilityPercent()
@@ -28,30 +24,17 @@ public class DirectionalShield
 
     public void TakeDamage(float damage)
     {
-        if (isDisabled) return;
         currentDurability = Mathf.Max(0, currentDurability - damage);
     }
 
     public void Restore(float amount)
     {
         currentDurability = Mathf.Min(maxDurability, currentDurability + amount);
-        if (currentDurability > 0)
-        {
-            isDisabled = false;
-        }
     }
 
     public void FullRestore()
     {
         currentDurability = maxDurability;
-        isDisabled = false;
-    }
-
-    public void Disable(float time)
-    {
-        isDisabled = true;
-        disableStartTime = time;
-        currentDurability = 0f;
     }
 }
 
@@ -73,7 +56,6 @@ public class DirectionalShieldSystem : MonoBehaviour
     [Header("Shield Settings")]
     [SerializeField] private float maxDurability = 100f;
     [SerializeField] private float restoreRate = 10f;
-    [SerializeField] private float disableDuration = 3f;
 
     [Header("Damage Settings")]
     [SerializeField] private float perfectHitDamage = 5f;
@@ -97,10 +79,10 @@ public class DirectionalShieldSystem : MonoBehaviour
 
     private static readonly DirectionInfo[] directionInfos = new DirectionInfo[]
     {
-        new DirectionInfo("A(0Â°)", "Up"),
-        new DirectionInfo("B(90Â°)", "Left"),
-        new DirectionInfo("C(180Â°)", "Up"),
-        new DirectionInfo("D(270Â°)", "Right")
+        new DirectionInfo("A(0°)", "Up"),
+        new DirectionInfo("B(90°)", "Left"),
+        new DirectionInfo("C(180°)", "Up"),
+        new DirectionInfo("D(270°)", "Right")
     };
 
     void Start()
@@ -152,21 +134,7 @@ public class DirectionalShieldSystem : MonoBehaviour
     {
         UpdateCurrentDirection();
         UpdateShieldRegeneration();
-        UpdateDisabledShields();
         UpdateAllShieldVisuals();
-        // UpdateParticleEffects(); // 제거 - SetShieldBrokenState가 대신 처리
-    }
-
-    private void UpdateParticleEffects()
-    {
-        if (shieldController == null) return;
-
-        bool shouldShowParticles = shields[currentDirection].currentDurability <= 0;
-
-        // 방패 GameObject는 건드리지 않고 파티클만 제어
-        shieldController.SetShieldParticleEffect("Left", shouldShowParticles);
-        shieldController.SetShieldParticleEffect("Right", shouldShowParticles);
-        shieldController.SetShieldParticleEffect("Up", shouldShowParticles);
     }
 
     void UpdateCurrentDirection()
@@ -181,6 +149,35 @@ public class DirectionalShieldSystem : MonoBehaviour
             shields[currentDirection].isActive = false;
             currentDirection = newDirection;
             shields[currentDirection].isActive = true;
+            
+            CheckGlobalShieldStatus();
+        }
+    }
+
+    void CheckGlobalShieldStatus()
+    {
+        bool hasCurrentDurability = shields[currentDirection].currentDurability > 0;
+        SetGlobalShieldBroken(!hasCurrentDurability);
+    }
+
+    void SetGlobalShieldBroken(bool isBroken)
+    {
+        if (shieldController != null)
+        {
+            if (isBroken)
+            {
+                Debug.Log("Global shield broken - all directions disabled");
+                shieldController.SetShieldBrokenState("Left", true);
+                shieldController.SetShieldBrokenState("Right", true);
+                shieldController.SetShieldBrokenState("Up", true);
+            }
+            else
+            {
+                Debug.Log("Global shield restored - all directions enabled");
+                shieldController.SetShieldBrokenState("Left", false);
+                shieldController.SetShieldBrokenState("Right", false);
+                shieldController.SetShieldBrokenState("Up", false);
+            }
         }
     }
 
@@ -199,32 +196,9 @@ public class DirectionalShieldSystem : MonoBehaviour
     {
         for (int i = 0; i < 4; i++)
         {
-            if (!shields[i].isActive && !shields[i].isDisabled && shields[i].currentDurability < shields[i].maxDurability)
+            if (!shields[i].isActive && shields[i].currentDurability < shields[i].maxDurability)
             {
                 shields[i].Restore(restoreRate * Time.deltaTime);
-            }
-        }
-    }
-
-    void UpdateDisabledShields()
-    {
-        if (shields[0].isDisabled)
-        {
-            float timeSinceDisabled = Time.time - shields[0].disableStartTime;
-
-            if (timeSinceDisabled >= disableDuration)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    shields[i].FullRestore();
-                }
-
-                if (shieldController != null)
-                {
-                    shieldController.SetShieldBrokenState("Left", false);
-                    shieldController.SetShieldBrokenState("Right", false);
-                    shieldController.SetShieldBrokenState("Up", false);
-                }
             }
         }
     }
@@ -234,28 +208,11 @@ public class DirectionalShieldSystem : MonoBehaviour
         if (result == JudgmentResult.Miss) return;
 
         float damage = GetDamageAmount(result);
+        DirectionalShield activeShield = shields[currentDirection];
+        
+        activeShield.TakeDamage(damage);
 
-        float previousDurability = shields[currentDirection].currentDurability;
-
-        for (int i = 0; i < 4; i++)
-        {
-            shields[i].TakeDamage(damage);
-        }
-
-        if (shields[currentDirection].currentDurability <= 0 && previousDurability > 0)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                shields[i].Disable(Time.time);
-            }
-
-            if (shieldController != null)
-            {
-                shieldController.SetShieldBrokenState("Left", true);
-                shieldController.SetShieldBrokenState("Right", true);
-                shieldController.SetShieldBrokenState("Up", true);
-            }
-        }
+        CheckGlobalShieldStatus();
     }
 
     float GetDamageAmount(JudgmentResult result)
@@ -271,12 +228,7 @@ public class DirectionalShieldSystem : MonoBehaviour
 
     public bool IsShieldDisabled(string direction)
     {
-        int directionIndex = GetDirectionIndex(direction);
-        if (directionIndex >= 0 && directionIndex < 4)
-        {
-            return shields[directionIndex].isDisabled;
-        }
-        return false;
+        return shields[currentDirection].currentDurability <= 0;
     }
 
     int GetDirectionIndex(string direction)
@@ -346,14 +298,13 @@ public class DirectionalShieldSystem : MonoBehaviour
 
     Color GetShieldColor(DirectionalShield shield)
     {
-        if (shield.isDisabled)
+        float durabilityPercent = shield.GetDurabilityPercent();
+
+        if (durabilityPercent <= 0)
         {
             return brokenColor;
         }
-
-        float durabilityPercent = shield.GetDurabilityPercent();
-
-        if (durabilityPercent > 0.7f)
+        else if (durabilityPercent > 0.7f)
         {
             return Color.Lerp(halfDurabilityColor, fullDurabilityColor, (durabilityPercent - 0.7f) / 0.3f);
         }
@@ -373,7 +324,6 @@ public class DirectionalShieldSystem : MonoBehaviour
         {
             float percent = shields[i].GetDurabilityPercent() * 100f;
             string status = shields[i].isActive ? "ACTIVE" : "INACTIVE";
-            if (shields[i].isDisabled) status = "DISABLED";
 
             Debug.Log($"Shield {GetDirectionName(i)}: {percent:F1}% ({status})");
         }
