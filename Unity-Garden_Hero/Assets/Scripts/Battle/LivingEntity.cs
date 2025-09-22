@@ -24,8 +24,8 @@ public abstract class LivingEntity : MonoBehaviour
     [SerializeField] protected int level = 1;
     [SerializeField] protected int attackPower = 10;
     [SerializeField] protected int defense = 0;
-    [SerializeField] protected int maxHealth = 100;
-    [SerializeField] protected int currentHealth = 100;
+    [SerializeField] public int maxHealth = 100;
+    [SerializeField] public int currentHealth = 100;
     
     [Header("Events")]
     public UnityEvent<DamageInfo, int> OnDamageReceived;
