@@ -1,0 +1,85 @@
+{
+  "patternName": "TESTCASE2",
+  "totalDuration": 60.0,
+  "perfectTolerance": 0.2,
+  "goodTolerance": 0.4,
+  "notes": [
+    {
+      "time": 1.5,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 1.80000007,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 2.7,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 2.25,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 2.25,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 3.5,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 1.0,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.5
+    },
+    {
+      "time": 4.5,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.5
+    },
+    {
+      "time": 4.5,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.5
+    },
+    {
+      "time": 3.0,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 4.5,
+      "type": "Charged",
+      "direction": "Left",
+      "duration": 1.0999999,
+      "snapValue": 0.1
+    }
+  ]
+}
