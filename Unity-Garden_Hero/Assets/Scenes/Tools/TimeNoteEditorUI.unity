@@ -712,7 +712,7 @@ MonoBehaviour:
   - {fileID: 913867831}
   fileSelectDropdown: {fileID: 957401572}
   refreshFilesButton: {fileID: 712061467}
-  notePrefab: {fileID: 5946952411847655366, guid: 54c662bbfaad7b142bfdfd793ff38514, type: 3}
+  notePrefab: {fileID: 5946952411847655366, guid: 228143f5977528b46914992dbcc397c9, type: 3}
   dragPreviewPrefab: {fileID: 709942429856654768, guid: 98c36d8e98dd50a41add56275463162d, type: 3}
   hitMarkerPrefab: {fileID: 7218508804281121100, guid: bedcbafcd045a9541942133878261037, type: 3}
   gridLinePrefab: {fileID: 6015199431396487126, guid: 7332ce30d98cc954fb22a4ac59875c36, type: 3}

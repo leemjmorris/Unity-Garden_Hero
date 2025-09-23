@@ -322,7 +322,7 @@ public class TimeNoteEditor : MonoBehaviour
         fileSelectDropdown.options.Clear();
         string patternsPath = GetPatternsDirectory();
         string[] jsonFiles = Directory.GetFiles(patternsPath, "*.json");
-        
+
         foreach (string file in jsonFiles)
         {
             string fileName = Path.GetFileNameWithoutExtension(file);
@@ -565,8 +565,9 @@ public class TimeNoteEditor : MonoBehaviour
 
     void HandleTrackClick(int trackIndex, Vector2 mousePos)
     {
+        // LMJ: Use clicked track as reference instead of timelineContent
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            timelineContent, mousePos, null, out Vector2 localPoint);
+            tracks[trackIndex], mousePos, null, out Vector2 localPoint);
 
         float clickTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
@@ -610,7 +611,7 @@ public class TimeNoteEditor : MonoBehaviour
 
         Vector2 mousePos = Input.mousePosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            timelineContent, mousePos, null, out Vector2 localPoint);
+            tracks[currentTrackIndex], mousePos, null, out Vector2 localPoint);
 
         float currentDragTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
@@ -637,7 +638,7 @@ public class TimeNoteEditor : MonoBehaviour
 
         Vector2 mousePos = Input.mousePosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            timelineContent, mousePos, null, out Vector2 localPoint);
+            tracks[currentTrackIndex], mousePos, null, out Vector2 localPoint);
 
         float endTime = localPoint.x / pixelsPerSecond;
         float snapValue = GetSnapValue();
@@ -931,9 +932,9 @@ public class TimeNoteEditor : MonoBehaviour
     {
         isPlaying = false;
         currentTime = 0f;
-        
+
         ResetTimelinePosition();
-        
+
         UpdatePlayhead();
         UpdateTimeDisplay();
 
@@ -973,12 +974,12 @@ public class TimeNoteEditor : MonoBehaviour
         if (playhead != null)
         {
             float fixedPlayheadX = playheadFixedTime * pixelsPerSecond;
-            
+
             if (currentTime <= playheadFixedTime)
             {
                 Vector2 currentPos = playhead.anchoredPosition;
                 playhead.anchoredPosition = new Vector2(currentTime * pixelsPerSecond, currentPos.y);
-                
+
                 if (timelineContent != null)
                 {
                     Vector2 contentPos = timelineContent.anchoredPosition;
@@ -989,7 +990,7 @@ public class TimeNoteEditor : MonoBehaviour
             {
                 Vector2 currentPos = playhead.anchoredPosition;
                 playhead.anchoredPosition = new Vector2(fixedPlayheadX, currentPos.y);
-                
+
                 if (timelineContent != null)
                 {
                     float offset = (currentTime - playheadFixedTime) * pixelsPerSecond;

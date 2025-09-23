@@ -1924,11 +1924,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   patternJsonList:
-  - {fileID: 4900000, guid: 8b8cfc272b7f36347b0a5c5bdb79cf8e, type: 3}
-  - {fileID: 4900000, guid: 398dd85f1e8be79478adaab71a1c7c67, type: 3}
-  - {fileID: 4900000, guid: a0885fa3ecb748a4aa900395c7838933, type: 3}
   - {fileID: 4900000, guid: 6bed9f978ce4abd45bf8aa46ff5bc7e2, type: 3}
-  - {fileID: 4900000, guid: 85fb8f2ba6c937142b408a482c1b4789, type: 3}
   gameSystem: {fileID: 1003656420}
   startDelay: 3
   lookAheadTime: 3
