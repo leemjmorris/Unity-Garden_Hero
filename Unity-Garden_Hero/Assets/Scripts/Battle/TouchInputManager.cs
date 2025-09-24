@@ -7,11 +7,8 @@ public class TouchInputManager : MonoBehaviour
     [Header("Button References")]
     [SerializeField] private Button leftButton;
     [SerializeField] private Button rightButton;
-    [SerializeField] private Button centerButton;
-    
-    [Header("Combo Button References")]
-    [SerializeField] private Button leftCenterButton;
-    [SerializeField] private Button rightCenterButton;
+    [SerializeField] private Button leftCenterButton; // LMJ: Left-side center button
+    [SerializeField] private Button rightCenterButton; // LMJ: Right-side center button
 
     [Header("Manager References")]
     [SerializeField] private RhythmGameSystem gameSystem;
@@ -22,8 +19,6 @@ public class TouchInputManager : MonoBehaviour
     private bool isLeftHolding = false;
     private bool isRightHolding = false;
     private bool isCenterHolding = false;
-    private bool isLeftCenterHolding = false;
-    private bool isRightCenterHolding = false;
 
     void Start()
     {
@@ -45,23 +40,16 @@ public class TouchInputManager : MonoBehaviour
             AddButtonEvents(rightButton, "Right");
         }
 
-        if (centerButton != null)
-        {
-            ClearButtonEvents(centerButton);
-            AddButtonEvents(centerButton, "Up");
-        }
-        
-        //LMJ: Setup combo buttons
         if (leftCenterButton != null)
         {
             ClearButtonEvents(leftCenterButton);
-            AddButtonEvents(leftCenterButton, "LeftCenter");
+            AddButtonEvents(leftCenterButton, "Up");
         }
         
         if (rightCenterButton != null)
         {
             ClearButtonEvents(rightCenterButton);
-            AddButtonEvents(rightCenterButton, "RightCenter");
+            AddButtonEvents(rightCenterButton, "Up");
         }
     }
 
@@ -79,7 +67,6 @@ public class TouchInputManager : MonoBehaviour
         //LMJ: Clean up all event triggers
         if (leftButton != null) ClearButtonEvents(leftButton);
         if (rightButton != null) ClearButtonEvents(rightButton);
-        if (centerButton != null) ClearButtonEvents(centerButton);
         if (leftCenterButton != null) ClearButtonEvents(leftCenterButton);
         if (rightCenterButton != null) ClearButtonEvents(rightCenterButton);
     }
@@ -99,37 +86,24 @@ public class TouchInputManager : MonoBehaviour
         // Add pointer down event
         EventTrigger.Entry pointerDown = new EventTrigger.Entry();
         pointerDown.eventID = EventTriggerType.PointerDown;
-        pointerDown.callback.AddListener((data) => OnButtonPress(direction));
+        pointerDown.callback.AddListener((data) => OnButtonPress(direction, button));
         trigger.triggers.Add(pointerDown);
 
         // Add pointer up event
         EventTrigger.Entry pointerUp = new EventTrigger.Entry();
         pointerUp.eventID = EventTriggerType.PointerUp;
-        pointerUp.callback.AddListener((data) => OnButtonRelease(direction));
+        pointerUp.callback.AddListener((data) => OnButtonRelease(direction, button));
         trigger.triggers.Add(pointerUp);
 
         // Add pointer exit event (for when finger slides off)
         EventTrigger.Entry pointerExit = new EventTrigger.Entry();
         pointerExit.eventID = EventTriggerType.PointerExit;
-        pointerExit.callback.AddListener((data) => OnButtonExit(direction));
+        pointerExit.callback.AddListener((data) => OnButtonExit(direction, button));
         trigger.triggers.Add(pointerExit);
     }
 
-    public void OnButtonPress(string direction)
+    public void OnButtonPress(string direction, Button pressedButton = null)
     {
-        //LMJ: Handle combo buttons
-        if (direction == "LeftCenter")
-        {
-            ProcessLeftCenterPress();
-            return;
-        }
-        
-        if (direction == "RightCenter")
-        {
-            ProcessRightCenterPress();
-            return;
-        }
-        
         SetHoldingState(direction, true);
 
         if (gameSystem != null)
@@ -143,24 +117,19 @@ public class TouchInputManager : MonoBehaviour
             ShowShield(direction, true);
         }
 
-        AnimateButtonPress(direction, true);
+        // LMJ: Only animate the specific button that was pressed
+        if (pressedButton != null)
+        {
+            AnimateSingleButton(pressedButton, true);
+        }
+        else
+        {
+            AnimateButtonPress(direction, true);
+        }
     }
 
-    public void OnButtonRelease(string direction)
+    public void OnButtonRelease(string direction, Button pressedButton = null)
     {
-        //LMJ: Handle combo buttons
-        if (direction == "LeftCenter")
-        {
-            ProcessLeftCenterRelease();
-            return;
-        }
-        
-        if (direction == "RightCenter")
-        {
-            ProcessRightCenterRelease();
-            return;
-        }
-        
         if (IsHolding(direction))
         {
             SetHoldingState(direction, false);
@@ -177,111 +146,23 @@ public class TouchInputManager : MonoBehaviour
             ShowShield(direction, false);
         }
 
-        AnimateButtonPress(direction, false);
+        // LMJ: Only animate the specific button that was pressed
+        if (pressedButton != null)
+        {
+            AnimateSingleButton(pressedButton, false);
+        }
+        else
+        {
+            AnimateButtonPress(direction, false);
+        }
     }
 
-    void ProcessLeftCenterPress()
-    {
-        //LMJ: Process Left and Center simultaneously
-        SetHoldingState("LeftCenter", true);
-        
-        if (gameSystem != null)
-        {
-            gameSystem.CheckHitWithLongNote("Left");
-            gameSystem.CheckHitWithLongNote("Up");
-        }
-
-        if (shieldController != null)
-        {
-            if (!(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Left")))
-                ShowShield("Left", true);
-                
-            if (!(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Up")))
-                ShowShield("Up", true);
-        }
-
-        AnimateButtonPress("LeftCenter", true);
-    }
-    
-    void ProcessRightCenterPress()
-    {
-        //LMJ: Process Right and Center simultaneously
-        SetHoldingState("RightCenter", true);
-        
-        if (gameSystem != null)
-        {
-            gameSystem.CheckHitWithLongNote("Right");
-            gameSystem.CheckHitWithLongNote("Up");
-        }
-
-        if (shieldController != null)
-        {
-            if (!(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Right")))
-                ShowShield("Right", true);
-                
-            if (!(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Up")))
-                ShowShield("Up", true);
-        }
-
-        AnimateButtonPress("RightCenter", true);
-    }
-    
-    void ProcessLeftCenterRelease()
-    {
-        if (IsHolding("LeftCenter"))
-        {
-            SetHoldingState("LeftCenter", false);
-
-            if (gameSystem != null)
-            {
-                gameSystem.ReleaseLongNote("Left");
-                gameSystem.ReleaseLongNote("Up");
-            }
-        }
-
-        if (shieldController != null)
-        {
-            if (!(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Left")))
-                ShowShield("Left", false);
-                
-            if (!(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Up")))
-                ShowShield("Up", false);
-        }
-
-        AnimateButtonPress("LeftCenter", false);
-    }
-    
-    void ProcessRightCenterRelease()
-    {
-        if (IsHolding("RightCenter"))
-        {
-            SetHoldingState("RightCenter", false);
-
-            if (gameSystem != null)
-            {
-                gameSystem.ReleaseLongNote("Right");
-                gameSystem.ReleaseLongNote("Up");
-            }
-        }
-
-        if (shieldController != null)
-        {
-            if (!(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Right")))
-                ShowShield("Right", false);
-                
-            if (!(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled("Up")))
-                ShowShield("Up", false);
-        }
-
-        AnimateButtonPress("RightCenter", false);
-    }
-
-    public void OnButtonExit(string direction)
+    public void OnButtonExit(string direction, Button pressedButton = null)
     {
         //LMJ: Treat as release if finger slides off button while holding
         if (IsHolding(direction))
         {
-            OnButtonRelease(direction);
+            OnButtonRelease(direction, pressedButton);
         }
     }
 
@@ -298,12 +179,6 @@ public class TouchInputManager : MonoBehaviour
             case "Up":
                 isCenterHolding = holding;
                 break;
-            case "LeftCenter":
-                isLeftCenterHolding = holding;
-                break;
-            case "RightCenter":
-                isRightCenterHolding = holding;
-                break;
         }
     }
 
@@ -317,10 +192,6 @@ public class TouchInputManager : MonoBehaviour
                 return isRightHolding;
             case "Up":
                 return isCenterHolding;
-            case "LeftCenter":
-                return isLeftCenterHolding;
-            case "RightCenter":
-                return isRightCenterHolding;
             default:
                 return false;
         }
@@ -361,16 +232,17 @@ public class TouchInputManager : MonoBehaviour
                 targetButton = rightButton;
                 break;
             case "Up":
-                targetButton = centerButton;
-                break;
-            case "LeftCenter":
-                targetButton = leftCenterButton;
-                break;
-            case "RightCenter":
-                targetButton = rightCenterButton;
-                break;
+                // LMJ: Animate both center buttons when Up is pressed
+                AnimateSingleButton(leftCenterButton, pressed);
+                AnimateSingleButton(rightCenterButton, pressed);
+                return;
         }
 
+        AnimateSingleButton(targetButton, pressed);
+    }
+
+    void AnimateSingleButton(Button targetButton, bool pressed)
+    {
         if (targetButton != null)
         {
             RectTransform rect = targetButton.GetComponent<RectTransform>();
