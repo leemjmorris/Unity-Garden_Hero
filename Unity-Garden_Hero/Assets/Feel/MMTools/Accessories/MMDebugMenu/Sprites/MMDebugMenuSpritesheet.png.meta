@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 72f7a32ac9c7676409eb438757bc6b4a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 183370
+  packageName: Feel
+  packageVersion: 5.7
+  assetPath: Assets/Feel/MMTools/Accessories/MMDebugMenu/Sprites/MMDebugMenuSpritesheet.png
+  uploadId: 779587
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -27,7 +34,7 @@ TextureImporter:
       213: 4694184556055176316
     second: MMDebugMenuSpritesheet_Touch
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -91,7 +98,7 @@ TextureImporter:
   swizzle: 50462976
   cookieLightType: 1
   platformSettings:
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -104,7 +111,7 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -117,8 +124,8 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: iPhone
+  - serializedVersion: 4
+    buildTarget: iOS
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -130,7 +137,7 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -143,7 +150,7 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: WebGL
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -160,70 +167,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: MMDebugMenuSpritesheet_Close
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 896
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ba99fcc7f1353f9d0800000000000000
-      internalID: -2741756353435428437
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: MMDebugMenuSpritesheet_Button
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 768
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d1117a9188eaac110800000000000000
-      internalID: 1282028943509491997
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: MMDebugMenuSpritesheet_ButtonBorder
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 896
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 20, y: 20, z: 20, w: 20}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: da6c4fac9b0b94f80800000000000000
-      internalID: -8121766140965501267
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: MMDebugMenuSpritesheet_Check
+      name: MMDebugMenuSpritesheet_0
       rect:
         serializedVersion: 2
         x: 128
@@ -233,18 +177,85 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7602b5a5ddb7ce0e0800000000000000
-      internalID: -2239278724076068761
+      spriteID: 31262e0c511b82444a85c7f8b8fa1ea7
+      internalID: 731473229
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: MMDebugMenuSpritesheet_SliderKnob
+      name: MMDebugMenuSpritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7e11e07aa57455e4a8065b68e78f0944
+      internalID: -1518964667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MMDebugMenuSpritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 768
+        width: 127
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe55b536208c67b4f897075fc4118c64
+      internalID: -1300766474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MMDebugMenuSpritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e6206f898c9b81b4796fc472a1f3078e
+      internalID: 607213191
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MMDebugMenuSpritesheet_4
       rect:
         serializedVersion: 2
         x: 256
@@ -254,38 +265,41 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ab7a59ce65e7c37a0800000000000000
-      internalID: -6396098458971428934
+      spriteID: 6df438d8665e849458b8c3131de92d5a
+      internalID: -35197080
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: MMDebugMenuSpritesheet_Touch
+      name: MMDebugMenuSpritesheet_5_A
       rect:
         serializedVersion: 2
         x: 0
-        y: 517
-        width: 251
-        height: 251
+        y: 518
+        width: 250
+        height: 249
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c742bcd9bf7152140800000000000000
-      internalID: 4694184556055176316
+      spriteID: 539a14462ae969a49b2a1c3eec6cd809
+      internalID: -595272648
       vertices: []
       indices: 
       edges: []
       weights: []
     outline: []
+    customData: 
     physicsShape: []
     bones: []
     spriteID: 50917cc409c24284499fbd599f4b57aa
@@ -295,22 +309,18 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
     nameFileIdTable:
-      MMDebugMenuSpritesheet_Button: 1282028943509491997
-      MMDebugMenuSpritesheet_ButtonBorder: -8121766140965501267
-      MMDebugMenuSpritesheet_Check: -2239278724076068761
-      MMDebugMenuSpritesheet_Close: -2741756353435428437
-      MMDebugMenuSpritesheet_SliderKnob: -6396098458971428934
-      MMDebugMenuSpritesheet_Touch: 4694184556055176316
+      MMDebugMenuSpritesheet_0: 731473229
+      MMDebugMenuSpritesheet_1: -1518964667
+      MMDebugMenuSpritesheet_2: -1300766474
+      MMDebugMenuSpritesheet_3: 607213191
+      MMDebugMenuSpritesheet_4: -35197080
+      MMDebugMenuSpritesheet_5_A: -595272648
+      MMDebugMenuSpritesheet_6: -1106052383
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 183370
-  packageName: Feel
-  packageVersion: 5.7
-  assetPath: Assets/Feel/MMTools/Accessories/MMDebugMenu/Sprites/MMDebugMenuSpritesheet.png
-  uploadId: 779587

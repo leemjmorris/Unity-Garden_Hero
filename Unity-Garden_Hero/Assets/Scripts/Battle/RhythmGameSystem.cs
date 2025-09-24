@@ -327,9 +327,16 @@ public partial class RhythmGameSystem : MonoBehaviour
         if (!heldNotes.ContainsKey(direction)) return;
 
         RhythmNote longNote = heldNotes[direction];
+
+        // LMJ: Check if note still exists before accessing
+        if (longNote == null)
+        {
+            heldNotes.Remove(direction);
+            return;
+        }
+
         longNote.SetHit();
 
-        // LMJ: Use custom note time instead of Time.time
         float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
         float timeDiff = Mathf.Abs(currentGameTime - longNote.GetHoldEndTime());
         JudgmentResult result = GetLongNoteTailJudgment(timeDiff);
@@ -347,7 +354,6 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void UpdateHeldNotes()
     {
-        // LMJ: Use custom note time instead of Time.time
         float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         foreach (var kvp in new Dictionary<string, RhythmNote>(heldNotes))
@@ -355,7 +361,12 @@ public partial class RhythmGameSystem : MonoBehaviour
             string direction = kvp.Key;
             RhythmNote note = kvp.Value;
 
-            if (note == null) continue;
+            // LMJ: Check if note still exists
+            if (note == null)
+            {
+                heldNotes.Remove(direction);
+                continue;
+            }
 
             if (currentGameTime >= note.GetHoldEndTime())
             {
