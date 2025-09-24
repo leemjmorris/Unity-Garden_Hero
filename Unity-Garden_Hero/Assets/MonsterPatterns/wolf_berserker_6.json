@@ -1,0 +1,57 @@
+{
+  "patternName": "wolf berserker 6",
+  "totalDuration": 6.0,
+  "perfectTolerance": 0.15,
+  "goodTolerance": 0.3,
+  "notes": [
+    {
+      "time": 1.0,
+      "type": "Charged",
+      "direction": "Left",
+      "duration": 1.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 2.0,
+      "type": "Charged",
+      "direction": "Left",
+      "duration": 3.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 1.0,
+      "type": "Charged",
+      "direction": "Up",
+      "duration": 1.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 2.0,
+      "type": "Defense",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 2.25,
+      "type": "Charged",
+      "direction": "Right",
+      "duration": 1.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 3.25,
+      "type": "Defense",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 3.5,
+      "type": "Charged",
+      "direction": "Up",
+      "duration": 1.5,
+      "snapValue": 0.25
+    }
+  ]
+}

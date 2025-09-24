@@ -1,0 +1,29 @@
+{
+  "patternName": "dummy dodge1",
+  "totalDuration": 3.0,
+  "perfectTolerance": 0.15,
+  "goodTolerance": 0.3,
+  "notes": [
+    {
+      "time": 2.0,
+      "type": "Defense",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 2.0,
+      "type": "Defense",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 2.0,
+      "type": "Defense",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 1.0
+    }
+  ]
+}

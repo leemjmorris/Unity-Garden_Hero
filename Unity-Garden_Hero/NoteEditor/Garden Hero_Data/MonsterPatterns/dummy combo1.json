@@ -1,0 +1,29 @@
+{
+  "patternName": "dummy combo1",
+  "totalDuration": 6.0,
+  "perfectTolerance": 0.15,
+  "goodTolerance": 0.3,
+  "notes": [
+    {
+      "time": 1.0,
+      "type": "Special",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 3.0,
+      "type": "Special",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 1.0
+    },
+    {
+      "time": 5.0,
+      "type": "Special",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 1.0
+    }
+  ]
+}
