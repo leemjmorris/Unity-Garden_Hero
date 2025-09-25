@@ -44,7 +44,6 @@ public class GameManager : MonoBehaviour
     
     private bool isDealingTimeActive = false;
     private float dealingTimeTimer = 0f;
-    private List<RhythmNote> pausedNotes = new List<RhythmNote>();
 
     void Start()
     {
@@ -122,7 +121,7 @@ public class GameManager : MonoBehaviour
             dealingTimeUI.SetActive(true);
         }
 
-        // LMJ: Pause all notes
+        // LMJ: Delete all existing notes
         PauseAllNotes();
 
         Debug.Log("DealingTime Started!");
@@ -130,23 +129,21 @@ public class GameManager : MonoBehaviour
 
     void PauseAllNotes()
     {
-        // LMJ: Find all active notes and pause them
+        // LMJ: Find all active notes and immediately destroy them
         RhythmNote[] allNotes = FindObjectsByType<RhythmNote>(FindObjectsSortMode.None);
-        pausedNotes.Clear();
         
         foreach (RhythmNote note in allNotes)
         {
-            if (note != null && note.gameObject.activeInHierarchy)
+            if (note != null)
             {
-                pausedNotes.Add(note);
-                // LMJ: Disable note updates by setting inactive
-                note.enabled = false;
+                Destroy(note.gameObject);
             }
         }
 
-        // LMJ: Pause rhythm game system
+        // LMJ: Clear the rhythm game system's note list and disable it
         if (rhythmGameSystem != null)
         {
+            rhythmGameSystem.ClearAllNotes();
             rhythmGameSystem.enabled = false;
         }
     }
@@ -190,7 +187,7 @@ public class GameManager : MonoBehaviour
             dealingTimeUI.SetActive(false);
         }
 
-        // LMJ: Resume all notes
+        // LMJ: Resume rhythm game with new notes
         ResumeAllNotes();
 
         // LMJ: Reset boss stun
@@ -203,29 +200,19 @@ public class GameManager : MonoBehaviour
     }
 
     void ResumeAllNotes()
+{
+    // LMJ: Resume rhythm game system
+    if (rhythmGameSystem != null)
     {
-        // LMJ: Clear all existing notes and regenerate
-        foreach (RhythmNote note in pausedNotes)
-        {
-            if (note != null)
-            {
-                Destroy(note.gameObject);
-            }
-        }
-        pausedNotes.Clear();
-
-        // LMJ: Resume rhythm game system
-        if (rhythmGameSystem != null)
-        {
-            rhythmGameSystem.enabled = true;
-        }
-
-        // LMJ: Generate new notes
-        if (rhythmPatternManager != null)
-        {
-            rhythmPatternManager.AddNextPatternSetNow();
-        }
+        rhythmGameSystem.enabled = true;
     }
+
+    // LMJ: Generate new notes immediately from current time
+    if (rhythmPatternManager != null)
+    {
+        rhythmPatternManager.AddNextPatternSetFromCurrentTime(); // LMJ: 새로운 메서드 사용
+    }
+}
 
     public GameState GetCurrentState() => currentState;
     public bool IsDealingTimeActive() => isDealingTimeActive;

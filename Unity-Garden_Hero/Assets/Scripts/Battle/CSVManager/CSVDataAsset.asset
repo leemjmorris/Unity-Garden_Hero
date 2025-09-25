@@ -1,0 +1,1098 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0087f6f0f9d95ef4191b3a8f13c46609, type: 3}
+  m_Name: CSVDataAsset
+  m_EditorClassIdentifier: 
+  bossDataList:
+  - BOSS_ID: 20110001
+    BOSS_NAME: "\uB291\uB300 \uC804\uC0AC"
+    PHASE: 1
+    NORMAL_ATT: 10
+    NORMAL_DEF_ATT: 1
+    LONG_ATT: 1
+    LONG_DEF_ATT: 1
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
+    STUN: 30
+    STUN_RECOVERY: 7
+    DEF: 0
+    STUN_DEE: 2
+    HP: 50
+    PT_ID: 70000001
+  - BOSS_ID: 20210002
+    BOSS_NAME: "\uB291\uB300 \uC804\uC0AC"
+    PHASE: 2
+    NORMAL_ATT: 10
+    NORMAL_DEF_ATT: 1
+    LONG_ATT: 2
+    LONG_DEF_ATT: 1
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
+    STUN: 40
+    STUN_RECOVERY: 5
+    DEF: 2
+    STUN_DEE: 3
+    HP: 50
+    PT_ID: 70000001
+  - BOSS_ID: 20110003
+    BOSS_NAME: "\uB291\uB300 \uAD11\uC804\uC0AC"
+    PHASE: 1
+    NORMAL_ATT: 10
+    NORMAL_DEF_ATT: 2
+    LONG_ATT: 1
+    LONG_DEF_ATT: 1
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
+    STUN: 30
+    STUN_RECOVERY: 7
+    DEF: 0
+    STUN_DEE: 2
+    HP: 60
+    PT_ID: 70000002
+  - BOSS_ID: 20210004
+    BOSS_NAME: "\uB291\uB300 \uAD11\uC804\uC0AC"
+    PHASE: 2
+    NORMAL_ATT: 10
+    NORMAL_DEF_ATT: 2
+    LONG_ATT: 2
+    LONG_DEF_ATT: 1
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
+    STUN: 40
+    STUN_RECOVERY: 5
+    DEF: 2
+    STUN_DEE: 3
+    HP: 50
+    PT_ID: 70000002
+  - BOSS_ID: 20320005
+    BOSS_NAME: "\uB291\uB300 \uAD11\uC804\uC0AC"
+    PHASE: 3
+    NORMAL_ATT: 20
+    NORMAL_DEF_ATT: 2
+    LONG_ATT: 2
+    LONG_DEF_ATT: 2
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
+    STUN: 40
+    STUN_RECOVERY: 5
+    DEF: 2
+    STUN_DEE: 3
+    HP: 50
+    PT_ID: 70000002
+  - BOSS_ID: 20120006
+    BOSS_NAME: "\uB291\uB300 \uB300\uC804\uC0AC"
+    PHASE: 1
+    NORMAL_ATT: 20
+    NORMAL_DEF_ATT: 2
+    LONG_ATT: 1
+    LONG_DEF_ATT: 1
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
+    STUN: 50
+    STUN_RECOVERY: 5
+    DEF: 3
+    STUN_DEE: 2
+    HP: 70
+    PT_ID: 70000003
+  - BOSS_ID: 20220007
+    BOSS_NAME: "\uB291\uB300 \uB300\uC804\uC0AC"
+    PHASE: 2
+    NORMAL_ATT: 20
+    NORMAL_DEF_ATT: 3
+    LONG_ATT: 2
+    LONG_DEF_ATT: 2
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
+    STUN: 60
+    STUN_RECOVERY: 4
+    DEF: 2
+    STUN_DEE: 3
+    HP: 70
+    PT_ID: 70000003
+  - BOSS_ID: 20330008
+    BOSS_NAME: "\uB291\uB300 \uB300\uC804\uC0AC"
+    PHASE: 3
+    NORMAL_ATT: 30
+    NORMAL_DEF_ATT: 4
+    LONG_ATT: 2
+    LONG_DEF_ATT: 2
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
+    STUN: 60
+    STUN_RECOVERY: 3
+    DEF: 2
+    STUN_DEE: 4
+    HP: 60
+    PT_ID: 70000003
+  - BOSS_ID: 20105009
+    BOSS_NAME: "\uD5C8\uC218\uC544\uBE44"
+    PHASE: 1
+    NORMAL_ATT: 5
+    NORMAL_DEF_ATT: 1
+    LONG_ATT: 1
+    LONG_DEF_ATT: 1
+    SPECIAL_ATT: 1
+    SPECIAL_DEF_ATT: 1
+    STUN: 30
+    STUN_RECOVERY: 10
+    DEF: 0
+    STUN_DEE: 0
+    HP: 50
+    PT_ID: NULL
+  - BOSS_ID: 20205010
+    BOSS_NAME: "\uD5C8\uC218\uC544\uBE44"
+    PHASE: 2
+    NORMAL_ATT: 5
+    NORMAL_DEF_ATT: 1
+    LONG_ATT: 1
+    LONG_DEF_ATT: 1
+    SPECIAL_ATT: 1
+    SPECIAL_DEF_ATT: 1
+    STUN: 40
+    STUN_RECOVERY: 10
+    DEF: 0
+    STUN_DEE: 0
+    HP: 50
+    PT_ID: NULL
+  consumableDataList:
+  - ITME_ID: 60010001
+    ITEM_NAME: "\uCEE4\uD53C"
+    ITEM_RARE: 1
+    ITEM_TYPE: 1
+    OPTION_TYPE: 1
+    EFF_INT_VALUE: 20
+    EFF_FLOAT_VALUE: NULL
+    BT_MAX_STACK: 2
+    MAX_STACK: 2
+    DURATION: 0
+    COOLTIME: 3
+    MAX_DROP_VALUE: 2
+    ITEM_IMAGE: Alchemy_01_tea.png
+  - ITME_ID: 60010002
+    ITEM_NAME: "\uD558\uAE09 \uCC44\uB825 \uD3EC\uC158"
+    ITEM_RARE: 2
+    ITEM_TYPE: 1
+    OPTION_TYPE: 1
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.2
+    BT_MAX_STACK: 4
+    MAX_STACK: 99
+    DURATION: 0
+    COOLTIME: 3
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_13_heal_potion.png
+  - ITME_ID: 60010003
+    ITEM_NAME: "\uC911\uAE09 \uCC44\uB825 \uD3EC\uC158"
+    ITEM_RARE: 3
+    ITEM_TYPE: 1
+    OPTION_TYPE: 1
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.3
+    BT_MAX_STACK: 4
+    MAX_STACK: 99
+    DURATION: 0
+    COOLTIME: 3
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_21_littleheal_flask.png
+  - ITME_ID: 60010004
+    ITEM_NAME: "\uACE0\uAE09 \uCC44\uB825 \uD3EC\uC158"
+    ITEM_RARE: 4
+    ITEM_TYPE: 1
+    OPTION_TYPE: 1
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.5
+    BT_MAX_STACK: 4
+    MAX_STACK: 99
+    DURATION: 0
+    COOLTIME: 3
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_31_bigheal_flask.png
+  - ITME_ID: 60020005
+    ITEM_NAME: "\uD558\uAE09 \uBC29\uC5B4\uB825 \uD3EC\uC158"
+    ITEM_RARE: 2
+    ITEM_TYPE: 2
+    OPTION_TYPE: 2
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.2
+    BT_MAX_STACK: 3
+    MAX_STACK: 99
+    DURATION: 20000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_14_poison.png
+  - ITME_ID: 60020006
+    ITEM_NAME: "\uC911\uAE09 \uBC29\uC5B4\uB825 \uD3EC\uC158"
+    ITEM_RARE: 3
+    ITEM_TYPE: 2
+    OPTION_TYPE: 2
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.4
+    BT_MAX_STACK: 2
+    MAX_STACK: 99
+    DURATION: 40000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_22_deadly_poison.png
+  - ITME_ID: 60020007
+    ITEM_NAME: "\uACE0\uAE09 \uBC29\uC5B4\uB825 \uD3EC\uC158"
+    ITEM_RARE: 4
+    ITEM_TYPE: 2
+    OPTION_TYPE: 2
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.7
+    BT_MAX_STACK: 1
+    MAX_STACK: 99
+    DURATION: 60000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_41_magical_substance.png
+  - ITME_ID: 60020008
+    ITEM_NAME: "\uD558\uAE09 \uBCF4\uD638\uB9C9 \uD3EC\uC158"
+    ITEM_RARE: 2
+    ITEM_TYPE: 2
+    OPTION_TYPE: 3
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.2
+    BT_MAX_STACK: 3
+    MAX_STACK: 99
+    DURATION: 10000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_12_magic_potion.png
+  - ITME_ID: 60020009
+    ITEM_NAME: "\uC911\uAE09 \uBCF4\uD638\uB9C9 \uD3EC\uC158"
+    ITEM_RARE: 3
+    ITEM_TYPE: 2
+    OPTION_TYPE: 3
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.4
+    BT_MAX_STACK: 2
+    MAX_STACK: 99
+    DURATION: 13000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_20_littlemana_flask.png
+  - ITME_ID: 60020010
+    ITEM_NAME: "\uACE0\uAE09 \uBCF4\uD638\uB9C9 \uD3EC\uC158"
+    ITEM_RARE: 4
+    ITEM_TYPE: 2
+    OPTION_TYPE: 3
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.7
+    BT_MAX_STACK: 1
+    MAX_STACK: 99
+    DURATION: 15000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_30_bigmana_flask.png
+  - ITME_ID: 60020011
+    ITEM_NAME: "\uD558\uAE09 \uACF5\uACA9\uB825 \uC99D\uAC00 \uD3EC\uC158"
+    ITEM_RARE: 2
+    ITEM_TYPE: 2
+    OPTION_TYPE: 4
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.2
+    BT_MAX_STACK: 3
+    MAX_STACK: 99
+    DURATION: 20000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_15_reactive_potion.png
+  - ITME_ID: 60020012
+    ITEM_NAME: "\uC911\uAE09 \uACF5\uACA9\uB825 \uC99D\uAC00 \uD3EC\uC158"
+    ITEM_RARE: 3
+    ITEM_TYPE: 2
+    OPTION_TYPE: 4
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.3
+    BT_MAX_STACK: 2
+    MAX_STACK: 99
+    DURATION: 25000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_24_energy_potion.png
+  - ITME_ID: 60020013
+    ITEM_NAME: "\uACE0\uAE09 \uACF5\uACA9\uB825 \uC99D\uAC00 \uD3EC\uC158"
+    ITEM_RARE: 4
+    ITEM_TYPE: 2
+    OPTION_TYPE: 4
+    EFF_INT_VALUE: NULL
+    EFF_FLOAT_VALUE: 0.4
+    BT_MAX_STACK: 1
+    MAX_STACK: 99
+    DURATION: 30000
+    COOLTIME: 5
+    MAX_DROP_VALUE: 3
+    ITEM_IMAGE: Alchemy_34_bigenergy_flask.png
+  gearDataList:
+  - GEAR_ID: 30100001
+    GEAR_NAME: "\uB0A1\uC740 \uAC00\uC8FD \uD22C\uAD6C"
+    GEAR_RARE: 1
+    GEAR_TYPE: 1
+    GR_EFF_ID: 40003001
+    ITEM_IMAGE: Leather1_head.png
+  - GEAR_ID: 30200002
+    GEAR_NAME: "\uB0A1\uC740 \uAC00\uC8FD \uAC11\uC637"
+    GEAR_RARE: 1
+    GEAR_TYPE: 2
+    GR_EFF_ID: 40006002
+    ITEM_IMAGE: Leather5_Chest.png
+  - GEAR_ID: 30300003
+    GEAR_NAME: "\uB0A1\uC740 \uB9DD\uD1A0"
+    GEAR_RARE: 1
+    GEAR_TYPE: 3
+    GR_EFF_ID: 40003003
+    ITEM_IMAGE: cloak_18.png
+  - GEAR_ID: 30400004
+    GEAR_NAME: "\uB0A1\uC740 \uAC00\uC8FD \uBD80\uCE20"
+    GEAR_RARE: 1
+    GEAR_TYPE: 4
+    GR_EFF_ID: 40003004
+    ITEM_IMAGE: Cloth13_Boots.png
+  - GEAR_ID: 30500005
+    GEAR_NAME: "\uC870\uC7A1\uD55C \uBC29\uD328"
+    GEAR_RARE: 1
+    GEAR_TYPE: 5
+    GR_EFF_ID: 40003005
+    ITEM_IMAGE: BrokenShield.png
+  - GEAR_ID: 30100006
+    GEAR_NAME: "\uB358\uC804 \uC774\uB07C \uD2F0\uC544\uBA67"
+    GEAR_RARE: 1
+    GEAR_TYPE: 1
+    GR_EFF_ID: 40004006
+    ITEM_IMAGE: Leather7_head.png
+  - GEAR_ID: 30200007
+    GEAR_NAME: "\uB358\uC804 \uC774\uB07C \uAC11\uC637"
+    GEAR_RARE: 1
+    GEAR_TYPE: 2
+    GR_EFF_ID: 40008007
+    ITEM_IMAGE: Leather7_Chest.png
+  - GEAR_ID: 30300008
+    GEAR_NAME: "\uB358\uC804 \uC774\uB07C \uB9DD\uD1A0"
+    GEAR_RARE: 1
+    GEAR_TYPE: 3
+    GR_EFF_ID: 40004008
+    ITEM_IMAGE: cloak_30.png
+  - GEAR_ID: 30400009
+    GEAR_NAME: "\uB358\uC804 \uC774\uB07C \uB098\uB9C9\uC2E0"
+    GEAR_RARE: 1
+    GEAR_TYPE: 4
+    GR_EFF_ID: 40004009
+    ITEM_IMAGE: Leather7_boots.png
+  - GEAR_ID: 30500010
+    GEAR_NAME: "\uC7A5\uBBF8 \uBC29\uD328"
+    GEAR_RARE: 1
+    GEAR_TYPE: 5
+    GR_EFF_ID: 40004010
+    ITEM_IMAGE: RoseShield.png
+  - GEAR_ID: 30100011
+    GEAR_NAME: "\uAC00\uC8FD \uD22C\uAD6C"
+    GEAR_RARE: 1
+    GEAR_TYPE: 1
+    GR_EFF_ID: 40006011
+    ITEM_IMAGE: Cloth1_Head.png
+  - GEAR_ID: 30200012
+    GEAR_NAME: "\uAC00\uC8FD \uAC11\uC637"
+    GEAR_RARE: 1
+    GEAR_TYPE: 2
+    GR_EFF_ID: 40012012
+    ITEM_IMAGE: Leather14_Chest.png
+  - GEAR_ID: 30300013
+    GEAR_NAME: "\uAC00\uC8FD \uB9DD\uD1A0"
+    GEAR_RARE: 1
+    GEAR_TYPE: 3
+    GR_EFF_ID: 40006013
+    ITEM_IMAGE: cloak_02.png
+  - GEAR_ID: 30400014
+    GEAR_NAME: "\uAC00\uC8FD \uBD80\uCE20"
+    GEAR_RARE: 1
+    GEAR_TYPE: 4
+    GR_EFF_ID: 40006014
+    ITEM_IMAGE: Leather1_boots.png
+  - GEAR_ID: 30500015
+    GEAR_NAME: "\uB098\uBB34 \uBC29\uD328"
+    GEAR_RARE: 1
+    GEAR_TYPE: 5
+    GR_EFF_ID: 40006015
+    ITEM_IMAGE: WoodShield.png
+  - GEAR_ID: 30100016
+    GEAR_NAME: "\uB291\uB300 \uD138 \uD22C\uAD6C"
+    GEAR_RARE: 2
+    GEAR_TYPE: 1
+    GR_EFF_ID: 40012016
+    ITEM_IMAGE: Leather17_head.png
+  - GEAR_ID: 30200017
+    GEAR_NAME: "\uB291\uB300 \uD138 \uAC11\uC637"
+    GEAR_RARE: 2
+    GEAR_TYPE: 2
+    GR_EFF_ID: 40012017
+    ITEM_IMAGE: Leather4_Chest.png
+  - GEAR_ID: 30300018
+    GEAR_NAME: "\uB291\uB300 \uB9DD\uD1A0"
+    GEAR_RARE: 2
+    GEAR_TYPE: 3
+    GR_EFF_ID: 40012018
+    ITEM_IMAGE: cloak_29.png
+  - GEAR_ID: 30400019
+    GEAR_NAME: "\uB291\uB300 \uD138 \uBD80\uCE20"
+    GEAR_RARE: 2
+    GEAR_TYPE: 4
+    GR_EFF_ID: 40012019
+    ITEM_IMAGE: Leather4_boots.png
+  - GEAR_ID: 30500020
+    GEAR_NAME: "\uB291\uB300 \uBB38\uC591 \uBC29\uD328"
+    GEAR_RARE: 2
+    GEAR_TYPE: 5
+    GR_EFF_ID: 40012020
+    ITEM_IMAGE: LionShield.png
+  gearSetDataList:
+  - SET_ID: 50030001
+    SET_NAME: "\uACF5\uACA9\uB825 \uC99D\uAC00"
+    GEAR_1: 3
+    GEAR_2: 5
+    GEAR_3: 30100016
+    SET_EFFECT: 30200017
+  - SET_ID: 51000002
+    SET_NAME: "\uCD5C\uB300 \uCCB4\uB825 \uC99D\uAC00"
+    GEAR_1: 100
+    GEAR_2: 300
+    GEAR_3: 30100006
+    SET_EFFECT: 30200007
+  gearEffectDataList:
+  - GR_EFF_ID: 40001001
+    EFF_NAME: "\uB0A1\uC740 \uAC00\uC8FD \uD22C\uAD6C"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 0.5
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001002
+    EFF_NAME: "\uB0A1\uC740 \uAC00\uC8FD \uAC11\uC637"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 0.5
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001003
+    EFF_NAME: "\uB0A1\uC740 \uB9DD\uD1A0"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 0.5
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001004
+    EFF_NAME: "\uB0A1\uC740 \uAC00\uC8FD \uBD80\uCE20"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 0.5
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001005
+    EFF_NAME: "\uC870\uC7A1\uD55C \uBC29\uD328"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: NULL
+    Durability: 100
+  - GR_EFF_ID: 40001006
+    EFF_NAME: "\uB358\uC804 \uC774\uB07C \uD2F0\uC544\uBA67"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001007
+    EFF_NAME: "\uB358\uC804 \uC774\uB07C \uAC11\uC637"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001008
+    EFF_NAME: "\uB358\uC804 \uC774\uB07C \uB9DD\uD1A0"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001009
+    EFF_NAME: "\uB358\uC804 \uC774\uB07C \uB098\uB9C9\uC2E0"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001010
+    EFF_NAME: "\uC7A5\uBBF8 \uBC29\uD328"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: NULL
+    Durability: 90
+  - GR_EFF_ID: 40002011
+    EFF_NAME: "\uAC00\uC8FD \uD22C\uAD6C"
+    ATT_EFF: 2
+    DEF_ATT_EFF: 2
+    DEE_EFF: 2
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40002012
+    EFF_NAME: "\uAC00\uC8FD \uAC11\uC637"
+    ATT_EFF: 2
+    DEF_ATT_EFF: 2
+    DEE_EFF: 2
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40002013
+    EFF_NAME: "\uAC00\uC8FD \uB9DD\uD1A0"
+    ATT_EFF: 2
+    DEF_ATT_EFF: 2
+    DEE_EFF: 2
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40002014
+    EFF_NAME: "\uAC00\uC8FD \uBD80\uCE20"
+    ATT_EFF: 2
+    DEF_ATT_EFF: 2
+    DEE_EFF: 2
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40002015
+    EFF_NAME: "\uB098\uBB34 \uBC29\uD328"
+    ATT_EFF: 2
+    DEF_ATT_EFF: 2
+    DEE_EFF: 2
+    HP_EFF: NULL
+    Durability: 110
+  - GR_EFF_ID: 40001016
+    EFF_NAME: "\uB291\uB300 \uD138 \uD22C\uAD6C"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001017
+    EFF_NAME: "\uB291\uB300 \uD138 \uAC11\uC637"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001018
+    EFF_NAME: "\uB291\uB300 \uB9DD\uD1A0"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001019
+    EFF_NAME: "\uB291\uB300 \uD138 \uBD80\uCE20"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: 10
+    Durability: NULL
+  - GR_EFF_ID: 40001020
+    EFF_NAME: "\uB291\uB300 \uBB38\uC591 \uBC29\uD328"
+    ATT_EFF: 1
+    DEF_ATT_EFF: 1
+    DEE_EFF: 1
+    HP_EFF: NULL
+    Durability: 75
+  linkDataList:
+  - GROUP: "\uD328\uD134 \uACBD\uB85C"
+    LINK: \Assets\MonsterPatterns\
+  - GROUP: "\uC7A5\uBE44 \uC774\uBBF8\uC9C0 \uACBD\uB85C"
+    LINK: \Assets\GEAR_IMAGE\
+  - GROUP: "\uC18C\uBAA8\uD488 \uC774\uBBF8\uC9C0 \uACBD\uB85C"
+    LINK: \Assets\GEAR_IMAGE\
+  phaseDataList:
+  - PHASE_ID: 80000001
+    PHASE_NUM: 20110001
+    ATT_MULTI: 20210002
+    DEF_MULTI: NULL
+    HP_MULTI: NULL
+    STUN_VALUE: NULL
+  - PHASE_ID: 80000002
+    PHASE_NUM: 20110003
+    ATT_MULTI: 20210004
+    DEF_MULTI: 20320005
+    HP_MULTI: NULL
+    STUN_VALUE: NULL
+  - PHASE_ID: 80000003
+    PHASE_NUM: 20120006
+    ATT_MULTI: 20220007
+    DEF_MULTI: 20330008
+    HP_MULTI: NULL
+    STUN_VALUE: NULL
+  patternDataList:
+  - PT_ID: 70000001
+    PT_1: wolf 1
+    PT_2: wolf 2
+    PT_3: wolf 3
+    PT_4: wolf 4
+    PT_5: wolf 5
+    PT_6: NULL
+    PT_7: NULL
+    PT_8: NULL
+    PT_9: NULL
+    PT_10: NULL
+  - PT_ID: 70000002
+    PT_1: wolf berserker 1
+    PT_2: wolf berserker 2
+    PT_3: wolf berserker 3
+    PT_4: wolf berserker 4
+    PT_5: wolf berserker 5
+    PT_6: wolf berserker 6
+    PT_7: NULL
+    PT_8: NULL
+    PT_9: NULL
+    PT_10: NULL
+  - PT_ID: 70000003
+    PT_1: wolf Champion 1
+    PT_2: wolf Champion 2
+    PT_3: wolf Champion 3
+    PT_4: wolf Champion 4
+    PT_5: wolf Champion 5
+    PT_6: wolf Champion 6
+    PT_7: wolf Champion 7
+    PT_8: NULL
+    PT_9: NULL
+    PT_10: NULL
+  stageDataList:
+  - STAGE_ID: 90000001
+    PHASE_ID: 80000001
+  - STAGE_ID: 90000002
+    PHASE_ID: 80000002
+  - STAGE_ID: 90000003
+    PHASE_ID: 80000003
+  statDataList:
+  - STAT_ID: 10100001
+    STAT_LV: 1
+    STAT: 0
+    ATT: 100
+    DEF_ATT: 100
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10200002
+    STAT_LV: 2
+    STAT: 0
+    ATT: 130
+    DEF_ATT: 130
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10300003
+    STAT_LV: 3
+    STAT: 0
+    ATT: 160
+    DEF_ATT: 160
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10400004
+    STAT_LV: 4
+    STAT: 0
+    ATT: 190
+    DEF_ATT: 190
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10500005
+    STAT_LV: 5
+    STAT: 0
+    ATT: 220
+    DEF_ATT: 220
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10600006
+    STAT_LV: 6
+    STAT: 0
+    ATT: 250
+    DEF_ATT: 250
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10700007
+    STAT_LV: 7
+    STAT: 0
+    ATT: 280
+    DEF_ATT: 280
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10800008
+    STAT_LV: 8
+    STAT: 0
+    ATT: 310
+    DEF_ATT: 310
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10900009
+    STAT_LV: 9
+    STAT: 0
+    ATT: 340
+    DEF_ATT: 340
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11000010
+    STAT_LV: 10
+    STAT: 0
+    ATT: 370
+    DEF_ATT: 370
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11100011
+    STAT_LV: 11
+    STAT: 0
+    ATT: 400
+    DEF_ATT: 400
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11200012
+    STAT_LV: 12
+    STAT: 0
+    ATT: 430
+    DEF_ATT: 430
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11300013
+    STAT_LV: 13
+    STAT: 0
+    ATT: 460
+    DEF_ATT: 460
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11400014
+    STAT_LV: 14
+    STAT: 0
+    ATT: 490
+    DEF_ATT: 490
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11500015
+    STAT_LV: 15
+    STAT: 0
+    ATT: 520
+    DEF_ATT: 520
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11600016
+    STAT_LV: 16
+    STAT: 0
+    ATT: 550
+    DEF_ATT: 550
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11700017
+    STAT_LV: 17
+    STAT: 0
+    ATT: 580
+    DEF_ATT: 580
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11800018
+    STAT_LV: 18
+    STAT: 0
+    ATT: 610
+    DEF_ATT: 610
+    HP: 0
+    DEF: 0
+  - STAT_ID: 11900019
+    STAT_LV: 19
+    STAT: 0
+    ATT: 640
+    DEF_ATT: 640
+    HP: 0
+    DEF: 0
+  - STAT_ID: 12000020
+    STAT_LV: 20
+    STAT: 0
+    ATT: 670
+    DEF_ATT: 670
+    HP: 0
+    DEF: 0
+  - STAT_ID: 10101021
+    STAT_LV: 1
+    STAT: 1
+    ATT: 100
+    DEF_ATT: 100
+    HP: 100
+    DEF: 0
+  - STAT_ID: 10201022
+    STAT_LV: 2
+    STAT: 1
+    ATT: 116
+    DEF_ATT: 116
+    HP: 105.4
+    DEF: 0
+  - STAT_ID: 10301023
+    STAT_LV: 3
+    STAT: 1
+    ATT: 132
+    DEF_ATT: 132
+    HP: 110.8
+    DEF: 0
+  - STAT_ID: 10401024
+    STAT_LV: 4
+    STAT: 1
+    ATT: 148
+    DEF_ATT: 148
+    HP: 116.2
+    DEF: 0
+  - STAT_ID: 10501025
+    STAT_LV: 5
+    STAT: 1
+    ATT: 164
+    DEF_ATT: 164
+    HP: 121.6
+    DEF: 0
+  - STAT_ID: 10601026
+    STAT_LV: 6
+    STAT: 1
+    ATT: 180
+    DEF_ATT: 180
+    HP: 127
+    DEF: 0
+  - STAT_ID: 10701027
+    STAT_LV: 7
+    STAT: 1
+    ATT: 196
+    DEF_ATT: 196
+    HP: 132.4
+    DEF: 0
+  - STAT_ID: 10801028
+    STAT_LV: 8
+    STAT: 1
+    ATT: 212
+    DEF_ATT: 212
+    HP: 137.8
+    DEF: 0
+  - STAT_ID: 10901029
+    STAT_LV: 9
+    STAT: 1
+    ATT: 228
+    DEF_ATT: 228
+    HP: 143.2
+    DEF: 0
+  - STAT_ID: 11001030
+    STAT_LV: 10
+    STAT: 1
+    ATT: 244
+    DEF_ATT: 244
+    HP: 148.6
+    DEF: 0
+  - STAT_ID: 11101031
+    STAT_LV: 11
+    STAT: 1
+    ATT: 260
+    DEF_ATT: 260
+    HP: 154
+    DEF: 0
+  - STAT_ID: 11201032
+    STAT_LV: 12
+    STAT: 1
+    ATT: 276
+    DEF_ATT: 276
+    HP: 159.4
+    DEF: 0
+  - STAT_ID: 11301033
+    STAT_LV: 13
+    STAT: 1
+    ATT: 292
+    DEF_ATT: 292
+    HP: 164.8
+    DEF: 0
+  - STAT_ID: 11401034
+    STAT_LV: 14
+    STAT: 1
+    ATT: 308
+    DEF_ATT: 308
+    HP: 170.2
+    DEF: 0
+  - STAT_ID: 11501035
+    STAT_LV: 15
+    STAT: 1
+    ATT: 324
+    DEF_ATT: 324
+    HP: 175.6
+    DEF: 0
+  - STAT_ID: 11601036
+    STAT_LV: 16
+    STAT: 1
+    ATT: 340
+    DEF_ATT: 340
+    HP: 181
+    DEF: 0
+  - STAT_ID: 11701037
+    STAT_LV: 17
+    STAT: 1
+    ATT: 356
+    DEF_ATT: 356
+    HP: 186.4
+    DEF: 0
+  - STAT_ID: 11801038
+    STAT_LV: 18
+    STAT: 1
+    ATT: 372
+    DEF_ATT: 372
+    HP: 191.8
+    DEF: 0
+  - STAT_ID: 11901039
+    STAT_LV: 19
+    STAT: 1
+    ATT: 388
+    DEF_ATT: 388
+    HP: 197.2
+    DEF: 0
+  - STAT_ID: 12001040
+    STAT_LV: 20
+    STAT: 1
+    ATT: 404
+    DEF_ATT: 404
+    HP: 202.6
+    DEF: 0
+  - STAT_ID: 10102041
+    STAT_LV: 1
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 100
+    DEF: 0.25
+  - STAT_ID: 10202042
+    STAT_LV: 2
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 120
+    DEF: 0.5
+  - STAT_ID: 10302043
+    STAT_LV: 3
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 140
+    DEF: 0.75
+  - STAT_ID: 10402044
+    STAT_LV: 4
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 160
+    DEF: 1
+  - STAT_ID: 10502045
+    STAT_LV: 5
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 180
+    DEF: 1.25
+  - STAT_ID: 10602046
+    STAT_LV: 6
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 200
+    DEF: 1.5
+  - STAT_ID: 10702047
+    STAT_LV: 7
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 220
+    DEF: 1.75
+  - STAT_ID: 10802048
+    STAT_LV: 8
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 240
+    DEF: 2
+  - STAT_ID: 10902049
+    STAT_LV: 9
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 260
+    DEF: 2.25
+  - STAT_ID: 11002050
+    STAT_LV: 10
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 280
+    DEF: 2.5
+  - STAT_ID: 11102051
+    STAT_LV: 11
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 300
+    DEF: 2.75
+  - STAT_ID: 11202052
+    STAT_LV: 12
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 320
+    DEF: 3
+  - STAT_ID: 11302053
+    STAT_LV: 13
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 340
+    DEF: 3.25
+  - STAT_ID: 11402054
+    STAT_LV: 14
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 360
+    DEF: 3.5
+  - STAT_ID: 11502055
+    STAT_LV: 15
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 380
+    DEF: 3.75
+  - STAT_ID: 11602056
+    STAT_LV: 16
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 400
+    DEF: 4
+  - STAT_ID: 11702057
+    STAT_LV: 17
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 420
+    DEF: 4.25
+  - STAT_ID: 11802058
+    STAT_LV: 18
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 440
+    DEF: 4.5
+  - STAT_ID: 11902059
+    STAT_LV: 19
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 460
+    DEF: 4.75
+  - STAT_ID: 12002060
+    STAT_LV: 20
+    STAT: 2
+    ATT: 0
+    DEF_ATT: 0
+    HP: 480
+    DEF: 5

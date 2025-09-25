@@ -203,6 +203,20 @@ public partial class RhythmGameSystem : MonoBehaviour
         allNotes.AddRange(newNotes);
     }
 
+    public void ClearAllNotes()
+    {
+        foreach (var note in allNotes)
+        {
+            if (note != null)
+            {
+                Destroy(note.gameObject);
+            }
+        }
+        
+        allNotes.Clear();
+        heldNotes.Clear();
+    }
+
     void Update()
     {
         UpdateNotePositions();
@@ -214,7 +228,6 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void UpdateNotePositions()
     {
-        // LMJ: Use custom note time instead of Time.time
         float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         foreach (var note in allNotes)
@@ -252,13 +265,11 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     public void CheckHitWithLongNote(string direction)
     {
-        // LMJ: Shield disabled check - completely ignore input
         if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction))
         {
             return;
         }
 
-        // LMJ: Use custom note time instead of Time.time
         float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
         RhythmNote closestNote = FindClosestNote(direction, currentGameTime);
 
@@ -328,7 +339,6 @@ public partial class RhythmGameSystem : MonoBehaviour
 
         RhythmNote longNote = heldNotes[direction];
 
-        // LMJ: Check if note still exists before accessing
         if (longNote == null)
         {
             heldNotes.Remove(direction);
@@ -361,7 +371,6 @@ public partial class RhythmGameSystem : MonoBehaviour
             string direction = kvp.Key;
             RhythmNote note = kvp.Value;
 
-            // LMJ: Check if note still exists
             if (note == null)
             {
                 heldNotes.Remove(direction);
@@ -488,7 +497,6 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void CheckMissedLongNotes()
     {
-        // LMJ: Use custom note time instead of Time.time
         float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         for (int i = allNotes.Count - 1; i >= 0; i--)
@@ -517,7 +525,8 @@ public partial class RhythmGameSystem : MonoBehaviour
                 monsterManager.TakeNoteHit(playerManager.GetAttackPower(), noteType, result);
             }
 
-            playerManager.ProcessNoteResult(monsterManager.GetAttackPower(), noteType, result);
+            // LMJ: Fixed - Use correct parameters for ProcessNoteResult
+            playerManager.ProcessNoteResult(noteType, result != JudgmentResult.Miss);
 
             if (directionalShieldSystem != null)
             {
@@ -528,7 +537,6 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void CheckMissedNotes()
     {
-        // LMJ: Use custom note time instead of Time.time
         float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         for (int i = allNotes.Count - 1; i >= 0; i--)
