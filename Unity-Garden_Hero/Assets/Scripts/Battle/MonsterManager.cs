@@ -6,16 +6,17 @@ public class MonsterManager : LivingEntity
 {
     [Header("Monster Settings")]
     [SerializeField] private string monsterName = "Wolf";
-    [SerializeField] private int phase = 1;
+    [SerializeField] private int totalPhases = 3;
+    [SerializeField] private int currentPhase = 1;
 
     [Header("STUN System")]
     [SerializeField] private int maxStun = 100;
     [SerializeField] private int currentStun = 100;
     [SerializeField] private int[] phaseStunValues = { 100, 120, 150 }; // LMJ: STUN values per phase
-    
+
     [Header("STUN Visual")]
     [SerializeField] private GameObject stunObject; // LMJ: Visual stun GameObject
-    
+
     [Header("STUN Events")]
     public UnityEvent OnStunBroken;
     public UnityEvent<int> OnStunChanged;
@@ -40,13 +41,11 @@ public class MonsterManager : LivingEntity
 
     void Start()
     {
-        // LMJ: Only initialize if values haven't been set in inspector
         if (maxHealth == 0)
         {
             InitializeFromTable();
         }
-        
-        // LMJ: Initialize stun based on current phase
+
         InitializeStun();
     }
 
@@ -58,15 +57,13 @@ public class MonsterManager : LivingEntity
 
     void InitializeStun()
     {
-        if (phaseStunValues.Length > 0 && phase > 0 && phase <= phaseStunValues.Length)
+        if (phaseStunValues.Length > 0 && currentPhase > 0 && currentPhase <= phaseStunValues.Length)
         {
-            maxStun = phaseStunValues[phase - 1];
+            maxStun = phaseStunValues[currentPhase - 1];
         }
-        
+
         currentStun = maxStun;
         OnStunChanged?.Invoke(currentStun);
-        
-        // LMJ: Show stun visual
         UpdateStunVisual();
     }
 
@@ -95,7 +92,7 @@ public class MonsterManager : LivingEntity
             // LMJ: Damage stun first
             int stunDamage = Mathf.Min(currentStun, calculatedDamage);
             currentStun = Mathf.Max(0, currentStun - stunDamage);
-            
+
             OnStunChanged?.Invoke(currentStun);
             // LMJ: Don't trigger OnDamageReceived when only STUN is damaged
             // OnDamageReceived?.Invoke(damageInfo, stunDamage);
@@ -159,20 +156,18 @@ public class MonsterManager : LivingEntity
 
     public void ResetStun()
     {
-        // LMJ: Reset stun to maximum value for current phase
-        if (phaseStunValues.Length > 0 && phase > 0 && phase <= phaseStunValues.Length)
+        if (phaseStunValues.Length > 0 && currentPhase > 0 && currentPhase <= phaseStunValues.Length)
         {
-            maxStun = phaseStunValues[phase - 1];
+            maxStun = phaseStunValues[currentPhase - 1];
         }
-        
+
         currentStun = maxStun;
         OnStunChanged?.Invoke(currentStun);
-        
-        // LMJ: Show stun visual
         UpdateStunVisual();
-        
+
         Debug.Log($"{monsterName}'s stun restored to {currentStun}!");
     }
+
 
     protected override void OnDeath()
     {
@@ -193,27 +188,23 @@ public class MonsterManager : LivingEntity
 
     bool CanAdvancePhase()
     {
-        // LMJ: Check if there are more phases available
-        return phase < phaseStunValues.Length;
+        // LMJ: Check if current phase is less than total phases
+        return currentPhase < totalPhases;
     }
 
     void AdvancePhase()
     {
-        phase++;
+        currentPhase++;
 
-        // LMJ: Increase stats for next phase
         int newAttack = attackPower + 5;
         int newDefense = defense + 1;
         int newHealth = maxHealth + 20;
 
         Initialize(level, newAttack, newDefense, newHealth);
-        
-        // LMJ: Reset stun for new phase
         ResetStun();
 
-        Debug.Log($"{monsterName} advanced to Phase {phase}!");
+        Debug.Log($"{monsterName} advanced to Phase {currentPhase}!");
     }
-
     void UpdateStunVisual()
     {
         if (stunObject == null) return;
@@ -239,5 +230,5 @@ public class MonsterManager : LivingEntity
     public bool HasStun() => currentStun > 0;
 
     public string GetMonsterName() => monsterName;
-    public int GetPhase() => phase;
+    public int GetPhase() => currentPhase;
 }

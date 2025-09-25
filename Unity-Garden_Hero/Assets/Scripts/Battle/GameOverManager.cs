@@ -23,7 +23,6 @@ public class GameOverManager : MonoBehaviour
 
     void CreateGameOverUI()
     {
-        // LMJ: Create game over canvas if not assigned
         if (gameOverCanvas == null)
         {
             GameObject canvasObj = new GameObject("GameOverCanvas");
@@ -38,7 +37,6 @@ public class GameOverManager : MonoBehaviour
             canvasObj.AddComponent<GraphicRaycaster>();
         }
 
-        // LMJ: Create panel
         if (gameOverPanel == null)
         {
             gameOverPanel = new GameObject("GameOverPanel");
@@ -116,17 +114,49 @@ public class GameOverManager : MonoBehaviour
 
     void SetupEventListeners()
     {
-        // LMJ: Clear existing listeners first
+        // LMJ: Setup PlayerManager death listener
         if (playerManager != null)
         {
             playerManager.OnDied.RemoveAllListeners();
             playerManager.OnDied.AddListener(OnPlayerDeath);
         }
+        else
+        {
+            // LMJ: Try to find PlayerManager if not assigned
+            playerManager = PlayerManager.Instance;
+            if (playerManager != null)
+            {
+                playerManager.OnDied.RemoveAllListeners();
+                playerManager.OnDied.AddListener(OnPlayerDeath);
+            }
+        }
 
+        // LMJ: Setup MonsterManager death listener (if MonsterManager has OnDied event)
         if (monsterManager != null)
         {
-            monsterManager.OnDied.RemoveAllListeners();
-            monsterManager.OnDied.AddListener(OnMonsterDeath);
+            // LMJ: Check if MonsterManager has OnDied event
+            var onDiedField = monsterManager.GetType().GetField("OnDied");
+            if (onDiedField != null)
+            {
+                // LMJ: MonsterManager has OnDied event
+                try
+                {
+                    var onDiedEvent = onDiedField.GetValue(monsterManager) as UnityEngine.Events.UnityEvent;
+                    if (onDiedEvent != null)
+                    {
+                        onDiedEvent.RemoveAllListeners();
+                        onDiedEvent.AddListener(OnMonsterDeath);
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[GameOverManager] Could not setup MonsterManager OnDied listener: {e.Message}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[GameOverManager] MonsterManager does not have OnDied event. Victory condition disabled.");
+            }
         }
     }
 
@@ -159,11 +189,9 @@ public class GameOverManager : MonoBehaviour
 
     void RestartGame()
     {
-        // LMJ: Clean up everything before restart
         Time.timeScale = 1f;
         StopAllCoroutines();
 
-        // LMJ: Force cleanup of all managers using new API
         var allManagers = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
         foreach (var manager in allManagers)
         {
@@ -175,7 +203,6 @@ public class GameOverManager : MonoBehaviour
 
     void OnDestroy()
     {
-        // LMJ: Ensure proper cleanup
         StopAllCoroutines();
 
         if (restartButton != null)
@@ -183,14 +210,37 @@ public class GameOverManager : MonoBehaviour
             restartButton.onClick.RemoveAllListeners();
         }
 
-        if (playerManager != null)
+        if (playerManager != null && playerManager.OnDied != null)
         {
             playerManager.OnDied.RemoveAllListeners();
         }
 
+        // LMJ: Clean up MonsterManager listener if exists
         if (monsterManager != null)
         {
-            monsterManager.OnDied.RemoveAllListeners();
+            try
+            {
+                var onDiedField = monsterManager.GetType().GetField("OnDied");
+                if (onDiedField != null)
+                {
+                    var onDiedEvent = onDiedField.GetValue(monsterManager) as UnityEngine.Events.UnityEvent;
+                    onDiedEvent?.RemoveAllListeners();
+                }
+            }
+            catch (System.Exception)
+            {
+                // Ignore cleanup errors
+            }
+        }
+    }
+
+    // LMJ: Alternative method to check for player death if event doesn't work
+    void Update()
+    {
+        // LMJ: Fallback check for player death
+        if (playerManager != null && playerManager.CurrentHealth <= 0 && gameOverPanel != null && !gameOverPanel.activeInHierarchy)
+        {
+            OnPlayerDeath();
         }
     }
 }
