@@ -1,5 +1,5 @@
 ﻿"GEAR_ID","GEAR_NAME","GEAR_RARE","GEAR_TYPE","GR_EFF_ID","ITEM_IMAGE"
-"INT","STRING","INT","INT","INT","STRING"
+"INT","STRING","ENUM","ENUM","INT","STRING"
 "30100001","낡은 가죽 투구","1","1","40003001","Leather1_head.png"
 "30200002","낡은 가죽 갑옷","1","2","40006002","Leather5_Chest.png"
 "30300003","낡은 망토","1","3","40003003","cloak_18.png"
