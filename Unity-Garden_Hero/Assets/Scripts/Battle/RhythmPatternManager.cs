@@ -80,7 +80,6 @@ public class RhythmPatternManager : MonoBehaviour
         List<int> shuffledIndices = GetShuffledPatternIndices();
         float currentPatternStartTime = currentSetStartTime;
 
-        Debug.Log("=== Creating New Pattern Set ===");
 
         foreach (int patternIndex in shuffledIndices)
         {
@@ -91,7 +90,6 @@ public class RhythmPatternManager : MonoBehaviour
             
             // LMJ: Calculate when next pattern should start (seamlessly)
             float patternDuration = GetPatternDuration(pattern);
-            Debug.Log($"Pattern '{pattern.patternName}' placed at time {currentPatternStartTime:F2}, duration: {patternDuration:F2}");
             
             // LMJ: No gap - seamless connection
             currentPatternStartTime += patternDuration;
@@ -99,7 +97,6 @@ public class RhythmPatternManager : MonoBehaviour
 
         // LMJ: Record when this entire set will end
         currentSetEndTime = currentPatternStartTime;
-        Debug.Log($"Pattern set ends at time: {currentSetEndTime:F2}");
     }
 
     List<int> GetShuffledPatternIndices()
@@ -186,7 +183,6 @@ public class RhythmPatternManager : MonoBehaviour
             // LMJ: When approaching the end of current set, generate new set seamlessly
             if (timeUntilSetEnd <= lookAheadTime * 2f && timeUntilSetEnd > 0f)
             {
-                Debug.Log($"Generating next pattern set. Time until current set ends: {timeUntilSetEnd:F2}");
                 
                 List<RhythmNote> previousNotes = new List<RhythmNote>(allNotes);
                 int previousCount = allNotes.Count;
@@ -198,7 +194,6 @@ public class RhythmPatternManager : MonoBehaviour
                 List<RhythmNote> newNotes = allNotes.GetRange(previousCount, allNotes.Count - previousCount);
                 gameSystem.AddNotes(newNotes);
 
-                Debug.Log($"Added {newNotes.Count} new notes. Next set will end at: {currentSetEndTime:F2}");
 
                 // LMJ: Wait longer to prevent multiple generations
                 yield return new WaitForSeconds(lookAheadTime);
@@ -236,7 +231,6 @@ public class RhythmPatternManager : MonoBehaviour
         List<RhythmNote> newNotes = allNotes.GetRange(previousCount, allNotes.Count - previousCount);
         gameSystem.AddNotes(newNotes);
 
-        Debug.Log($"DealingTime Recovery: Started new pattern set from time {currentSetStartTime:F2}");
     }
 
     void OnDestroy()

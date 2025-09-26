@@ -44,10 +44,6 @@ public class GlobeUIController : MonoBehaviour
     
     void CheckConnections()
     {
-        Debug.Log($"Center Globe: {centerHealthGlobe != null}");
-        Debug.Log($"Shield Globes - Left: {leftShieldDurability != null}, Right: {rightShieldDurability != null}, Top: {topShieldDurability != null}, Bottom: {bottomShieldDurability != null}");
-        Debug.Log($"Highlight Circles - Top: {topGlobeHighlightCircle != null}, Bottom: {bottomGlobeHighlightCircle != null}, Left: {leftGlobeHighlightCircle != null}, Right: {rightGlobeHighlightCircle != null}");
-        Debug.Log($"Systems - DirectionalShield: {directionalShieldSystem != null}, Monster: {monsterManager != null}, HealthSystem: {mainHealthSystem != null}");
     }
     
     void SetupHealthSystem()
@@ -102,18 +98,12 @@ public class GlobeUIController : MonoBehaviour
                     img.fillMethod = Image.FillMethod.Vertical;
                     img.fillOrigin = 0; // Bottom to top
                     img.fillAmount = healthPercent;
-                    Debug.Log($"Center Globe Updated Image: {img.name} fillAmount: {healthPercent * 100f}%");
                     updated = true;
                 }
             }
             
             if (!updated)
             {
-                Debug.LogWarning("No Filled Image found in Center Globe. Found Images:");
-                foreach (Image img in allImages)
-                {
-                    Debug.LogWarning($"  - {img.name} (Type: {img.type})");
-                }
             }
         }
     }
@@ -139,18 +129,12 @@ public class GlobeUIController : MonoBehaviour
                 img.fillMethod = Image.FillMethod.Vertical;
                 img.fillOrigin = 0; // Bottom to top
                 img.fillAmount = durabilityPercent;
-                Debug.Log($"{globeName} Shield Updated Image: {img.name} fillAmount: {durabilityPercent * 100f}%");
                 updated = true;
             }
         }
         
         if (!updated)
         {
-            Debug.LogWarning($"No Filled Image found in {globeName} Shield Globe. Found Images:");
-            foreach (Image img in allImages)
-            {
-                Debug.LogWarning($"  - {img.name} (Type: {img.type})");
-            }
         }
     }
     

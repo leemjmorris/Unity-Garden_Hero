@@ -17,11 +17,11 @@ public class GameManager : MonoBehaviour
 {
     [Header("Game State")]
     [SerializeField] private GameState currentState = GameState.Playing;
-    
+
     [Header("DealingTime Settings")]
     [SerializeField] private float dealingTimeDuration = 10f;
     [SerializeField] private float touchDamageMultiplier = 1.5f;
-    
+
     [Header("UI References")]
     [SerializeField] private CanvasGroup gameUICanvasGroup;
     [SerializeField] private GameObject dealingTimeUI;
@@ -31,17 +31,21 @@ public class GameManager : MonoBehaviour
     [SerializeField] private HealthUIManager playerHealthUIManager; // LMJ: Player health UI for reset
     [SerializeField] private StunUIManager stunUIManager; // LMJ: Stun UI for reset
     [SerializeField] private LaneShieldDurability shieldDurabilityUI; // LMJ: Shield durability UI for reset
-    
+    [SerializeField] protected LivingEntity livingEntity;
+
     [Header("Camera Feedback Effects")]
     [SerializeField] private MMFeedbacks dealingTimeStartFeedback; // LMJ: Camera effects when entering dealing time
     [SerializeField] private MMFeedbacks dealingTimeEndFeedback; // LMJ: Camera effects when exiting dealing time
-    
+
     [Header("System References")]
     [SerializeField] private MonsterManager monsterManager;
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private RhythmGameSystem rhythmGameSystem;
     [SerializeField] private RhythmPatternManager rhythmPatternManager;
-    
+
+    public float animationPlayDelayTime;
+    private float animationTime;
+
     private bool isDealingTimeActive = false;
     private float dealingTimeTimer = 0f;
 
@@ -52,7 +56,7 @@ public class GameManager : MonoBehaviour
         {
             monsterManager.OnStunBroken.AddListener(StartDealingTime);
         }
-        
+
         SetupUI();
     }
 
@@ -62,7 +66,7 @@ public class GameManager : MonoBehaviour
         {
             dealingTimeUI.SetActive(false);
         }
-        
+
         if (dealingTimeInstructionText != null)
         {
             dealingTimeInstructionText.text = "Touch the Boss to Deal Damage!";
@@ -73,6 +77,19 @@ public class GameManager : MonoBehaviour
     {
         HandleInput();
         UpdateDealingTime();
+
+        if (currentState == GameState.Playing && Time.time >= animationTime + animationPlayDelayTime)
+        {
+            animationTime = Time.time;
+            int random = Random.Range(0, 3);
+
+            livingEntity.animator.SetInteger("randomAtt", random);
+        }
+        else
+        {
+            livingEntity.animator.SetInteger("randomAtt", -1);
+
+        }
     }
 
     void HandleInput()
@@ -89,7 +106,7 @@ public class GameManager : MonoBehaviour
 
         // LMJ: Calculate touch damage based on player attack power
         int touchDamage = Mathf.RoundToInt(playerManager.GetAttackPower() * touchDamageMultiplier);
-        
+
         // LMJ: Deal direct damage to boss real health
         monsterManager.TakeDealingTimeDamage(touchDamage);
     }
@@ -123,15 +140,14 @@ public class GameManager : MonoBehaviour
 
         // LMJ: Delete all existing notes
         PauseAllNotes();
-
-        Debug.Log("DealingTime Started!");
+        livingEntity.animator.SetBool("isDealingTime", true);
     }
 
     void PauseAllNotes()
     {
         // LMJ: Find all active notes and immediately destroy them
         RhythmNote[] allNotes = FindObjectsByType<RhythmNote>(FindObjectsSortMode.None);
-        
+
         foreach (RhythmNote note in allNotes)
         {
             if (note != null)
@@ -195,28 +211,27 @@ public class GameManager : MonoBehaviour
         {
             monsterManager.ResetStun();
         }
-
-        Debug.Log("DealingTime Ended! Returning to rhythm game.");
+        livingEntity.animator.SetBool("isDealingTime", false);
     }
 
     void ResumeAllNotes()
-{
-    // LMJ: Resume rhythm game system
-    if (rhythmGameSystem != null)
     {
-        rhythmGameSystem.enabled = true;
-    }
+        // LMJ: Resume rhythm game system
+        if (rhythmGameSystem != null)
+        {
+            rhythmGameSystem.enabled = true;
+        }
 
-    // LMJ: Generate new notes immediately from current time
-    if (rhythmPatternManager != null)
-    {
-        rhythmPatternManager.AddNextPatternSetFromCurrentTime(); // LMJ: 새로운 메서드 사용
+        // LMJ: Generate new notes immediately from current time
+        if (rhythmPatternManager != null)
+        {
+            rhythmPatternManager.AddNextPatternSetFromCurrentTime(); // LMJ: 새로운 메서드 사용
+        }
     }
-}
 
     public GameState GetCurrentState() => currentState;
     public bool IsDealingTimeActive() => isDealingTimeActive;
-    
+
     public void SetGameState(GameState newState)
     {
         currentState = newState;

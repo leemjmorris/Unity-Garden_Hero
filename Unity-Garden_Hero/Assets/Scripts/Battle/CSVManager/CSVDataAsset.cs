@@ -115,7 +115,6 @@ public class CSVDataAsset : ScriptableObject
             statDataDict[key] = data;
         }
 
-        Debug.Log($"CSV Dictionaries built - Boss: {bossDataDict.Count}, Gear: {gearDataDict.Count}, Effects: {gearEffectDataDict.Count}, Stats: {statDataDict.Count}");
     }
 
     // LMJ: Public getter methods
@@ -202,7 +201,6 @@ public class CSVDataAsset : ScriptableObject
 
         BuildDictionaries();
         UnityEditor.EditorUtility.SetDirty(this);
-        Debug.Log("All CSV data loaded successfully!");
     }
 
     void LoadBossData()
@@ -244,12 +242,10 @@ public class CSVDataAsset : ScriptableObject
                     bossDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing BOSS.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {bossDataList.Count} boss entries");
     }
 
     void LoadConsumableData()
@@ -289,12 +285,10 @@ public class CSVDataAsset : ScriptableObject
                     consumableDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing CONS.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {consumableDataList.Count} consumable entries");
     }
 
     void LoadGearSetData()
@@ -330,12 +324,10 @@ public class CSVDataAsset : ScriptableObject
                     gearSetDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing GEAR_SET.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {gearSetDataList.Count} gear set entries");
     }
 
     void LoadPhaseData()
@@ -368,12 +360,10 @@ public class CSVDataAsset : ScriptableObject
                     phaseDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing PHASE.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {phaseDataList.Count} phase entries");
     }
 
     void LoadGearData()
@@ -406,12 +396,10 @@ public class CSVDataAsset : ScriptableObject
                     gearDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing GEAR.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {gearDataList.Count} gear entries");
     }
 
     void LoadGearEffectData()
@@ -445,12 +433,10 @@ public class CSVDataAsset : ScriptableObject
                     gearEffectDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing GR_EFF.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {gearEffectDataList.Count} gear effect entries");
     }
 
     void LoadLinkData()
@@ -479,12 +465,10 @@ public class CSVDataAsset : ScriptableObject
                     linkDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing LINK.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {linkDataList.Count} link entries");
     }
 
     void LoadPatternData()
@@ -522,12 +506,10 @@ public class CSVDataAsset : ScriptableObject
                     patternDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing PT.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {patternDataList.Count} pattern entries");
     }
 
     void LoadStageData()
@@ -556,12 +538,10 @@ public class CSVDataAsset : ScriptableObject
                     stageDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing STAGE.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {stageDataList.Count} stage entries");
     }
 
     void LoadStatData()
@@ -595,12 +575,10 @@ public class CSVDataAsset : ScriptableObject
                     statDataList.Add(data);
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
-                Debug.LogError($"Error parsing STAT.csv line {i + 1}: {e.Message}");
             }
         }
-        Debug.Log($"Loaded {statDataList.Count} stat entries");
     }
 
     string[] SplitCSVLine(string line)

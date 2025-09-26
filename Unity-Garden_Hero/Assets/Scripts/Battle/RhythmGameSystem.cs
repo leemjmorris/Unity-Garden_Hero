@@ -82,8 +82,32 @@ public class PulseAnimation : MonoBehaviour
     }
 }
 
+
+
 public partial class RhythmGameSystem : MonoBehaviour
 {
+
+    [System.Serializable]
+    public class MissDamageSettings
+    {
+        [Header("Basic Notes")]
+        public int normalMissDamage = 10;
+        public int specialMissDamage = 20;
+        public int dodgeMissDamage = 0;
+
+        [Header("Long Notes")]
+        public int longMissDamage = 15;
+        public int longHeadMissDamage = 15;
+        public int longTailMissDamage = 10;
+        public int longHoldMissDamage = 5;
+
+        [Header("Default")]
+        public int defaultMissDamage = 10;
+    }
+
+    [Header("Miss Damage Settings")]
+    [SerializeField] private MissDamageSettings missDamageSettings = new MissDamageSettings();
+
     [Header("UI References")]
     [SerializeField] private Canvas gameCanvas;
     [SerializeField] private GameObject notePrefab;
@@ -212,7 +236,7 @@ public partial class RhythmGameSystem : MonoBehaviour
                 Destroy(note.gameObject);
             }
         }
-        
+
         allNotes.Clear();
         heldNotes.Clear();
     }
@@ -423,7 +447,7 @@ public partial class RhythmGameSystem : MonoBehaviour
     {
         if (monsterManager != null && playerManager != null)
         {
-            int damage = Mathf.RoundToInt(playerManager.GetAttackPower() * longNoteHeadMultiplier);
+            int damage = Mathf.RoundToInt(playerManager.GetStunAttackPower() * longNoteHeadMultiplier);
             monsterManager.TakeNoteHit(damage, "Long_Head", result);
 
             if (directionalShieldSystem != null)
@@ -437,7 +461,7 @@ public partial class RhythmGameSystem : MonoBehaviour
     {
         if (monsterManager != null && playerManager != null)
         {
-            float baseDamage = playerManager.GetAttackPower() * longNoteTailMultiplier;
+            float baseDamage = playerManager.GetStunAttackPower() * longNoteTailMultiplier;
             float holdBonus = baseDamage * holdProgress * longNoteHoldBonusMultiplier;
             int totalDamage = Mathf.RoundToInt(baseDamage + holdBonus);
 
@@ -454,7 +478,7 @@ public partial class RhythmGameSystem : MonoBehaviour
     {
         if (monsterManager != null && playerManager != null)
         {
-            int bonusDamage = Mathf.RoundToInt(playerManager.GetAttackPower() * 0.05f);
+            int bonusDamage = Mathf.RoundToInt(playerManager.GetStunAttackPower() * 0.05f);
             monsterManager.TakeNoteHit(bonusDamage, "Long_Hold", JudgmentResult.Perfect);
         }
     }
@@ -522,10 +546,15 @@ public partial class RhythmGameSystem : MonoBehaviour
 
             if (result != JudgmentResult.Miss && noteType != "Dodge")
             {
-                monsterManager.TakeNoteHit(playerManager.GetAttackPower(), noteType, result);
+                monsterManager.TakeNoteHit(playerManager.GetStunAttackPower(), noteType, result);
+            }
+            else if (result == JudgmentResult.Miss)
+            {
+                int missDamage = GetMissDamage(noteType);
+                playerManager.OnDamage(missDamage);
+                Debug.Log($"[RhythmGameSystem] Player takes miss damage: {missDamage} from {noteType}");
             }
 
-            // LMJ: Fixed - Use correct parameters for ProcessNoteResult
             playerManager.ProcessNoteResult(noteType, result != JudgmentResult.Miss);
 
             if (directionalShieldSystem != null)
@@ -533,6 +562,21 @@ public partial class RhythmGameSystem : MonoBehaviour
                 directionalShieldSystem.ProcessNoteResult(note.direction, result);
             }
         }
+    }
+
+    int GetMissDamage(string noteType)
+    {
+        return noteType.ToLower() switch
+        {
+            "long_head" => missDamageSettings.longHeadMissDamage,
+            "long_tail" => missDamageSettings.longTailMissDamage,
+            "long_hold" => missDamageSettings.longHoldMissDamage,
+            "long" => missDamageSettings.longMissDamage,
+            "normal" => missDamageSettings.normalMissDamage,
+            "special" => missDamageSettings.specialMissDamage,
+            "dodge" => missDamageSettings.dodgeMissDamage,
+            _ => missDamageSettings.defaultMissDamage
+        };
     }
 
     void CheckMissedNotes()

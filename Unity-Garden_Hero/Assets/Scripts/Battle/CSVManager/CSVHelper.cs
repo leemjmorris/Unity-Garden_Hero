@@ -173,23 +173,11 @@ public static class CSVHelper
         GearData gear = CSVManager.Instance?.GetGearData(gearId);
         if (gear == null)
         {
-            Debug.LogWarning($"Gear not found: {gearId}");
             return;
         }
 
         GearEffectData effect = CSVManager.Instance.GetGearEffectData(gear.GR_EFF_ID.ToString());
 
-        Debug.Log($"=== Gear Info: {gearId} ===");
-        Debug.Log($"Name: {gear.GEAR_NAME}");
-        Debug.Log($"Type: {gear.GEAR_TYPE}");
-        Debug.Log($"Rarity: {gear.GEAR_RARE}");
-        Debug.Log($"Effect ID: {gear.GR_EFF_ID}");
-
-        if (effect != null)
-        {
-            Debug.Log($"Effect: {effect.EFF_NAME}");
-            Debug.Log($"ATT: +{effect.ATT_EFF}, DEF: +{effect.DEF_ATT_EFF}, HP: +{effect.HP_EFF}");
-        }
     }
 
     public static void LogStatInfo(string statId, int level)
@@ -197,14 +185,9 @@ public static class CSVHelper
         StatData stat = CSVManager.Instance?.GetStatData(statId, level);
         if (stat == null)
         {
-            Debug.LogWarning($"Stat not found: {statId} Level {level}");
             return;
         }
 
-        Debug.Log($"=== Stat Info: {statId} Level {level} ===");
-        Debug.Log($"Type: {stat.STAT}");
-        Debug.Log($"ATT: {stat.ATT}, DEF: {stat.DEF}, HP: {stat.HP}");
-        Debug.Log($"DEF_ATT: {stat.DEF_ATT}");
     }
 
     // LMJ: Player stat helper methods

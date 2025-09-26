@@ -669,7 +669,6 @@
 
         void Start() {
             if (!GetComponent<SpriteRenderer>() && !GetComponent<Image>()) {
-                Debug.LogWarning("Shapes2D: Shape component needs a SpriteRenderer or an Image.");
                 return;
             }
             Configure();
@@ -686,7 +685,7 @@
             Material baseMaterial = (Material) Resources.Load(
                         "Shapes2D/Materials/Shape", typeof(Material));
             if (!baseMaterial) {
-                Debug.LogError("Shapes2D: Couldn't find a base material in Shapes2D/Materials/Resources."); 
+ 
                 return null;
             }
             return baseMaterial;
@@ -1167,16 +1166,17 @@
                 foreach (Component c in components) {
                     if (c == mask)
                         break;
-                    i ++;
+                    i++;
                 }
                 int i2 = 0;
                 foreach (Component c in components) {
                     if (c == this)
                         break;
-                    i2 ++;
+                    i2++;
                 }
                 if (i2 < i)
-                    Debug.LogWarning("Warning (Object " + name + ") - If a Mask and a Shapes2D Shape are on the same GameObject, the Shape needs to be further down in the component order!  You can move components up and down using the gear icon in the Inspector."); 
+                { }
+ 
             }
 
             if (oldMaterial != null && UIShapeIsMasked(this, true)) {

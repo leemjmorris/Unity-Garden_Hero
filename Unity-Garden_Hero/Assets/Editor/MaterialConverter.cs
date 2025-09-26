@@ -25,6 +25,5 @@ public class MaterialConverter
         }
         
         AssetDatabase.SaveAssets();
-        Debug.Log("Material conversion completed!");
     }
 }

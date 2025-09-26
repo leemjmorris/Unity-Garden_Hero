@@ -64,45 +64,36 @@ public class ShieldController : MonoBehaviour
 
     public void SetShieldBrokenState(string direction, bool isBroken)
     {
-        Debug.Log($"SetShieldBrokenState called: {direction}, isBroken: {isBroken}");
 
         GameObject shield = GetShieldByDirection(direction);
         ParticleSystem brokenEffect = GetBrokenEffectByDirection(direction);
 
-        Debug.Log($"Shield GameObject found: {shield != null}");
-        Debug.Log($"Particle System found: {brokenEffect != null}");
 
         if (shield == null)
         {
-            Debug.LogError($"Shield GameObject for {direction} is null!");
             return;
         }
 
         if (isBroken)
         {
-            Debug.Log($"Setting {direction} shield to broken state");
             shield.SetActive(true);
             SetShieldOpacity(shield, 0.3f);
 
             if (brokenEffect != null)
             {
                 brokenEffect.Play();
-                Debug.Log($"Particle effect started for {direction}");
             }
             else
             {
-                Debug.LogError($"Particle effect for {direction} is null!");
             }
         }
         else
         {
-            Debug.Log($"Restoring {direction} shield");
             SetShieldOpacity(shield, 1.0f);
 
             if (brokenEffect != null)
             {
                 brokenEffect.Stop();
-                Debug.Log($"Particle effect stopped for {direction}");
             }
 
             shield.SetActive(false);

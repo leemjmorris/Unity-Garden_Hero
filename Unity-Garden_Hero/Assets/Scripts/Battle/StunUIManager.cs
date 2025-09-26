@@ -39,7 +39,7 @@ public class StunUIManager : MonoBehaviour
         monsterManager.OnStunBroken.AddListener(OnStunBroken);
     }
     
-    void OnStunChanged(int newStun)
+    void OnStunChanged(float newStun)
     {
         UpdateStunBar();
         

@@ -109,7 +109,6 @@ public class ShieldDurabilitySystem : MonoBehaviour
         isSystemDisabled = true;
         disableStartTime = Time.time;
         
-        Debug.Log($"All Shields Disabled for {disableDuration} seconds");
         
         ShieldController shieldController = FindFirstObjectByType<ShieldController>();
         if (shieldController != null)
@@ -128,7 +127,6 @@ public class ShieldDurabilitySystem : MonoBehaviour
         isSystemDisabled = false;
         currentDurability = maxDurability;
         
-        Debug.Log("All Shields Restored");
         
         ShieldController shieldController = FindFirstObjectByType<ShieldController>();
         if (shieldController != null)

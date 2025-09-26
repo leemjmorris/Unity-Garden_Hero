@@ -201,7 +201,6 @@ public class TouchInputManager : MonoBehaviour
     {
         if (directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction))
         {
-            Debug.Log($"Shield {direction} is disabled, ignoring input");
             return;
         }
 

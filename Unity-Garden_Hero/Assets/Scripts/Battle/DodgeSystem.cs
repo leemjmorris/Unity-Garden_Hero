@@ -15,8 +15,11 @@ public class DodgeSystem : MonoBehaviour
     [Header("Shield System")]
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
-    [Header("Debug")]
-    [SerializeField] private bool showInputDebug = false;
+    [Header("Animator")]
+    [SerializeField] protected Animator animator;
+
+    // [Header("Debug")]
+    // [SerializeField] private bool showInputDebug = false;
 
     private bool isRotating = false;
     private bool isDodgeActive = false;
@@ -44,7 +47,7 @@ public class DodgeSystem : MonoBehaviour
     {
         if (enableSwipeInput)
             HandleSwipeInput();
-            
+
         if (enableKeyboardInput)
             HandleKeyboardInput();
     }
@@ -64,12 +67,12 @@ public class DodgeSystem : MonoBehaviour
         {
             EndSwipe(Input.mousePosition);
         }
-        
+
         //LMJ: Handle mobile touch
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
-            
+
             switch (touch.phase)
             {
                 case TouchPhase.Began:
@@ -95,7 +98,7 @@ public class DodgeSystem : MonoBehaviour
         {
             DodgeLeft();
         }
-        
+
         //LMJ: E key for right dodge
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -108,30 +111,24 @@ public class DodgeSystem : MonoBehaviour
         startTouchPosition = position;
         startTime = Time.time;
         isDragging = true;
-        
-        if (showInputDebug)
-            Debug.Log($"Swipe started at: {position}");
+
     }
-    
+
     void UpdateSwipe(Vector2 position)
     {
         endTouchPosition = position;
     }
-    
+
     void EndSwipe(Vector2 position)
     {
         if (!isDragging) return;
-        
+
         endTouchPosition = position;
         float swipeTime = Time.time - startTime;
         Vector2 swipeDirection = endTouchPosition - startTouchPosition;
         float swipeDistance = swipeDirection.magnitude;
-        
-        if (showInputDebug)
-        {
-            Debug.Log($"Swipe ended - Distance: {swipeDistance}, Time: {swipeTime}, Direction: {swipeDirection}");
-        }
-        
+
+
         //LMJ: Check if swipe meets criteria
         if (swipeDistance >= minSwipeDistance && swipeTime <= maxSwipeTime)
         {
@@ -149,11 +146,7 @@ public class DodgeSystem : MonoBehaviour
                 }
             }
         }
-        else if (showInputDebug)
-        {
-            Debug.Log($"Swipe rejected - Distance: {swipeDistance} (min: {minSwipeDistance}), Time: {swipeTime} (max: {maxSwipeTime})");
-        }
-        
+
         isDragging = false;
     }
 
@@ -190,10 +183,9 @@ public class DodgeSystem : MonoBehaviour
     {
         if (isDodgeActive && isRotating) return;
 
-        if (showInputDebug)
-            Debug.Log("Dodge Left triggered!");
 
         targetRotation -= 90f;
+        animator.SetTrigger("RollLeft");
         StartDodge();
     }
 
@@ -201,10 +193,9 @@ public class DodgeSystem : MonoBehaviour
     {
         if (isDodgeActive && isRotating) return;
 
-        if (showInputDebug)
-            Debug.Log("Dodge Right triggered!");
 
         targetRotation += 90f;
+        animator.SetTrigger("RollRight");
         StartDodge();
     }
 

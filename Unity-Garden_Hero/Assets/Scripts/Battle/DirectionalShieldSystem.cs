@@ -101,7 +101,6 @@ public class DirectionalShieldSystem : MonoBehaviour
         // LMJ: Ensure arrays are properly sized
         if (shieldVisuals.Length != 3)
         {
-            Debug.LogError("shieldVisuals array must have exactly 3 elements");
             return;
         }
 
@@ -120,7 +119,6 @@ public class DirectionalShieldSystem : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"Shield visual {i} is null!");
             }
         }
 
@@ -166,14 +164,12 @@ public class DirectionalShieldSystem : MonoBehaviour
         {
             if (isBroken)
             {
-                Debug.Log("Global shield broken - all directions disabled");
                 shieldController.SetShieldBrokenState("Left", true);
                 shieldController.SetShieldBrokenState("Right", true);
                 shieldController.SetShieldBrokenState("Up", true);
             }
             else
             {
-                Debug.Log("Global shield restored - all directions enabled");
                 shieldController.SetShieldBrokenState("Left", false);
                 shieldController.SetShieldBrokenState("Right", false);
                 shieldController.SetShieldBrokenState("Up", false);
@@ -325,7 +321,6 @@ public class DirectionalShieldSystem : MonoBehaviour
             float percent = shields[i].GetDurabilityPercent() * 100f;
             string status = shields[i].isActive ? "ACTIVE" : "INACTIVE";
 
-            Debug.Log($"Shield {GetDirectionName(i)}: {percent:F1}% ({status})");
         }
     }
 

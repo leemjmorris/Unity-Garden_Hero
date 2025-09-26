@@ -1,14 +1,13 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerManager : MonoBehaviour
+public class PlayerManager : LivingEntity
 {
     private static PlayerManager instance;
     public static PlayerManager Instance => instance;
 
     [Header("🎮 God Mode")]
     [SerializeField] private bool isGodMode = false;
-    public UnityEvent OnDied;
 
     [Header("🔧 Development Mode")]
     [SerializeField] private bool enableInspectorTesting = true;
@@ -16,7 +15,7 @@ public class PlayerManager : MonoBehaviour
 
     [Header("🎯 Player Stat Levels - ADJUSTABLE")]
     [SerializeField, Range(1, 20)] private int strengthLevel = 1;
-    [SerializeField, Range(1, 20)] private int dexterityLevel = 1; 
+    [SerializeField, Range(1, 20)] private int dexterityLevel = 1;
     [SerializeField, Range(1, 20)] private int constitutionLevel = 1;
 
     [Header("⚔️ Final Combat Stats (Auto Calculated)")]
@@ -26,7 +25,6 @@ public class PlayerManager : MonoBehaviour
     [Header("💚 Final Survival Stats (Auto Calculated)")]
     [SerializeField] private int totalHP;          // 체력
     [SerializeField] private float totalDefense;   // 방어력
-    [SerializeField] private int currentHealth;    // 현재 체력
 
     [Header("📊 Stat Breakdown Detail")]
     [Space(10)]
@@ -52,12 +50,12 @@ public class PlayerManager : MonoBehaviour
         [SerializeField] public int hp;
         [SerializeField] public float def;
         [SerializeField] public string contribution;
-        
+
         public StatBreakdown(string name)
         {
             statName = name;
         }
-        
+
         public void UpdateStats(int lv, StatData data)
         {
             level = lv;
@@ -85,36 +83,17 @@ public class PlayerManager : MonoBehaviour
         set => isGodMode = value;
     }
 
-    // LMJ: Health management
-    public int CurrentHealth
-    {
-        get => currentHealth;
-        set
-        {
-            if (isGodMode && value < currentHealth) return; // God mode prevents damage
-            
-            int previousHealth = currentHealth;
-            currentHealth = Mathf.Clamp(value, 0, totalHP);
-            
-            if (currentHealth <= 0 && previousHealth > 0)
-            {
-                OnDied?.Invoke();
-            }
-        }
-    }
-
     void Awake()
     {
         if (instance == null)
         {
             instance = this;
-            //DontDestroyOnLoad(gameObject);
-            
+
             // LMJ: Initialize breakdown display
             strengthStats = new StatBreakdown("💪 Strength");
             dexterityStats = new StatBreakdown("⚡ Dexterity");
             constitutionStats = new StatBreakdown("🛡️ Constitution");
-            
+
             // LMJ: Store initial values
             prevStrengthLevel = strengthLevel;
             prevDexterityLevel = dexterityLevel;
@@ -130,6 +109,59 @@ public class PlayerManager : MonoBehaviour
     {
         CalculateStats();
         UpdateRangeValues();
+
+        // LMJ: Initialize LivingEntity with calculated stats
+        InitializeFromCSV();
+    }
+
+    void InitializeFromCSV()
+    {
+        // LMJ: Use calculated stats to initialize LivingEntity
+        int playerLevel = (strengthLevel + dexterityLevel + constitutionLevel) / 3;
+        int playerAttack = dealingDamage; // Primary attack stat
+        float playerDefense = totalDefense;
+        int playerHealth = totalHP;
+
+        Initialize(playerLevel, playerAttack, Mathf.RoundToInt(playerDefense), playerHealth);
+
+    }
+
+    // LMJ: Override OnDamage to add God Mode protection
+    public override void OnDamage(DamageInfo damageInfo)
+    {
+        Debug.Log($"[PlayerManager] OnDamage(DamageInfo) called - Damage: {damageInfo.baseDamage}, Type: {damageInfo.noteType}, God Mode: {isGodMode}");
+
+        if (isGodMode)
+        {
+            Debug.Log("[PlayerManager] God Mode - Damage ignored");
+            return;
+        }
+
+        Debug.Log($"[PlayerManager] Before damage - Current HP: {currentHealth}/{maxHealth}");
+        base.OnDamage(damageInfo);
+        Debug.Log($"[PlayerManager] After damage - Current HP: {currentHealth}/{maxHealth}");
+    }
+
+    public override void OnDamage(int simpleDamage)
+    {
+        Debug.Log($"[PlayerManager] OnDamage(int) called - Damage: {simpleDamage}, God Mode: {isGodMode}");
+
+        if (isGodMode)
+        {
+            Debug.Log("[PlayerManager] God Mode - Damage ignored");
+            return;
+        }
+
+        Debug.Log($"[PlayerManager] Before simple damage - Current HP: {currentHealth}/{maxHealth}");
+        base.OnDamage(simpleDamage);
+        Debug.Log($"[PlayerManager] After simple damage - Current HP: {currentHealth}/{maxHealth}");
+    }
+
+
+    // LMJ: Override OnDeath for player-specific death handling
+    protected override void OnDeath()
+    {
+        base.OnDeath(); // This will invoke OnDied event
     }
 
     // LMJ: Called when inspector values change
@@ -137,30 +169,29 @@ public class PlayerManager : MonoBehaviour
     {
         if (enableInspectorTesting && Application.isPlaying)
         {
-            if (prevStrengthLevel != strengthLevel || 
-                prevDexterityLevel != dexterityLevel || 
+            if (prevStrengthLevel != strengthLevel ||
+                prevDexterityLevel != dexterityLevel ||
                 prevConstitutionLevel != constitutionLevel)
             {
                 prevStrengthLevel = strengthLevel;
                 prevDexterityLevel = dexterityLevel;
                 prevConstitutionLevel = constitutionLevel;
-                
+
                 CalculateStats();
-                Debug.Log($"[PlayerManager] Inspector values changed - Recalculating stats");
             }
         }
-        
+
         UpdateRangeValues();
     }
 
     private void UpdateRangeValues()
     {
         if (!Application.isPlaying) return;
-        
+
         int maxStr = GetMaxLevelForStatType(StatType.Strength);
         int maxDex = GetMaxLevelForStatType(StatType.Dexterity);
         int maxCon = GetMaxLevelForStatType(StatType.Constitution);
-        
+
         strengthLevel = Mathf.Clamp(strengthLevel, 1, maxStr);
         dexterityLevel = Mathf.Clamp(dexterityLevel, 1, maxDex);
         constitutionLevel = Mathf.Clamp(constitutionLevel, 1, maxCon);
@@ -169,7 +200,7 @@ public class PlayerManager : MonoBehaviour
     public void CalculateStats()
     {
         dealingDamage = 0;
-        stunDamage = 0; 
+        stunDamage = 0;
         totalHP = 0;
         totalDefense = 0f;
 
@@ -177,45 +208,66 @@ public class PlayerManager : MonoBehaviour
         AddStatsFromLevel(StatType.Dexterity, dexterityLevel);
         AddStatsFromLevel(StatType.Constitution, constitutionLevel);
 
-        // LMJ: Initialize current health if it's 0
-        if (currentHealth == 0)
+        // LMJ: Update LivingEntity stats when CSV stats change
+        if (Application.isPlaying)
         {
-            currentHealth = totalHP;
+            UpdateLivingEntityStats();
         }
 
         UpdateStatSummary();
 
-        Debug.Log($"[PlayerManager] Stats Updated - ATT: {dealingDamage}, DEF_ATT: {stunDamage}, HP: {totalHP}, DEF: {totalDefense}");
+    }
+
+    void UpdateLivingEntityStats()
+    {
+        // LMJ: Update the inherited LivingEntity properties
+        int newMaxHealth = totalHP;
+        float newDefense = totalDefense;
+        int newAttack = dealingDamage;
+
+        // LMJ: Preserve health ratio when changing max health
+        float healthRatio = maxHealth > 0 ? (float)currentHealth / maxHealth : 1f;
+
+        maxHealth = newMaxHealth;
+        defense = Mathf.RoundToInt(newDefense);
+        attackPower = newAttack;
+
+        // LMJ: Restore health based on ratio
+        currentHealth = Mathf.RoundToInt(maxHealth * healthRatio);
+        currentHealth = Mathf.Clamp(currentHealth, 1, maxHealth); // Keep alive
+
+        OnHealthChanged?.Invoke(currentHealth); // Notify health change
     }
 
     private void UpdateStatSummary()
     {
+        string livingEntityInfo = $"LivingEntity - HP:{currentHealth}/{maxHealth}, ATK:{attackPower}, DEF:{defense}";
+
         statSummary = $"Total Levels: {strengthLevel + dexterityLevel + constitutionLevel}\n" +
                      $"Combat Power: ATT={dealingDamage} | STUN={stunDamage}\n" +
-                     $"Survival: HP={totalHP} | DEF={totalDefense:F2} | Current HP={currentHealth}\n" +
+                     $"Survival: HP={totalHP} | DEF={totalDefense:F2}\n" +
                      $"Distribution: STR({strengthLevel}) DEX({dexterityLevel}) CON({constitutionLevel})\n" +
-                     $"God Mode: {(isGodMode ? "ON" : "OFF")}";
+                     $"God Mode: {(isGodMode ? "ON" : "OFF")}\n" +
+                     $"{livingEntityInfo}";
     }
 
     private void AddStatsFromLevel(StatType statType, int level)
     {
         StatData statData = GetStatData(statType, level);
-        
+
         if (statData != null)
         {
             dealingDamage += statData.ATT;
             stunDamage += statData.DEF_ATT;
             totalHP += statData.HP;
             totalDefense += statData.DEF;
-            
+
             if (enableInspectorTesting)
             {
-                Debug.Log($"[PlayerManager] {statType} Lv.{level}: ATT+{statData.ATT}, DEF_ATT+{statData.DEF_ATT}, HP+{statData.HP}, DEF+{statData.DEF}");
             }
         }
         else
         {
-            Debug.LogWarning($"[PlayerManager] StatData not found for {statType} level {level}");
         }
 
         UpdateStatBreakdown(statType, level, statData);
@@ -241,12 +293,11 @@ public class PlayerManager : MonoBehaviour
     {
         if (CSVManager.Instance == null)
         {
-            Debug.LogError("[PlayerManager] CSVManager.Instance is null!");
             return null;
         }
 
         var statList = CSVManager.Instance.GetCSVDataAsset().statDataList;
-        
+
         foreach (var stat in statList)
         {
             if (stat.STAT == (int)statType && stat.STAT_LV == level)
@@ -261,19 +312,14 @@ public class PlayerManager : MonoBehaviour
     // LMJ: Compatibility method for RhythmGameSystem
     public void ProcessNoteResult(string noteType, bool isSuccess)
     {
-        Debug.Log($"[PlayerManager] Note {noteType} result: {(isSuccess ? "Success" : "Fail")}");
-        // 필요시 추가 로직 구현
     }
 
-    // LMJ: Damage handling
+    // LMJ: Public damage method for external systems
     public void TakeDamage(int damage)
     {
-        if (isGodMode) return;
-        
-        CurrentHealth -= damage;
-        Debug.Log($"[PlayerManager] Took {damage} damage. Health: {currentHealth}/{totalHP}");
+        Debug.Log($"[PlayerManager] TakeDamage wrapper called - Damage: {damage}");
+        OnDamage(damage);
     }
-
     // LMJ: Stat level management
     public void LevelUpStat(StatType statType)
     {
@@ -289,14 +335,15 @@ public class PlayerManager : MonoBehaviour
                 constitutionLevel++;
                 break;
         }
-        
+
         CalculateStats();
     }
 
     // LMJ: Public getters for other systems
-    public int GetAttackPower() => stunDamage;
-    public int GetDealingAttackPower() => dealingDamage;
-    
+    public new int GetAttackPower() => dealingDamage; // Main attack for dealing time and rhythm notes
+    public int GetStunAttackPower() => stunDamage; // Stun damage for rhythm game
+    public int GetDealingAttackPower() => dealingDamage; // Compatibility method
+
     public int DealingDamage => dealingDamage;
     public int StunDamage => stunDamage;
     public int TotalHP => totalHP;
@@ -309,10 +356,10 @@ public class PlayerManager : MonoBehaviour
     public int GetMaxLevelForStatType(StatType statType)
     {
         if (CSVManager.Instance == null) return 20;
-        
+
         var statList = CSVManager.Instance.GetCSVDataAsset().statDataList;
         int maxLevel = 1;
-        
+
         foreach (var stat in statList)
         {
             if (stat.STAT == (int)statType && stat.STAT_LV > maxLevel)
@@ -320,7 +367,7 @@ public class PlayerManager : MonoBehaviour
                 maxLevel = stat.STAT_LV;
             }
         }
-        
+
         return maxLevel;
     }
 
@@ -332,11 +379,11 @@ public class PlayerManager : MonoBehaviour
     public void RandomizeStatsForTesting()
     {
         if (!enableInspectorTesting) return;
-        
+
         strengthLevel = Random.Range(1, GetMaxLevelForStatType(StatType.Strength) + 1);
         dexterityLevel = Random.Range(1, GetMaxLevelForStatType(StatType.Dexterity) + 1);
         constitutionLevel = Random.Range(1, GetMaxLevelForStatType(StatType.Constitution) + 1);
-        
+
         CalculateStats();
     }
 
@@ -351,21 +398,31 @@ public class PlayerManager : MonoBehaviour
     public void ToggleGodMode()
     {
         isGodMode = !isGodMode;
-        Debug.Log($"[PlayerManager] God Mode: {(isGodMode ? "ON" : "OFF")}");
         UpdateStatSummary();
+    }
+
+    [ContextMenu("💀 Test Damage")]
+    public void TestDamage()
+    {
+        OnDamage(10);
     }
 
     // LMJ: Testing keys
     void Update()
     {
         if (!enableInspectorTesting) return;
-        
+
         if (Input.GetKeyDown(KeyCode.Alpha1)) LevelUpStat(StatType.Strength);
         if (Input.GetKeyDown(KeyCode.Alpha2)) LevelUpStat(StatType.Dexterity);
         if (Input.GetKeyDown(KeyCode.Alpha3)) LevelUpStat(StatType.Constitution);
         if (Input.GetKeyDown(KeyCode.G)) ToggleGodMode();
         if (Input.GetKeyDown(KeyCode.R)) RandomizeStatsForTesting();
         if (Input.GetKeyDown(KeyCode.Backspace)) ResetToLevel1();
-        if (Input.GetKeyDown(KeyCode.H)) TakeDamage(10); // Test damage
+        if (Input.GetKeyDown(KeyCode.H)) OnDamage(10); // Test damage with LivingEntity
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            Debug.Log($"God Mode Inspector: {isGodMode}");
+            UpdateStatSummary();
+        }
     }
 }

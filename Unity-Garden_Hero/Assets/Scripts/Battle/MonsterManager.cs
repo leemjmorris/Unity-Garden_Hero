@@ -4,100 +4,249 @@ using System.Collections.Generic;
 
 public class MonsterManager : LivingEntity
 {
-    [Header("Monster Settings")]
-    [SerializeField] private string monsterName = "Wolf";
-    [SerializeField] private int totalPhases = 3;
-    [SerializeField] private int currentPhase = 1;
+    [Header("Monster CSV Settings")]
+    [SerializeField] private int phaseId = 80000001; // 늑대 전사 페이즈 ID
+    [SerializeField] private int currentPhaseIndex = 1; // 현재 페이즈 인덱스 (0부터 시작)
+    
+    [Header("Monster Info (Auto Loaded)")]
+    [SerializeField] private string monsterName = "늑대 전사";
+    [SerializeField] private int currentBossId;
+    [SerializeField] private int totalPhases;
 
-    [Header("STUN System")]
-    [SerializeField] private int maxStun = 100;
-    [SerializeField] private int currentStun = 100;
-    [SerializeField] private int[] phaseStunValues = { 100, 120, 150 }; // LMJ: STUN values per phase
+    [Header("STUN System (Auto Loaded)")]
+    [SerializeField] private float maxStun = 100;
+    [SerializeField] private float currentStun = 100;
+    [SerializeField] private int stunRecovery;
+    [SerializeField] private int stunDefense; // STUN_DEF
 
     [Header("STUN Visual")]
-    [SerializeField] private GameObject stunObject; // LMJ: Visual stun GameObject
+    [SerializeField] private GameObject stunObject;
 
     [Header("STUN Events")]
     public UnityEvent OnStunBroken;
-    public UnityEvent<int> OnStunChanged;
+    public UnityEvent<float> OnStunChanged;
 
-    [Header("Damage Multipliers")]
-    [SerializeField]
-    private Dictionary<string, float> noteTypeMultipliers = new Dictionary<string, float>
-    {
-        {"Normal", 1.0f},
-        {"Long", 1.2f},
-        {"Special", 1.5f},
-        {"Defense", 0.8f}
-    };
+    [Header("Attack Multipliers (Auto Loaded)")]
+    [SerializeField] private float normalAttMultiplier = 1.0f;
+    [SerializeField] private float normalDefAttMultiplier = 1.0f;
+    [SerializeField] private float longAttMultiplier = 1.0f;
+    [SerializeField] private float longDefAttMultiplier = 1.0f;
+    [SerializeField] private float specialAttMultiplier = 1.0f;
+    [SerializeField] private float specialDefAttMultiplier = 1.0f;
 
-    [SerializeField]
-    private Dictionary<JudgmentResult, float> judgmentMultipliers = new Dictionary<JudgmentResult, float>
-    {
-        {JudgmentResult.Perfect, 1.0f},
-        {JudgmentResult.Good, 0.7f},
-        {JudgmentResult.Miss, 0.0f}
-    };
+    [Header("Debug Info")]
+    [SerializeField] private string csvStatus;
+
+    // CSV 데이터 캐시
+    private PhaseData currentPhaseData;
+    private BossData currentBossData;
+    private bool csvDataLoaded = false;
 
     void Start()
     {
-        if (maxHealth == 0)
+        LoadCSVData();
+        
+        if (csvDataLoaded)
         {
-            InitializeFromTable();
+            InitializeFromCSV();
         }
-
-        InitializeStun();
+        else
+        {
+            InitializeFallback();
+        }
     }
 
-    void InitializeFromTable()
+    void LoadCSVData()
     {
-        // LMJ: Initialize with sample boss data from table
-        Initialize(1, 10, 2, 50);
-    }
-
-    void InitializeStun()
-    {
-        if (phaseStunValues.Length > 0 && currentPhase > 0 && currentPhase <= phaseStunValues.Length)
+        if (CSVManager.Instance == null)
         {
-            maxStun = phaseStunValues[currentPhase - 1];
+            csvStatus = "CSVManager.Instance is null";
+            Debug.LogError("[MonsterManager] CSVManager.Instance is null!");
+            return;
         }
 
+        var csvDataAsset = CSVManager.Instance.GetCSVDataAsset();
+        if (csvDataAsset?.phaseDataList == null || csvDataAsset?.bossDataList == null)
+        {
+            csvStatus = "CSV data asset or lists are null";
+            Debug.LogError("[MonsterManager] CSV data not available!");
+            return;
+        }
+
+        // PHASE 데이터 로드
+        currentPhaseData = GetPhaseData(phaseId);
+        if (currentPhaseData == null)
+        {
+            csvStatus = $"Phase data not found for ID: {phaseId}";
+            Debug.LogError($"[MonsterManager] Phase data not found for ID: {phaseId}");
+            return;
+        }
+
+        // 총 페이즈 수 계산
+        CountTotalPhases();
+
+        // 현재 보스 데이터 로드
+        LoadCurrentBossData();
+
+        csvDataLoaded = true;
+        csvStatus = $"CSV loaded successfully - Phase ID: {phaseId}";
+        Debug.Log($"[MonsterManager] CSV data loaded successfully for Phase ID: {phaseId}");
+    }
+
+    PhaseData GetPhaseData(int phaseId)
+    {
+        var phaseDataList = CSVManager.Instance.GetCSVDataAsset().phaseDataList;
+        
+        foreach (var phase in phaseDataList)
+        {
+            if (phase.PHASE_ID == phaseId)
+            {
+                return phase;
+            }
+        }
+        
+        return null;
+    }
+
+    void CountTotalPhases()
+    {
+        totalPhases = 0;
+        int[] bossIds = { currentPhaseData.BOSS_ID_1, currentPhaseData.BOSS_ID_2, 
+                         currentPhaseData.BOSS_ID_3, currentPhaseData.BOSS_ID_4, 
+                         currentPhaseData.BOSS_ID_5 };
+
+        foreach (int bossId in bossIds)
+        {
+            if (bossId > 0) // NULL이 아닌 경우 (CSV에서는 0 또는 음수)
+            {
+                totalPhases++;
+            }
+        }
+
+        Debug.Log($"[MonsterManager] Total phases: {totalPhases}");
+    }
+
+    int GetBossIdForPhaseIndex(int phaseIndex)
+    {
+        int[] bossIds = { currentPhaseData.BOSS_ID_1, currentPhaseData.BOSS_ID_2, 
+                         currentPhaseData.BOSS_ID_3, currentPhaseData.BOSS_ID_4, 
+                         currentPhaseData.BOSS_ID_5 };
+
+        if (phaseIndex >= 0 && phaseIndex < bossIds.Length && phaseIndex < totalPhases)
+        {
+            return bossIds[phaseIndex];
+        }
+
+        return -1;
+    }
+
+    void LoadCurrentBossData()
+    {
+        currentBossId = GetBossIdForPhaseIndex(currentPhaseIndex);
+        
+        if (currentBossId <= 0)
+        {
+            csvStatus = $"Invalid boss ID for phase index: {currentPhaseIndex}";
+            Debug.LogError($"[MonsterManager] Invalid boss ID for phase index: {currentPhaseIndex}");
+            return;
+        }
+
+        currentBossData = GetBossData(currentBossId);
+        if (currentBossData == null)
+        {
+            csvStatus = $"Boss data not found for ID: {currentBossId}";
+            Debug.LogError($"[MonsterManager] Boss data not found for ID: {currentBossId}");
+            return;
+        }
+
+        Debug.Log($"[MonsterManager] Loaded boss data for ID: {currentBossId} ({currentBossData.BOSS_NAME})");
+    }
+
+    BossData GetBossData(int bossId)
+    {
+        var bossDataList = CSVManager.Instance.GetCSVDataAsset().bossDataList;
+        
+        foreach (var boss in bossDataList)
+        {
+            if (boss.BOSS_ID == bossId)
+            {
+                return boss;
+            }
+        }
+        
+        return null;
+    }
+
+    void InitializeFromCSV()
+    {
+        if (currentBossData == null) return;
+
+        // 기본 정보 설정
+        monsterName = currentBossData.BOSS_NAME;
+        
+        // LivingEntity 초기화
+        int bossLevel = currentBossData.PHASE;
+        int bossAttack = Mathf.RoundToInt(currentBossData.NORMAL_ATT);
+        int bossDefense = currentBossData.DEF;
+        int bossHealth = Mathf.RoundToInt(currentBossData.HP);
+        
+        Initialize(bossLevel, bossAttack, bossDefense, bossHealth);
+
+        // STUN 시스템 초기화
+        maxStun = currentBossData.STUN;
         currentStun = maxStun;
+        stunRecovery = currentBossData.STUN_RECOVERY;
+        stunDefense = currentBossData.STUN_DEF;
+
+        // 공격 배율 설정
+        normalAttMultiplier = currentBossData.NORMAL_ATT;
+        normalDefAttMultiplier = currentBossData.NORMAL_DEF_ATT;
+        longAttMultiplier = currentBossData.LONG_ATT;
+        longDefAttMultiplier = currentBossData.LONG_DEF_ATT;
+        specialAttMultiplier = currentBossData.SPECIAL_ATT;
+        specialDefAttMultiplier = currentBossData.SPECIAL_DEF_ATT;
+
         OnStunChanged?.Invoke(currentStun);
         UpdateStunVisual();
+
+        csvStatus = $"Initialized {monsterName} Phase {currentBossData.PHASE} - HP:{bossHealth}, STUN:{maxStun}";
+        Debug.Log($"[MonsterManager] {csvStatus}");
+    }
+
+    void InitializeFallback()
+    {
+        // CSV 로드 실패시 기본값
+        Initialize(1, 10, 2, 50);
+        maxStun = 30;
+        currentStun = maxStun;
+        stunRecovery = 7;
+        totalPhases = 2;
+        
+        OnStunChanged?.Invoke(currentStun);
+        UpdateStunVisual();
+        
+        csvStatus = "Using fallback values - CSV data not available";
+        Debug.LogWarning("[MonsterManager] " + csvStatus);
     }
 
     public void TakeNoteHit(int playerAttack, string noteType, JudgmentResult judgment)
     {
         if (judgment == JudgmentResult.Miss) return;
 
-        DamageInfo damageInfo = new DamageInfo
-        {
-            baseDamage = playerAttack,
-            noteType = noteType,
-            multiplier = GetDamageMultiplier(noteType, judgment),
-            ignoreDefense = false
-        };
-
-        // LMJ: Apply damage to stun first, then health
-        ApplyDamageToStunAndHealth(damageInfo);
-    }
-
-    void ApplyDamageToStunAndHealth(DamageInfo damageInfo)
-    {
-        int calculatedDamage = CalculateDamage(damageInfo);
+        // 노트 타입별 데미지 배율 적용
+        float damageMultiplier = GetNoteTypeDamageMultiplier(noteType);
+        float judgmentMultiplier = GetJudgmentMultiplier(judgment);
+        
+        int finalDamage = Mathf.RoundToInt(playerAttack * damageMultiplier * judgmentMultiplier);
 
         if (currentStun > 0)
         {
-            // LMJ: Damage stun first
-            int stunDamage = Mathf.Min(currentStun, calculatedDamage);
+            // STUN에 데미지 적용 (STUN_DEF 고려)
+            float stunDamage = Mathf.Max(1, finalDamage - stunDefense);
             currentStun = Mathf.Max(0, currentStun - stunDamage);
 
             OnStunChanged?.Invoke(currentStun);
-            // LMJ: Don't trigger OnDamageReceived when only STUN is damaged
-            // OnDamageReceived?.Invoke(damageInfo, stunDamage);
 
-            // LMJ: Check if stun is broken
             if (currentStun <= 0)
             {
                 Debug.Log($"{monsterName}'s stun is broken! Entering DealingTime...");
@@ -108,15 +257,41 @@ public class MonsterManager : LivingEntity
             {
                 UpdateStunVisual();
             }
+
+            Debug.Log($"[MonsterManager] STUN hit: -{stunDamage}, remaining: {currentStun}");
         }
-        // LMJ: If stun is broken, damage goes to health (during DealingTime)
         else
         {
-            ApplyDamage(calculatedDamage);
+            // 체력에 직접 데미지 (DealingTime 중)
+            OnDamage(finalDamage);
+            Debug.Log($"[MonsterManager] HP hit: -{finalDamage}, remaining: {currentHealth}");
         }
     }
 
-    // LMJ: Direct damage to health during DealingTime
+    float GetNoteTypeDamageMultiplier(string noteType)
+    {
+        if (!csvDataLoaded || currentBossData == null) return 1.0f;
+
+        return noteType.ToLower() switch
+        {
+            "normal" => normalDefAttMultiplier,
+            "long" or "long_head" or "long_tail" or "long_hold" => longDefAttMultiplier,
+            "special" => specialDefAttMultiplier,
+            _ => 1.0f
+        };
+    }
+
+    float GetJudgmentMultiplier(JudgmentResult judgment)
+    {
+        return judgment switch
+        {
+            JudgmentResult.Perfect => 1.0f,
+            JudgmentResult.Good => 0.7f,
+            JudgmentResult.Miss => 0.0f,
+            _ => 1.0f
+        };
+    }
+
     public void TakeDealingTimeDamage(int damage)
     {
         if (currentStun > 0)
@@ -125,42 +300,12 @@ public class MonsterManager : LivingEntity
             return;
         }
 
-        ApplyDamage(damage);
+        OnDamage(damage);
         Debug.Log($"{monsterName} takes {damage} direct damage! Health: {currentHealth}/{maxHealth}");
-    }
-
-    protected override int CalculateDamage(DamageInfo damageInfo)
-    {
-        // LMJ: Calculate base damage with multipliers
-        float totalDamage = damageInfo.baseDamage * damageInfo.multiplier;
-
-        // LMJ: Apply defense reduction
-        if (!damageInfo.ignoreDefense)
-        {
-            totalDamage = Mathf.Max(1, totalDamage - defense);
-        }
-
-        return Mathf.RoundToInt(totalDamage);
-    }
-
-    float GetDamageMultiplier(string noteType, JudgmentResult judgment)
-    {
-        float noteMultiplier = noteTypeMultipliers.ContainsKey(noteType) ?
-            noteTypeMultipliers[noteType] : 1.0f;
-
-        float judgmentMultiplier = judgmentMultipliers.ContainsKey(judgment) ?
-            judgmentMultipliers[judgment] : 1.0f;
-
-        return noteMultiplier * judgmentMultiplier;
     }
 
     public void ResetStun()
     {
-        if (phaseStunValues.Length > 0 && currentPhase > 0 && currentPhase <= phaseStunValues.Length)
-        {
-            maxStun = phaseStunValues[currentPhase - 1];
-        }
-
         currentStun = maxStun;
         OnStunChanged?.Invoke(currentStun);
         UpdateStunVisual();
@@ -168,12 +313,10 @@ public class MonsterManager : LivingEntity
         Debug.Log($"{monsterName}'s stun restored to {currentStun}!");
     }
 
-
     protected override void OnDeath()
     {
-        Debug.Log($"{monsterName} has been defeated!");
+        Debug.Log($"{monsterName} Phase {currentPhaseIndex + 1} has been defeated!");
 
-        // LMJ: Handle phase transition or death
         if (CanAdvancePhase())
         {
             AdvancePhase();
@@ -188,47 +331,89 @@ public class MonsterManager : LivingEntity
 
     bool CanAdvancePhase()
     {
-        // LMJ: Check if current phase is less than total phases
-        return currentPhase < totalPhases;
+        return currentPhaseIndex + 1 < totalPhases;
     }
 
     void AdvancePhase()
     {
-        currentPhase++;
-
-        int newAttack = attackPower + 5;
-        int newDefense = defense + 1;
-        int newHealth = maxHealth + 20;
-
-        Initialize(level, newAttack, newDefense, newHealth);
-        ResetStun();
-
-        Debug.Log($"{monsterName} advanced to Phase {currentPhase}!");
+        currentPhaseIndex++;
+        LoadCurrentBossData();
+        
+        if (csvDataLoaded && currentBossData != null)
+        {
+            InitializeFromCSV();
+            Debug.Log($"{monsterName} advanced to Phase {currentPhaseIndex + 1}!");
+        }
+        else
+        {
+            // Fallback phase advancement
+            Initialize(level + 1, attackPower + 5, defense + 1, maxHealth + 20);
+            ResetStun();
+        }
     }
+
     void UpdateStunVisual()
     {
         if (stunObject == null) return;
-
-        // LMJ: Show/hide stun based on current stun value
-        bool shouldShowStun = currentStun > 0;
-        stunObject.SetActive(shouldShowStun);
+        stunObject.SetActive(currentStun > 0);
     }
 
     void HandleMonsterDeath()
     {
-        // LMJ: Reward experience, items, etc.
         Debug.Log($"{monsterName} completely defeated! Victory!");
-
-        // LMJ: Disable monster or trigger victory screen
         gameObject.SetActive(false);
     }
 
-    // LMJ: Getter methods for stun system
-    public int GetCurrentStun() => currentStun;
-    public int GetMaxStun() => maxStun;
-    public float GetStunPercentage() => maxStun > 0 ? (float)currentStun / maxStun : 0f;
+    // Getter methods
+    public float GetCurrentStun() => currentStun;
+    public float GetMaxStun() => maxStun;
+    public float GetStunPercentage() => maxStun > 0 ? currentStun / maxStun : 0f;
     public bool HasStun() => currentStun > 0;
-
     public string GetMonsterName() => monsterName;
-    public int GetPhase() => currentPhase;
+    public int GetPhase() => currentPhaseIndex + 1;
+    public int GetCurrentBossId() => currentBossId;
+    public int GetTotalPhases() => totalPhases;
+
+    // Context Menu methods
+    [ContextMenu("🔄 Reload CSV Data")]
+    public void ReloadCSVData()
+    {
+        LoadCSVData();
+        if (csvDataLoaded)
+        {
+            InitializeFromCSV();
+        }
+    }
+
+    [ContextMenu("⚡ Force Next Phase")]
+    public void ForceNextPhase()
+    {
+        if (CanAdvancePhase())
+        {
+            AdvancePhase();
+        }
+        else
+        {
+            Debug.Log("Cannot advance - already at final phase");
+        }
+    }
+
+    [ContextMenu("🛡️ Reset STUN")]
+    public void ForceResetStun()
+    {
+        ResetStun();
+    }
+
+    [ContextMenu("📊 Log Monster Status")]
+    public void LogMonsterStatus()
+    {
+        Debug.Log($"[MonsterManager Status]\n" +
+                 $"Name: {monsterName}\n" +
+                 $"Phase: {currentPhaseIndex + 1}/{totalPhases}\n" +
+                 $"Boss ID: {currentBossId}\n" +
+                 $"HP: {currentHealth}/{maxHealth}\n" +
+                 $"STUN: {currentStun}/{maxStun}\n" +
+                 $"ATK: {attackPower}, DEF: {defense}\n" +
+                 $"CSV Status: {csvStatus}");
+    }
 }

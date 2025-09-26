@@ -42,12 +42,10 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned to CSVManager!");
             return;
         }
 
         csvDataAsset.BuildDictionaries();
-        Debug.Log("CSV data initialized successfully!");
     }
 
     // LMJ: Wrapper methods for easy access
@@ -55,7 +53,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetBossData(bossId);
@@ -65,7 +62,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetConsumableData(consId);
@@ -75,7 +71,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetGearData(gearId);
@@ -85,7 +80,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetGearSetData(setId);
@@ -95,7 +89,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetGearEffectData(effectId);
@@ -105,7 +98,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetLinkData(group);
@@ -115,7 +107,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetPhaseData(phaseId);
@@ -125,7 +116,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetPatternData(patternId);
@@ -135,7 +125,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetStageData(stageId);
@@ -145,7 +134,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetStatData(statId, level);
@@ -155,7 +143,6 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return null;
         }
         return csvDataAsset.GetStatData(statId, level);
@@ -193,20 +180,7 @@ public class CSVManager : MonoBehaviour
     {
         if (csvDataAsset == null)
         {
-            Debug.LogError("CSVDataAsset is not assigned!");
             return;
         }
-
-        Debug.Log($"=== CSV Data Counts ===");
-        Debug.Log($"Boss Data: {csvDataAsset.bossDataList.Count}");
-        Debug.Log($"Consumable Data: {csvDataAsset.consumableDataList.Count}");
-        Debug.Log($"Gear Data: {csvDataAsset.gearDataList.Count}");
-        Debug.Log($"Gear Set Data: {csvDataAsset.gearSetDataList.Count}");
-        Debug.Log($"Gear Effect Data: {csvDataAsset.gearEffectDataList.Count}");
-        Debug.Log($"Link Data: {csvDataAsset.linkDataList.Count}");
-        Debug.Log($"Phase Data: {csvDataAsset.phaseDataList.Count}");
-        Debug.Log($"Pattern Data: {csvDataAsset.patternDataList.Count}");
-        Debug.Log($"Stage Data: {csvDataAsset.stageDataList.Count}");
-        Debug.Log($"Stat Data: {csvDataAsset.statDataList.Count}");
     }
 }

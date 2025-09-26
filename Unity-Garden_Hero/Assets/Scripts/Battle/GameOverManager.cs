@@ -148,14 +148,9 @@ public class GameOverManager : MonoBehaviour
                         onDiedEvent.AddListener(OnMonsterDeath);
                     }
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
-                    Debug.LogWarning($"[GameOverManager] Could not setup MonsterManager OnDied listener: {e.Message}");
                 }
-            }
-            else
-            {
-                Debug.LogWarning("[GameOverManager] MonsterManager does not have OnDied event. Victory condition disabled.");
             }
         }
     }
@@ -238,7 +233,7 @@ public class GameOverManager : MonoBehaviour
     void Update()
     {
         // LMJ: Fallback check for player death
-        if (playerManager != null && playerManager.CurrentHealth <= 0 && gameOverPanel != null && !gameOverPanel.activeInHierarchy)
+        if (playerManager != null && !playerManager.IsAlive() && gameOverPanel != null && !gameOverPanel.activeInHierarchy)
         {
             OnPlayerDeath();
         }

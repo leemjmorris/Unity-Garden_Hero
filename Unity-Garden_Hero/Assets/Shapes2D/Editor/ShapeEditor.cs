@@ -296,9 +296,7 @@
             SpriteRenderer sr = (SpriteRenderer) Resources.Load(
                         "Shapes2D/Sprite Template", typeof(SpriteRenderer));
             if (!sr) {
-                Debug.LogError("Shapes2D: Couldn't get the sprite template from "
-                        + "Shapes2D/Resources.  You'll have to manually assign the "
-                        + "SpriteRenderer's material."); 
+ 
                 return null;
             }
             return sr.sharedMaterial;
@@ -726,7 +724,6 @@
             if (prefs) {
                 pixelsPerUnit = prefs.pixelsPerUnit;
             } else {
-                Debug.LogWarning("Can't find Shapes2D Preferences in Shapes2D/Preferences.  Please re-import Shapes2D.");
             }
 
             Vector2 pivot = RenderToTexture2D(fname, shape, pixelsPerUnit: pixelsPerUnit);
