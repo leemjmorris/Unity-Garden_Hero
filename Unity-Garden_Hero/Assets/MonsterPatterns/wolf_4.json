@@ -21,20 +21,6 @@
     {
       "time": 2.75,
       "type": "Normal",
-      "direction": "Left",
-      "duration": 0.0,
-      "snapValue": 0.25
-    },
-    {
-      "time": 2.5,
-      "type": "Normal",
-      "direction": "Right",
-      "duration": 0.0,
-      "snapValue": 0.25
-    },
-    {
-      "time": 2.75,
-      "type": "Normal",
       "direction": "Right",
       "duration": 0.0,
       "snapValue": 0.25
@@ -57,20 +43,6 @@
       "time": 5.0,
       "type": "Normal",
       "direction": "Left",
-      "duration": 0.0,
-      "snapValue": 0.25
-    },
-    {
-      "time": 5.25,
-      "type": "Normal",
-      "direction": "Left",
-      "duration": 0.0,
-      "snapValue": 0.25
-    },
-    {
-      "time": 5.0,
-      "type": "Normal",
-      "direction": "Right",
       "duration": 0.0,
       "snapValue": 0.25
     },
@@ -128,6 +100,34 @@
       "type": "Charged",
       "direction": "Right",
       "duration": 0.399999976,
+      "snapValue": 0.1
+    },
+    {
+      "time": 2.9,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 2.5,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 5.4,
+      "type": "Normal",
+      "direction": "Left",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 5.0,
+      "type": "Normal",
+      "direction": "Right",
+      "duration": 0.0,
       "snapValue": 0.1
     }
   ]

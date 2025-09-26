@@ -45,7 +45,7 @@ public class TouchInputManager : MonoBehaviour
             ClearButtonEvents(leftCenterButton);
             AddButtonEvents(leftCenterButton, "Up");
         }
-        
+
         if (rightCenterButton != null)
         {
             ClearButtonEvents(rightCenterButton);

@@ -15,8 +15,8 @@ public class DodgeSystem : MonoBehaviour
     [Header("Shield System")]
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
-    [Header("Animator")]
-    [SerializeField] protected Animator animator;
+    //[Header("Animator")]
+    //[SerializeField] protected Animator animator;
 
     // [Header("Debug")]
     // [SerializeField] private bool showInputDebug = false;
@@ -184,8 +184,8 @@ public class DodgeSystem : MonoBehaviour
         if (isDodgeActive && isRotating) return;
 
 
+        //animator.SetTrigger("RollLeft");
         targetRotation -= 90f;
-        animator.SetTrigger("RollLeft");
         StartDodge();
     }
 
@@ -194,8 +194,8 @@ public class DodgeSystem : MonoBehaviour
         if (isDodgeActive && isRotating) return;
 
 
+        //animator.SetTrigger("RollRight");
         targetRotation += 90f;
-        animator.SetTrigger("RollRight");
         StartDodge();
     }
 

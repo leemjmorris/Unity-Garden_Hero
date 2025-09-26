@@ -1935,7 +1935,6 @@ MonoBehaviour:
   mapTransform: {fileID: 1783859416}
   rotationSpeed: 10
   directionalShieldSystem: {fileID: 1717503336}
-  animator: {fileID: 1627749129}
 --- !u!4 &423770218
 Transform:
   m_ObjectHideFlags: 0
@@ -2242,9 +2241,8 @@ MonoBehaviour:
   level: 1
   attackPower: 10
   defense: 0
-  maxHealth: 10000
-  currentHealth: 10000
-  animator: {fileID: 490134567}
+  maxHealth: 20000
+  currentHealth: 20000
   OnDamageReceived:
     m_PersistentCalls:
       m_Calls: []
@@ -2252,9 +2250,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   OnHealed:
-    m_PersistentCalls:
-      m_Calls: []
-  OnDied:
     m_PersistentCalls:
       m_Calls: []
   phaseId: 80000001
@@ -2285,6 +2280,9 @@ MonoBehaviour:
   OnStunChanged:
     m_PersistentCalls:
       m_Calls: []
+  animator: {fileID: 490134567}
+  minAttackInterval: 1
+  maxAttackInterval: 4
   normalAttMultiplier: 1
   normalDefAttMultiplier: 1
   longAttMultiplier: 1
@@ -4614,11 +4612,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   level: 1
-  attackPower: 10
+  attackPower: 100
   defense: 0
   maxHealth: 100
   currentHealth: 0
-  animator: {fileID: 0}
   OnDamageReceived:
     m_PersistentCalls:
       m_Calls: []
@@ -4628,12 +4625,9 @@ MonoBehaviour:
   OnHealed:
     m_PersistentCalls:
       m_Calls: []
-  OnDied:
-    m_PersistentCalls:
-      m_Calls: []
   isGodMode: 1
   enableInspectorTesting: 1
-  strengthLevel: 1
+  strengthLevel: 20
   dexterityLevel: 1
   constitutionLevel: 1
   dealingDamage: 0
@@ -5251,7 +5245,8 @@ MonoBehaviour:
   playerHealthUIManager: {fileID: 1544201896}
   stunUIManager: {fileID: 1077255873}
   shieldDurabilityUI: {fileID: 95656595}
-  livingEntity: {fileID: 490134566}
+  monsterLivingEntity: {fileID: 490134566}
+  playerLivingEntity: {fileID: 1160532685}
   dealingTimeStartFeedback: {fileID: 930006437}
   dealingTimeEndFeedback: {fileID: 699177}
   monsterManager: {fileID: 490134566}
@@ -5992,11 +5987,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1160532685}
   m_SourcePrefab: {fileID: 100100000, guid: 9e89634fe9474125ab42aefdc22a787d, type: 3}
---- !u!95 &1627749129 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 8912693915797022553, guid: 9e89634fe9474125ab42aefdc22a787d, type: 3}
-  m_PrefabInstance: {fileID: 1627749128}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1682111807 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1365686433206287970, guid: 5df32524777398345892c3efb940ae47, type: 3}
@@ -6248,10 +6238,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fe9836f809362b4999abcb77ea40213, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxDurability: 10000
-  restoreRate: 100
-  perfectHitDamage: 5
-  goodHitDamage: 3
+  maxDurability: 50
+  restoreRate: 5
+  perfectHitDamage: 1
+  goodHitDamage: 2
   missDamage: 0
   shieldVisuals:
   - {fileID: 66618772}

@@ -12,13 +12,6 @@
       "snapValue": 1.0
     },
     {
-      "time": 2.0,
-      "type": "Special",
-      "direction": "Up",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
       "time": 4.0,
       "type": "Charged",
       "direction": "Right",
@@ -33,18 +26,46 @@
       "snapValue": 1.0
     },
     {
-      "time": 3.75,
+      "time": 3.5,
       "type": "Normal",
       "direction": "Right",
       "duration": 0.0,
       "snapValue": 0.25
     },
     {
-      "time": 6.0,
+      "time": 2.0,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.25
+    },
+    {
+      "time": 2.5,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 2.9,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 6.20000029,
       "type": "Normal",
       "direction": "Left",
       "duration": 0.0,
-      "snapValue": 0.25
+      "snapValue": 0.1
+    },
+    {
+      "time": 4.4,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.1
     }
   ]
 }

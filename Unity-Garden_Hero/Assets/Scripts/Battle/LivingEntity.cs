@@ -26,13 +26,13 @@ public abstract class LivingEntity : MonoBehaviour
     [SerializeField] protected int defense = 0;
     [SerializeField] public int maxHealth = 100;
     [SerializeField] public int currentHealth = 100;
-    [SerializeField] public Animator animator;
+    //[SerializeField] public Animator animator;
     
     [Header("Events")]
     public UnityEvent<DamageInfo, int> OnDamageReceived;
     public UnityEvent<int> OnHealthChanged;
     public UnityEvent<int> OnHealed;
-    public UnityEvent OnDied;
+    [System.NonSerialized] public UnityEvent OnDied = new UnityEvent();
     
     public virtual void Initialize(int entityLevel, int attack, int def, int health)
     {
@@ -59,7 +59,7 @@ public abstract class LivingEntity : MonoBehaviour
     {
         DamageInfo info = new DamageInfo(simpleDamage, "Normal", 1.0f, false);
         OnDamage(info);
-        animator.SetTrigger("GetHit");
+        //animator.SetTrigger("GetHit");
     }
     
     protected virtual int CalculateDamage(DamageInfo damageInfo)

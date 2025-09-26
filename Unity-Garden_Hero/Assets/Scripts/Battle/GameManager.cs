@@ -31,7 +31,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private HealthUIManager playerHealthUIManager; // LMJ: Player health UI for reset
     [SerializeField] private StunUIManager stunUIManager; // LMJ: Stun UI for reset
     [SerializeField] private LaneShieldDurability shieldDurabilityUI; // LMJ: Shield durability UI for reset
-    [SerializeField] protected LivingEntity livingEntity;
+    [SerializeField] protected LivingEntity monsterLivingEntity;
+    [SerializeField] protected LivingEntity playerLivingEntity;
 
     [Header("Camera Feedback Effects")]
     [SerializeField] private MMFeedbacks dealingTimeStartFeedback; // LMJ: Camera effects when entering dealing time
@@ -77,26 +78,23 @@ public class GameManager : MonoBehaviour
     {
         HandleInput();
         UpdateDealingTime();
-
-        if (currentState == GameState.Playing && Time.time >= animationTime + animationPlayDelayTime)
-        {
-            animationTime = Time.time;
-            int random = Random.Range(0, 3);
-
-            livingEntity.animator.SetInteger("randomAtt", random);
-        }
-        else
-        {
-            livingEntity.animator.SetInteger("randomAtt", -1);
-
-        }
     }
 
     void HandleInput()
     {
-        if (currentState == GameState.DealingTime && Input.GetMouseButtonDown(0))
+        if (currentState == GameState.DealingTime && Input.GetMouseButtonDown(0))// && Time.time >= animationTime + animationPlayDelayTime)
         {
+
+            // animationTime = Time.time;
+            // int random = Random.Range(0, 3);
+
+            //playerLivingEntity.animator.SetInteger("RandomAtt", random);
+
             HandleBossTouch();
+        }
+        else
+        {
+            //playerLivingEntity.animator.SetInteger("RandomAtt", -1);
         }
     }
 
@@ -109,6 +107,9 @@ public class GameManager : MonoBehaviour
 
         // LMJ: Deal direct damage to boss real health
         monsterManager.TakeDealingTimeDamage(touchDamage);
+
+        // LMJ: Trigger GetHit animation
+        monsterManager.PlayGetHitAnimation();
     }
 
     public void StartDealingTime()
@@ -140,7 +141,12 @@ public class GameManager : MonoBehaviour
 
         // LMJ: Delete all existing notes
         PauseAllNotes();
-        livingEntity.animator.SetBool("isDealingTime", true);
+
+        // LMJ: Start Dizzy animation for monster
+        if (monsterManager != null)
+        {
+            monsterManager.StartDizzyAnimation();
+        }
     }
 
     void PauseAllNotes()
@@ -206,12 +212,12 @@ public class GameManager : MonoBehaviour
         // LMJ: Resume rhythm game with new notes
         ResumeAllNotes();
 
-        // LMJ: Reset boss stun
+        // LMJ: Reset boss stun and stop Dizzy animation
         if (monsterManager != null)
         {
             monsterManager.ResetStun();
+            monsterManager.StopDizzyAnimation();
         }
-        livingEntity.animator.SetBool("isDealingTime", false);
     }
 
     void ResumeAllNotes()
