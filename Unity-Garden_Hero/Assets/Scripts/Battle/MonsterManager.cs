@@ -535,6 +535,49 @@ public class MonsterManager : LivingEntity
         }
     }
 
+    public void PlayVictoryAnimation()
+    {
+        if (animator != null)
+        {
+            // Stop any ongoing attack animations
+            if (attackAnimationCoroutine != null)
+            {
+                StopCoroutine(attackAnimationCoroutine);
+                attackAnimationCoroutine = null;
+            }
+
+            animator.SetBool("isVictory", true);
+            Debug.Log($"[MonsterManager] {monsterName} is victorious! Playing victory animation");
+
+            // Ensure victory animation keeps looping
+            StartCoroutine(EnsureVictoryLoop());
+        }
+    }
+
+    private System.Collections.IEnumerator EnsureVictoryLoop()
+    {
+        while (animator != null && animator.GetBool("isVictory"))
+        {
+            // Wait a bit and check if we're still in victory state
+            yield return new WaitForSeconds(0.5f);
+
+            // If animator somehow left victory state, force it back
+            if (animator != null && !animator.GetCurrentAnimatorStateInfo(0).IsName("Victory") &&
+                !animator.GetCurrentAnimatorStateInfo(0).IsName("Win") &&
+                !animator.GetCurrentAnimatorStateInfo(0).IsName("Celebration"))
+            {
+                // Re-trigger victory if we somehow left the victory state
+                if (animator.GetBool("isVictory"))
+                {
+                    animator.SetBool("isVictory", false);
+                    yield return null; // Wait one frame
+                    animator.SetBool("isVictory", true);
+                    Debug.Log($"[MonsterManager] Re-triggered victory animation to ensure loop");
+                }
+            }
+        }
+    }
+
     // Getter methods
     public float GetCurrentStun() => currentStun;
     public float GetMaxStun() => maxStun;

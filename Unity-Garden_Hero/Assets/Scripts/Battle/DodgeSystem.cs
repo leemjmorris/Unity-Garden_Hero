@@ -185,7 +185,7 @@ public class DodgeSystem : MonoBehaviour
 
 
         //animator.SetTrigger("RollLeft");
-        targetRotation -= 90f;
+        targetRotation += 90f;
         StartDodge();
     }
 
@@ -195,7 +195,7 @@ public class DodgeSystem : MonoBehaviour
 
 
         //animator.SetTrigger("RollRight");
-        targetRotation += 90f;
+        targetRotation -= 90f;
         StartDodge();
     }
 

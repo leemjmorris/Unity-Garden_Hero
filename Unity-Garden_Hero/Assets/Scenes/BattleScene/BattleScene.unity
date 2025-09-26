@@ -2070,6 +2070,7 @@ MonoBehaviour:
   gameOverText: {fileID: 0}
   playerManager: {fileID: 1160532685}
   monsterManager: {fileID: 490134566}
+  victoryAnimationDelay: 10
 --- !u!4 &439153874
 Transform:
   m_ObjectHideFlags: 0
@@ -3790,13 +3791,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   missDamageSettings:
-    normalMissDamage: 10
-    specialMissDamage: 20
-    dodgeMissDamage: 0
-    longMissDamage: 15
-    longHeadMissDamage: 15
-    longTailMissDamage: 10
-    longHoldMissDamage: 5
+    normalMissDamage: 25
+    specialMissDamage: 25
+    dodgeMissDamage: 25
+    longMissDamage: 50
+    longHeadMissDamage: 25
+    longTailMissDamage: 25
+    longHoldMissDamage: 1
     defaultMissDamage: 10
   gameCanvas: {fileID: 856063639}
   notePrefab: {fileID: 5946952411847655366, guid: 54c662bbfaad7b142bfdfd793ff38514, type: 3}
@@ -4392,6 +4393,10 @@ MonoBehaviour:
   gameSystem: {fileID: 1003656420}
   shieldController: {fileID: 899923388}
   directionalShieldSystem: {fileID: 1717503336}
+  swipeThreshold: 50
+  playerManager: {fileID: 1160532685}
+  mapTransform: {fileID: 1783859416}
+  rotationSpeed: 90
 --- !u!4 &1092343931
 Transform:
   m_ObjectHideFlags: 0
@@ -4625,9 +4630,9 @@ MonoBehaviour:
   OnHealed:
     m_PersistentCalls:
       m_Calls: []
-  isGodMode: 1
+  isGodMode: 0
   enableInspectorTesting: 1
-  strengthLevel: 20
+  strengthLevel: 1
   dexterityLevel: 1
   constitutionLevel: 1
   dealingDamage: 0
@@ -4659,6 +4664,7 @@ MonoBehaviour:
     def: 0
     contribution: 
   statSummary: 
+  playerAnimator: {fileID: 0}
 --- !u!1 &1160841612
 GameObject:
   m_ObjectHideFlags: 0

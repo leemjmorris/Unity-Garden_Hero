@@ -15,6 +15,9 @@ public class GameOverManager : MonoBehaviour
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private MonsterManager monsterManager;
 
+    [Header("Victory Animation Settings")]
+    [SerializeField, Range(0f, 10f)] private float victoryAnimationDelay = 2.5f;
+
     void Start()
     {
         CreateGameOverUI();
@@ -157,12 +160,24 @@ public class GameOverManager : MonoBehaviour
 
     void OnPlayerDeath()
     {
-        ShowGameOver("GAME OVER");
+        // Don't show Game Over immediately, let Victory animation play first
+        StartCoroutine(DelayedGameOver("GAME OVER"));
     }
 
     void OnMonsterDeath()
     {
         ShowGameOver("VICTORY!");
+    }
+
+    System.Collections.IEnumerator DelayedGameOver(string message)
+    {
+        Debug.Log($"[GameOverManager] Player died, waiting {victoryAnimationDelay}s for Victory animation...");
+
+        // Wait for Victory animation to play
+        yield return new WaitForSeconds(victoryAnimationDelay);
+
+        Debug.Log("[GameOverManager] Showing Game Over after Victory animation");
+        ShowGameOver(message);
     }
 
     void ShowGameOver(string message)
@@ -230,11 +245,14 @@ public class GameOverManager : MonoBehaviour
     }
 
     // LMJ: Alternative method to check for player death if event doesn't work
+    private bool playerDeathHandled = false;
+
     void Update()
     {
-        // LMJ: Fallback check for player death
-        if (playerManager != null && !playerManager.IsAlive() && gameOverPanel != null && !gameOverPanel.activeInHierarchy)
+        // LMJ: Fallback check for player death (only trigger once)
+        if (playerManager != null && !playerManager.IsAlive() && !playerDeathHandled && gameOverPanel != null && !gameOverPanel.activeInHierarchy)
         {
+            playerDeathHandled = true;
             OnPlayerDeath();
         }
     }

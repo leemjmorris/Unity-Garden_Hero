@@ -581,19 +581,41 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void CheckMissedNotes()
     {
+        if (allNotes == null || allNotes.Count == 0) return;
+
         float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
 
         for (int i = allNotes.Count - 1; i >= 0; i--)
         {
+            // Safety check: ensure index is still valid
+            if (i >= allNotes.Count) continue;
+
             RhythmNote note = allNotes[i];
-            if (note == null || note.IsHit()) continue;
+            if (note == null || note.IsHit())
+            {
+                // Remove null or hit notes safely
+                if (i < allNotes.Count)
+                {
+                    allNotes.RemoveAt(i);
+                }
+                continue;
+            }
 
             if (currentGameTime > note.hitTime + missTolerance && !note.IsHolding())
             {
                 ProcessNoteDamage(note, JudgmentResult.Miss);
                 ShowJudgment(note.direction, JudgmentResult.Miss);
-                allNotes.RemoveAt(i);
-                Destroy(note.gameObject);
+
+                // Double-check index before removal
+                if (i < allNotes.Count && allNotes[i] == note)
+                {
+                    allNotes.RemoveAt(i);
+                }
+
+                if (note != null)
+                {
+                    Destroy(note.gameObject);
+                }
             }
         }
     }

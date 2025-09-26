@@ -35,6 +35,9 @@ public class PlayerManager : LivingEntity
     [Header("📈 Stat Summary")]
     [SerializeField] private string statSummary;
 
+    [Header("🎬 Animation")]
+    [SerializeField] private Animator playerAnimator;
+
     // LMJ: Previous values to detect changes
     private int prevStrengthLevel;
     private int prevDexterityLevel;
@@ -107,6 +110,12 @@ public class PlayerManager : LivingEntity
 
     void Start()
     {
+        // LMJ: Initialize Animator if not assigned
+        if (playerAnimator == null)
+        {
+            playerAnimator = GetComponent<Animator>();
+        }
+
         CalculateStats();
         UpdateRangeValues();
 
@@ -161,7 +170,42 @@ public class PlayerManager : LivingEntity
     // LMJ: Override OnDeath for player-specific death handling
     protected override void OnDeath()
     {
-        base.OnDeath(); // This will invoke OnDied event
+        Debug.Log("[PlayerManager] Player has been defeated!");
+        StartCoroutine(PlayerDeathSequence());
+    }
+
+    // LMJ: Coroutine to handle death sequence with victory animation
+    private System.Collections.IEnumerator PlayerDeathSequence()
+    {
+        // First, trigger monster victory animation
+        MonsterManager monsterManager = FindFirstObjectByType<MonsterManager>();
+        if (monsterManager != null)
+        {
+            monsterManager.PlayVictoryAnimation();
+            Debug.Log("[PlayerManager] Monster victory animation started");
+        }
+
+        // Stop all rhythm game elements immediately
+        RhythmGameSystem rhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
+        if (rhythmSystem != null)
+        {
+            rhythmSystem.ClearAllNotes();
+            rhythmSystem.enabled = false;
+        }
+
+        RhythmPatternManager patternManager = FindFirstObjectByType<RhythmPatternManager>();
+        if (patternManager != null)
+        {
+            patternManager.StopAllCoroutines();
+        }
+
+        // Wait one frame to ensure everything is set up
+        yield return null;
+
+        // Trigger the OnDied event for GameOverManager to start its delayed sequence
+        base.OnDeath(); // This will invoke OnDied event immediately, but GameOverManager will delay the UI
+
+        Debug.Log("[PlayerManager] OnDied event triggered, GameOverManager will handle the delay");
     }
 
     // LMJ: Called when inspector values change
@@ -423,6 +467,33 @@ public class PlayerManager : LivingEntity
         {
             Debug.Log($"God Mode Inspector: {isGodMode}");
             UpdateStatSummary();
+        }
+    }
+
+    // LMJ: Roll Animation Methods
+    public void PlayRollLeftAnimation()
+    {
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetTrigger("RollLeft");
+            Debug.Log("[PlayerManager] Playing RollLeft animation");
+        }
+        else
+        {
+            Debug.LogWarning("[PlayerManager] Player Animator not found!");
+        }
+    }
+
+    public void PlayRollRightAnimation()
+    {
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetTrigger("RollRight");
+            Debug.Log("[PlayerManager] Playing RollRight animation");
+        }
+        else
+        {
+            Debug.LogWarning("[PlayerManager] Player Animator not found!");
         }
     }
 }

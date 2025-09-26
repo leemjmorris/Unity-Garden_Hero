@@ -20,9 +20,27 @@ public class TouchInputManager : MonoBehaviour
     private bool isRightHolding = false;
     private bool isCenterHolding = false;
 
+    [Header("Swipe Settings")]
+    [SerializeField] private float swipeThreshold = 50f;
+    [SerializeField] private PlayerManager playerManager;
+    [SerializeField] private Transform mapTransform; // The map/camera that rotates
+    [SerializeField] private float rotationSpeed = 90f; // Degrees per rotation
+
+    // Swipe detection variables
+    private Vector2 startTouchPosition;
+    private Vector2 endTouchPosition;
+    private bool isTouching = false;
+    private bool isRotating = false;
+
     void Start()
     {
         SetupButtonEvents();
+
+        // LMJ: Initialize PlayerManager if not assigned
+        if (playerManager == null)
+        {
+            playerManager = PlayerManager.Instance;
+        }
     }
 
     void SetupButtonEvents()
@@ -274,6 +292,8 @@ public class TouchInputManager : MonoBehaviour
 
     void Update()
     {
+        HandleSwipeInput();
+
         if (shieldController != null)
         {
             if (!IsShieldBroken("Left"))
@@ -305,5 +325,86 @@ public class TouchInputManager : MonoBehaviour
     bool IsShieldBroken(string direction)
     {
         return directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction);
+    }
+
+    void HandleSwipeInput()
+    {
+        // Handle touch input for mobile
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+
+            if (touch.phase == TouchPhase.Began)
+            {
+                startTouchPosition = touch.position;
+                isTouching = true;
+            }
+            else if (touch.phase == TouchPhase.Ended && isTouching)
+            {
+                endTouchPosition = touch.position;
+                DetectSwipe();
+                isTouching = false;
+            }
+        }
+        // Handle mouse input for testing in editor
+        else
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                startTouchPosition = Input.mousePosition;
+                isTouching = true;
+            }
+            else if (Input.GetMouseButtonUp(0) && isTouching)
+            {
+                endTouchPosition = Input.mousePosition;
+                DetectSwipe();
+                isTouching = false;
+            }
+        }
+    }
+
+    void DetectSwipe()
+    {
+        Vector2 swipeDirection = endTouchPosition - startTouchPosition;
+        float swipeDistance = swipeDirection.magnitude;
+
+        if (swipeDistance < swipeThreshold)
+            return;
+
+        // Normalize the swipe direction
+        swipeDirection.Normalize();
+
+        // Check if it's a horizontal swipe (left to right or right to left)
+        if (Mathf.Abs(swipeDirection.x) > Mathf.Abs(swipeDirection.y))
+        {
+            if (swipeDirection.x > 0)
+            {
+                // Left to Right swipe - Roll Left
+                OnSwipeLeftToRight();
+            }
+            else
+            {
+                // Right to Left swipe - Roll Right
+                OnSwipeRightToLeft();
+            }
+        }
+    }
+
+    void OnSwipeLeftToRight()
+    {
+        Debug.Log("[TouchInputManager] Left to Right swipe detected - Rolling Left");
+        if (playerManager != null)
+        {
+            playerManager.PlayRollLeftAnimation();
+        }
+    }
+
+    void OnSwipeRightToLeft()
+    {
+        Debug.Log("[TouchInputManager] Right to Left swipe detected - Rolling Right");
+        if (playerManager != null)
+        {
+            playerManager.PlayRollRightAnimation();
+        }
     }
 }
