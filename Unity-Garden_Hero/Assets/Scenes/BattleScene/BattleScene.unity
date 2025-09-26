@@ -2211,8 +2211,8 @@ MonoBehaviour:
   level: 1
   attackPower: 10
   defense: 0
-  maxHealth: 1000000
-  currentHealth: 1000000
+  maxHealth: 20000
+  currentHealth: 20000
   OnDamageReceived:
     m_PersistentCalls:
       m_Calls: []
@@ -2228,9 +2228,9 @@ MonoBehaviour:
   monsterName: Wolf
   totalPhases: 3
   currentPhase: 1
-  maxStun: 50000
-  currentStun: 50000
-  phaseStunValues: 50c30000a0860100f0490200
+  maxStun: 250
+  currentStun: 250
+  phaseStunValues: fa000000fa000000fa000000
   stunObject: {fileID: 1077255869}
   OnStunBroken:
     m_PersistentCalls:
@@ -4423,10 +4423,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   patternJsonList:
-  - {fileID: 4900000, guid: 6633ee5f78b3f684aa0a65d9f6c0841d, type: 3}
-  - {fileID: 4900000, guid: 23d41277770f81449b73efc9f0050920, type: 3}
-  - {fileID: 4900000, guid: 5337b1eae6437224fb51f1c0fb775b4b, type: 3}
-  - {fileID: 4900000, guid: 0fda4fdeacf41a5428f834ca6edd6fa7, type: 3}
+  - {fileID: 4900000, guid: 6bed9f978ce4abd45bf8aa46ff5bc7e2, type: 3}
+  - {fileID: 4900000, guid: 90b515c0db8adcb45afa2f94432de674, type: 3}
+  - {fileID: 4900000, guid: f878e906ba463c54fbd3eaeb11c42101, type: 3}
+  - {fileID: 4900000, guid: ede1ac559d99b294188aaa24f3a88650, type: 3}
+  - {fileID: 4900000, guid: 0211e9c5676fb0249b64f2fe92ee1b7c, type: 3}
   gameSystem: {fileID: 1003656420}
   startDelay: 3
   lookAheadTime: 3
@@ -5637,6 +5638,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BossTypeWolf
       objectReference: {fileID: 0}
+    - target: {fileID: 5785497811915092149, guid: b5afe6d4d709463798131becb57c8317, type: 3}
+      propertyPath: m_AnimatePhysics
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5740,7 +5745,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentState: 0
   dealingTimeDuration: 10
-  touchDamageMultiplier: 1.5
+  touchDamageMultiplier: 200
   gameUICanvasGroup: {fileID: 856063643}
   dealingTimeUI: {fileID: 1924977961}
   dealingTimeTimerText: {fileID: 2056436305}

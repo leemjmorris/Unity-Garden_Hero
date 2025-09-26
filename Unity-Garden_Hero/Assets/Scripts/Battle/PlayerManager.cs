@@ -268,7 +268,7 @@ public class PlayerManager : MonoBehaviour
     // LMJ: Damage handling
     public void TakeDamage(int damage)
     {
-        if (isGodMode) return;
+        //if (isGodMode) return;
         
         CurrentHealth -= damage;
         Debug.Log($"[PlayerManager] Took {damage} damage. Health: {currentHealth}/{totalHP}");

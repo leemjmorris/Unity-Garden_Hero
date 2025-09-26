@@ -1,5 +1,5 @@
 {
-  "patternName": "wolf 4",
+  "patternName": "wolf_4",
   "totalDuration": 7.0,
   "perfectTolerance": 0.15,
   "goodTolerance": 0.3,
@@ -36,13 +36,6 @@
       "time": 2.75,
       "type": "Normal",
       "direction": "Right",
-      "duration": 0.0,
-      "snapValue": 0.25
-    },
-    {
-      "time": 3.25,
-      "type": "Normal",
-      "direction": "Up",
       "duration": 0.0,
       "snapValue": 0.25
     },
@@ -110,18 +103,32 @@
       "snapValue": 0.25
     },
     {
-      "time": 1.0,
-      "type": "Special",
-      "direction": "Left",
+      "time": 3.3,
+      "type": "Normal",
+      "direction": "Up",
       "duration": 0.0,
-      "snapValue": 0.5
+      "snapValue": 0.1
     },
     {
-      "time": 1.5,
-      "type": "Special",
-      "direction": "Right",
+      "time": 3.4,
+      "type": "Normal",
+      "direction": "Up",
       "duration": 0.0,
-      "snapValue": 0.5
+      "snapValue": 0.1
+    },
+    {
+      "time": 1.0,
+      "type": "Charged",
+      "direction": "Left",
+      "duration": 0.399999976,
+      "snapValue": 0.1
+    },
+    {
+      "time": 1.6,
+      "type": "Charged",
+      "direction": "Right",
+      "duration": 0.399999976,
+      "snapValue": 0.1
     }
   ]
 }

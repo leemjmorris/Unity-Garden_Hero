@@ -1,66 +1,10 @@
 {
-  "patternName": "wolf 2",
+  "patternName": "wolf _2",
   "totalDuration": 7.0,
   "perfectTolerance": 0.15,
   "goodTolerance": 0.3,
   "notes": [
     {
-      "time": 2.0,
-      "type": "Special",
-      "direction": "Left",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
-      "time": 1.0,
-      "type": "Special",
-      "direction": "Left",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
-      "time": 1.0,
-      "type": "Special",
-      "direction": "Right",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
-      "time": 2.0,
-      "type": "Special",
-      "direction": "Right",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
-      "time": 4.0,
-      "type": "Special",
-      "direction": "Right",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
-      "time": 4.0,
-      "type": "Special",
-      "direction": "Left",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
-      "time": 5.0,
-      "type": "Special",
-      "direction": "Left",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
-      "time": 5.0,
-      "type": "Special",
-      "direction": "Right",
-      "duration": 0.0,
-      "snapValue": 1.0
-    },
-    {
       "time": 6.0,
       "type": "Defense",
       "direction": "Left",
@@ -80,13 +24,62 @@
       "direction": "Up",
       "duration": 0.0,
       "snapValue": 1.0
+    },
+    {
+      "time": 1.0,
+      "type": "Charged",
+      "direction": "Right",
+      "duration": 2.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 1.0,
+      "type": "Charged",
+      "direction": "Left",
+      "duration": 1.60000014,
+      "snapValue": 0.1
+    },
+    {
+      "time": 2.7,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.1
     },
     {
       "time": 3.0,
-      "type": "Charged",
+      "type": "Normal",
       "direction": "Up",
-      "duration": 1.0,
-      "snapValue": 0.25
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 3.3,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 3.60000014,
+      "type": "Normal",
+      "direction": "Up",
+      "duration": 0.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 4.0,
+      "type": "Charged",
+      "direction": "Left",
+      "duration": 2.0,
+      "snapValue": 0.1
+    },
+    {
+      "time": 4.0,
+      "type": "Charged",
+      "direction": "Right",
+      "duration": 2.0,
+      "snapValue": 0.1
     }
   ]
 }
