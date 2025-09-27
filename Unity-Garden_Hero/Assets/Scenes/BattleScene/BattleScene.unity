@@ -990,6 +990,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: LeftShield
       objectReference: {fileID: 0}
+    - target: {fileID: 1331669195327926360, guid: 84ce09f249844cb6801664556bc5d965, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1815191165774441186, guid: 84ce09f249844cb6801664556bc5d965, type: 3}
       propertyPath: m_LocalScale.x
       value: 3.5
@@ -1935,6 +1939,12 @@ MonoBehaviour:
   mapTransform: {fileID: 1783859416}
   rotationSpeed: 10
   directionalShieldSystem: {fileID: 1717503336}
+  OnDodgeLeft:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDodgeRight:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &423770218
 Transform:
   m_ObjectHideFlags: 0
@@ -2244,6 +2254,7 @@ MonoBehaviour:
   defense: 0
   maxHealth: 20000
   currentHealth: 20000
+  isDead: 0
   OnDamageReceived:
     m_PersistentCalls:
       m_Calls: []
@@ -4009,6 +4020,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FrontShield
       objectReference: {fileID: 0}
+    - target: {fileID: 1331669195327926360, guid: 84ce09f249844cb6801664556bc5d965, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1815191165774441186, guid: 84ce09f249844cb6801664556bc5d965, type: 3}
       propertyPath: m_LocalScale.x
       value: 3.5
@@ -4621,6 +4636,7 @@ MonoBehaviour:
   defense: 0
   maxHealth: 100
   currentHealth: 0
+  isDead: 0
   OnDamageReceived:
     m_PersistentCalls:
       m_Calls: []
@@ -4905,6 +4921,10 @@ PrefabInstance:
     - target: {fileID: 1331669195327926360, guid: 84ce09f249844cb6801664556bc5d965, type: 3}
       propertyPath: m_Name
       value: RightShield
+      objectReference: {fileID: 0}
+    - target: {fileID: 1331669195327926360, guid: 84ce09f249844cb6801664556bc5d965, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1815191165774441186, guid: 84ce09f249844cb6801664556bc5d965, type: 3}
       propertyPath: m_LocalScale.x
@@ -5928,6 +5948,10 @@ PrefabInstance:
     - target: {fileID: 8735403254467785365, guid: 9e89634fe9474125ab42aefdc22a787d, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8912693915797022553, guid: 9e89634fe9474125ab42aefdc22a787d, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8951615198464756160, guid: 9e89634fe9474125ab42aefdc22a787d, type: 3}
       propertyPath: m_LocalScale.x
@@ -7568,8 +7592,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -60, y: 145}
-  m_SizeDelta: {x: 390, y: 359.77}
+  m_AnchoredPosition: {x: -74, y: 173}
+  m_SizeDelta: {x: 239.537, y: 210.627}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &1798819340
 MonoBehaviour:

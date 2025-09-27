@@ -41,6 +41,8 @@ public class TouchInputManager : MonoBehaviour
         {
             playerManager = PlayerManager.Instance;
         }
+
+        // LMJ: Shield initialization is handled by ShieldController.Awake()
     }
 
     void SetupButtonEvents()
@@ -133,6 +135,12 @@ public class TouchInputManager : MonoBehaviour
             !(directionalShieldSystem != null && directionalShieldSystem.IsShieldDisabled(direction)))
         {
             ShowShield(direction, true);
+        }
+
+        // LMJ: Play defence animation when button is pressed
+        if (playerManager != null)
+        {
+            playerManager.PlayDefenceAnimation();
         }
 
         // LMJ: Only animate the specific button that was pressed
@@ -293,32 +301,40 @@ public class TouchInputManager : MonoBehaviour
     void Update()
     {
         HandleSwipeInput();
+        HandleKeyboardInput();
+    }
 
-        if (shieldController != null)
+    void HandleKeyboardInput()
+    {
+        // LMJ: Handle keyboard input for PC testing - same as button touches
+        // A key for Left button
+        if (Input.GetKeyDown(KeyCode.A))
         {
-            if (!IsShieldBroken("Left"))
-            {
-                if (Input.GetKey(KeyCode.A))
-                    shieldController.ShowLeftShield(true);
-                else
-                    shieldController.ShowLeftShield(false);
-            }
+            OnButtonPress("Left");
+        }
+        if (Input.GetKeyUp(KeyCode.A))
+        {
+            OnButtonRelease("Left");
+        }
 
-            if (!IsShieldBroken("Right"))
-            {
-                if (Input.GetKey(KeyCode.D))
-                    shieldController.ShowRightShield(true);
-                else
-                    shieldController.ShowRightShield(false);
-            }
+        // D key for Right button
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            OnButtonPress("Right");
+        }
+        if (Input.GetKeyUp(KeyCode.D))
+        {
+            OnButtonRelease("Right");
+        }
 
-            if (!IsShieldBroken("Up"))
-            {
-                if (Input.GetKey(KeyCode.W))
-                    shieldController.ShowFrontShield(true);
-                else
-                    shieldController.ShowFrontShield(false);
-            }
+        // W key for Up/Center button
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            OnButtonPress("Up");
+        }
+        if (Input.GetKeyUp(KeyCode.W))
+        {
+            OnButtonRelease("Up");
         }
     }
 
@@ -392,19 +408,13 @@ public class TouchInputManager : MonoBehaviour
 
     void OnSwipeLeftToRight()
     {
-        Debug.Log("[TouchInputManager] Left to Right swipe detected - Rolling Left");
-        if (playerManager != null)
-        {
-            playerManager.PlayRollLeftAnimation();
-        }
+        Debug.Log("[TouchInputManager] Left to Right swipe detected");
+        // Animation is now handled by DodgeSystem events
     }
 
     void OnSwipeRightToLeft()
     {
-        Debug.Log("[TouchInputManager] Right to Left swipe detected - Rolling Right");
-        if (playerManager != null)
-        {
-            playerManager.PlayRollRightAnimation();
-        }
+        Debug.Log("[TouchInputManager] Right to Left swipe detected");
+        // Animation is now handled by DodgeSystem events
     }
 }

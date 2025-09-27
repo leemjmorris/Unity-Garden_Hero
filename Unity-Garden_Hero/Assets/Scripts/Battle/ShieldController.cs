@@ -16,15 +16,25 @@ public class ShieldController : MonoBehaviour
     [SerializeField] private TouchInputManager touchInputManager;
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
+    void Awake()
+    {
+        // LMJ: Hide shields immediately on awake - single point of initialization
+        HideAllShields();
+    }
+
     void Start()
+    {
+        // LMJ: Only handle particle effects here, shield visibility is handled in Awake()
+        if (rightShieldBrokenEffect != null) rightShieldBrokenEffect.Stop();
+        if (leftShieldBrokenEffect != null) leftShieldBrokenEffect.Stop();
+        if (frontShieldBrokenEffect != null) frontShieldBrokenEffect.Stop();
+    }
+
+    void HideAllShields()
     {
         if (leftShield != null) leftShield.SetActive(false);
         if (rightShield != null) rightShield.SetActive(false);
         if (frontShield != null) frontShield.SetActive(false);
-
-        if (rightShieldBrokenEffect != null) rightShieldBrokenEffect.Stop();
-        if (leftShieldBrokenEffect != null) leftShieldBrokenEffect.Stop();
-        if (frontShieldBrokenEffect != null) frontShieldBrokenEffect.Stop();
     }
 
     public void ShowLeftShield(bool show)

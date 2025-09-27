@@ -268,13 +268,8 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     public void CheckInputs()
     {
-        if (Input.GetKeyDown(KeyCode.A)) CheckHitWithLongNote("Left");
-        if (Input.GetKeyDown(KeyCode.D)) CheckHitWithLongNote("Right");
-        if (Input.GetKeyDown(KeyCode.W)) CheckHitWithLongNote("Up");
-
-        if (Input.GetKeyUp(KeyCode.A)) ReleaseLongNote("Left");
-        if (Input.GetKeyUp(KeyCode.D)) ReleaseLongNote("Right");
-        if (Input.GetKeyUp(KeyCode.W)) ReleaseLongNote("Up");
+        // LMJ: Keyboard input is now handled by TouchInputManager
+        // This prevents duplicate input processing
     }
 
     public void CheckHit(string direction)

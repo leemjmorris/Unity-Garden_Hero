@@ -102,6 +102,9 @@ public class GameManager : MonoBehaviour
     {
         if (!isDealingTimeActive || monsterManager == null || playerManager == null) return;
 
+        // LMJ: Play Player Attack Animation
+        playerManager.PlayAttackAnimation();
+
         // LMJ: Calculate touch damage based on player attack power
         int touchDamage = Mathf.RoundToInt(playerManager.GetAttackPower() * touchDamageMultiplier);
 

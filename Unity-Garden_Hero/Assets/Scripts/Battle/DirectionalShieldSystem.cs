@@ -115,7 +115,8 @@ public class DirectionalShieldSystem : MonoBehaviour
             if (shieldVisuals[i] != null)
             {
                 shieldRenderers[i] = shieldVisuals[i].GetComponent<Renderer>();
-                shieldVisuals[i].SetActive(true);
+                // Don't activate shields at start - they should only show when player presses buttons
+                shieldVisuals[i].SetActive(false);
             }
             else
             {

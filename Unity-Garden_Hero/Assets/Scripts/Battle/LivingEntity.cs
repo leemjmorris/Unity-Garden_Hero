@@ -26,6 +26,7 @@ public abstract class LivingEntity : MonoBehaviour
     [SerializeField] protected int defense = 0;
     [SerializeField] public int maxHealth = 100;
     [SerializeField] public int currentHealth = 100;
+    [SerializeField] protected bool isDead = false;
     //[SerializeField] public Animator animator;
     
     [Header("Events")]
@@ -78,9 +79,11 @@ public abstract class LivingEntity : MonoBehaviour
     {
         currentHealth = Mathf.Max(0, currentHealth - damage);
         OnHealthChanged?.Invoke(currentHealth);
-        
-        if (currentHealth <= 0)
+
+        // Only call OnDeath once when entity dies
+        if (currentHealth <= 0 && !isDead)
         {
+            isDead = true;
             OnDeath();
         }
     }
@@ -103,7 +106,7 @@ public abstract class LivingEntity : MonoBehaviour
     
     public bool IsAlive()
     {
-        return currentHealth > 0;
+        return currentHealth > 0 && !isDead;
     }
     
     public float GetHealthPercentage()

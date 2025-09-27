@@ -38,6 +38,9 @@ public class PlayerManager : LivingEntity
     [Header("🎬 Animation")]
     [SerializeField] private Animator playerAnimator;
 
+    [Header("🎮 Dodge System")]
+    private DodgeSystem dodgeSystem;
+
     // LMJ: Previous values to detect changes
     private int prevStrengthLevel;
     private int prevDexterityLevel;
@@ -116,6 +119,15 @@ public class PlayerManager : LivingEntity
             playerAnimator = GetComponent<Animator>();
         }
 
+        // LMJ: Find DodgeSystem and subscribe to events
+        dodgeSystem = FindFirstObjectByType<DodgeSystem>();
+        if (dodgeSystem != null)
+        {
+            dodgeSystem.OnDodgeLeft.AddListener(PlayRollLeftAnimation);
+            dodgeSystem.OnDodgeRight.AddListener(PlayRollRightAnimation);
+            Debug.Log("[PlayerManager] Subscribed to DodgeSystem events");
+        }
+
         CalculateStats();
         UpdateRangeValues();
 
@@ -138,54 +150,54 @@ public class PlayerManager : LivingEntity
     // LMJ: Override OnDamage to add God Mode protection
     public override void OnDamage(DamageInfo damageInfo)
     {
-        Debug.Log($"[PlayerManager] OnDamage(DamageInfo) called - Damage: {damageInfo.baseDamage}, Type: {damageInfo.noteType}, God Mode: {isGodMode}");
+        if (isGodMode) return;
 
-        if (isGodMode)
-        {
-            Debug.Log("[PlayerManager] God Mode - Damage ignored");
-            return;
-        }
+        // Don't take damage if already dead
+        if (!IsAlive()) return;
 
-        Debug.Log($"[PlayerManager] Before damage - Current HP: {currentHealth}/{maxHealth}");
         base.OnDamage(damageInfo);
-        Debug.Log($"[PlayerManager] After damage - Current HP: {currentHealth}/{maxHealth}");
+
+        // Only play GetHit animation if still alive after damage
+        if (IsAlive())
+        {
+            PlayGetHitAnimation();
+        }
     }
 
     public override void OnDamage(int simpleDamage)
     {
-        Debug.Log($"[PlayerManager] OnDamage(int) called - Damage: {simpleDamage}, God Mode: {isGodMode}");
+        if (isGodMode) return;
 
-        if (isGodMode)
-        {
-            Debug.Log("[PlayerManager] God Mode - Damage ignored");
-            return;
-        }
+        // Don't take damage if already dead
+        if (!IsAlive()) return;
 
-        Debug.Log($"[PlayerManager] Before simple damage - Current HP: {currentHealth}/{maxHealth}");
         base.OnDamage(simpleDamage);
-        Debug.Log($"[PlayerManager] After simple damage - Current HP: {currentHealth}/{maxHealth}");
+
+        // Only play GetHit animation if still alive after damage
+        if (IsAlive())
+        {
+            PlayGetHitAnimation();
+        }
     }
 
 
     // LMJ: Override OnDeath for player-specific death handling
     protected override void OnDeath()
     {
-        Debug.Log("[PlayerManager] Player has been defeated!");
+        // Disable dodge system immediately to prevent input interference
+        if (dodgeSystem != null)
+        {
+            dodgeSystem.SetDodgeSystemEnabled(false);
+        }
+
+        PlayDeathAnimation();
         StartCoroutine(PlayerDeathSequence());
     }
 
     // LMJ: Coroutine to handle death sequence with victory animation
     private System.Collections.IEnumerator PlayerDeathSequence()
     {
-        // First, trigger monster victory animation
-        MonsterManager monsterManager = FindFirstObjectByType<MonsterManager>();
-        if (monsterManager != null)
-        {
-            monsterManager.PlayVictoryAnimation();
-            Debug.Log("[PlayerManager] Monster victory animation started");
-        }
-
-        // Stop all rhythm game elements immediately
+        // Stop all rhythm game elements immediately to prevent further damage
         RhythmGameSystem rhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
         if (rhythmSystem != null)
         {
@@ -199,13 +211,18 @@ public class PlayerManager : LivingEntity
             patternManager.StopAllCoroutines();
         }
 
+        // Trigger monster victory animation immediately with player death
+        MonsterManager monsterManager = FindFirstObjectByType<MonsterManager>();
+        if (monsterManager != null)
+        {
+            monsterManager.PlayVictoryAnimation();
+        }
+
         // Wait one frame to ensure everything is set up
         yield return null;
 
         // Trigger the OnDied event for GameOverManager to start its delayed sequence
         base.OnDeath(); // This will invoke OnDied event immediately, but GameOverManager will delay the UI
-
-        Debug.Log("[PlayerManager] OnDied event triggered, GameOverManager will handle the delay");
     }
 
     // LMJ: Called when inspector values change
@@ -473,10 +490,104 @@ public class PlayerManager : LivingEntity
     // LMJ: Roll Animation Methods
     public void PlayRollLeftAnimation()
     {
+        // Don't roll if player is dead
+        if (!IsAlive()) return;
+
         if (playerAnimator != null)
         {
             playerAnimator.SetTrigger("RollLeft");
-            Debug.Log("[PlayerManager] Playing RollLeft animation");
+        }
+    }
+
+    public void PlayRollRightAnimation()
+    {
+        // Don't roll if player is dead
+        if (!IsAlive()) return;
+
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetTrigger("RollRight");
+        }
+    }
+
+    // LMJ: Defence Animation Method
+    public void PlayDefenceAnimation()
+    {
+        // Don't defend if player is dead
+        if (!IsAlive()) return;
+
+        if (playerAnimator != null)
+        {
+            // Reset the trigger first to interrupt any ongoing Defence animation
+            playerAnimator.ResetTrigger("Defence");
+            // Then set it again to restart the animation from the beginning
+            playerAnimator.SetTrigger("Defence");
+        }
+    }
+
+    // LMJ: GetHit Animation Method
+    public void PlayGetHitAnimation()
+    {
+        if (playerAnimator != null)
+        {
+            // Reset the trigger first to interrupt any ongoing GetHit animation
+            playerAnimator.ResetTrigger("GetHit");
+
+            // Randomly choose between GetHit01 and GetHit02
+            int randomHitType = Random.Range(0, 2); // 0 or 1
+            playerAnimator.SetInteger("hitType", randomHitType);
+
+            // Then set it again to restart the animation from the beginning
+            playerAnimator.SetTrigger("GetHit");
+        }
+    }
+
+    // LMJ: Death Animation Method
+    public void PlayDeathAnimation()
+    {
+        Debug.Log("[PlayerManager] PlayDeathAnimation() called");
+
+        if (playerAnimator != null)
+        {
+            // Check current animator state
+            AnimatorStateInfo currentState = playerAnimator.GetCurrentAnimatorStateInfo(0);
+            Debug.Log($"[PlayerManager] Current animator state: {currentState.fullPathHash} (length: {currentState.length})");
+
+            // Randomly choose between Die01 (0) and Die02 (1)
+            int randomDeathType = Random.Range(0, 2); // 0 or 1
+            Debug.Log($"[PlayerManager] Setting deathType to: {randomDeathType}");
+
+            // Check if parameters exist
+            AnimatorControllerParameter[] parameters = playerAnimator.parameters;
+            bool hasRandomOnDeath = false;
+            bool hasDeathType = false;
+
+            foreach (var param in parameters)
+            {
+                if (param.name == "RandomOnDeath")
+                {
+                    hasRandomOnDeath = true;
+                    Debug.Log($"[PlayerManager] Found RandomOnDeath parameter - Type: {param.type}");
+                }
+                if (param.name == "deathType")
+                {
+                    hasDeathType = true;
+                    Debug.Log($"[PlayerManager] Found deathType parameter - Type: {param.type}");
+                }
+            }
+
+            if (!hasRandomOnDeath)
+                Debug.LogError("[PlayerManager] RandomOnDeath parameter not found in Animator!");
+            if (!hasDeathType)
+                Debug.LogError("[PlayerManager] deathType parameter not found in Animator!");
+
+            playerAnimator.SetInteger("deathType", randomDeathType);
+            playerAnimator.SetTrigger("RandomOnDeath");
+
+            Debug.Log($"[PlayerManager] Death animation triggered - Type: {randomDeathType}");
+
+            // Check animator state after setting trigger
+            StartCoroutine(CheckAnimatorStateAfterTrigger());
         }
         else
         {
@@ -484,16 +595,56 @@ public class PlayerManager : LivingEntity
         }
     }
 
-    public void PlayRollRightAnimation()
+    private System.Collections.IEnumerator CheckAnimatorStateAfterTrigger()
     {
+        yield return null; // Wait one frame
+
         if (playerAnimator != null)
         {
-            playerAnimator.SetTrigger("RollRight");
-            Debug.Log("[PlayerManager] Playing RollRight animation");
+            AnimatorStateInfo stateAfter = playerAnimator.GetCurrentAnimatorStateInfo(0);
+            Debug.Log($"[PlayerManager] Animator state after trigger: {stateAfter.fullPathHash}");
+
+            // Check if we're in any die state
+            if (stateAfter.IsName("Die01_SwordAndShield") || stateAfter.IsName("Die02_SwordAndShield"))
+            {
+                Debug.Log("[PlayerManager] SUCCESS: Death animation is playing!");
+            }
+            else
+            {
+                Debug.LogWarning($"[PlayerManager] PROBLEM: Not in death state. Current state hash: {stateAfter.fullPathHash}");
+            }
         }
-        else
+    }
+
+    // LMJ: Attack Animation Method for DealingTime
+    public void PlayAttackAnimation()
+    {
+        // Don't attack if player is dead
+        if (!IsAlive()) return;
+
+        if (playerAnimator != null)
         {
-            Debug.LogWarning("[PlayerManager] Player Animator not found!");
+            // Reset the trigger first to interrupt any ongoing Attack animation
+            playerAnimator.ResetTrigger("TriggerRandomAtt");
+
+            // Randomly choose between Attack01 (0), Attack02 (1), and Attack03 (2)
+            int randomAttackType = Random.Range(0, 3); // 0, 1, or 2
+            playerAnimator.SetInteger("RandomAtt", randomAttackType);
+
+            // Then set it again to restart the animation from the beginning
+            playerAnimator.SetTrigger("TriggerRandomAtt");
+
+            Debug.Log($"[PlayerManager] Attack animation triggered - Type: {randomAttackType}");
+        }
+    }
+
+    // LMJ: Clean up event subscriptions
+    void OnDestroy()
+    {
+        if (dodgeSystem != null)
+        {
+            dodgeSystem.OnDodgeLeft.RemoveListener(PlayRollLeftAnimation);
+            dodgeSystem.OnDodgeRight.RemoveListener(PlayRollRightAnimation);
         }
     }
 }

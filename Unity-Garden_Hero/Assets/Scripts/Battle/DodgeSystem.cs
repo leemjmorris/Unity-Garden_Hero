@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class DodgeSystem : MonoBehaviour
 {
@@ -8,6 +9,9 @@ public class DodgeSystem : MonoBehaviour
     [SerializeField] private float minSwipeDistance = 50f;
     [SerializeField] private float maxSwipeTime = 1f;
 
+    [Header("System Control")]
+    private bool isDodgeSystemEnabled = true;
+
     [Header("Rotation Settings")]
     [SerializeField] private Transform mapTransform;
     [SerializeField] private float rotationSpeed = 2f;
@@ -15,8 +19,9 @@ public class DodgeSystem : MonoBehaviour
     [Header("Shield System")]
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
-    //[Header("Animator")]
-    //[SerializeField] protected Animator animator;
+    [Header("Dodge Events")]
+    public UnityEvent OnDodgeLeft;
+    public UnityEvent OnDodgeRight;
 
     // [Header("Debug")]
     // [SerializeField] private bool showInputDebug = false;
@@ -45,6 +50,9 @@ public class DodgeSystem : MonoBehaviour
 
     void HandleInput()
     {
+        // Don't handle any input if dodge system is disabled
+        if (!isDodgeSystemEnabled) return;
+
         if (enableSwipeInput)
             HandleSwipeInput();
 
@@ -138,11 +146,13 @@ public class DodgeSystem : MonoBehaviour
                 //LMJ: Horizontal swipe
                 if (swipeDirection.x > 0)
                 {
-                    DodgeRight();
+                    // Left to Right swipe -> DodgeLeft
+                    DodgeLeft();
                 }
                 else
                 {
-                    DodgeLeft();
+                    // Right to Left swipe -> DodgeRight
+                    DodgeRight();
                 }
             }
         }
@@ -181,21 +191,25 @@ public class DodgeSystem : MonoBehaviour
 
     public void DodgeLeft()
     {
+        if (!isDodgeSystemEnabled) return;
         if (isDodgeActive && isRotating) return;
 
+        // Invoke the dodge left event
+        OnDodgeLeft?.Invoke();
 
-        //animator.SetTrigger("RollLeft");
-        targetRotation += 90f;
+        targetRotation -= 90f;  // Counter-clockwise rotation
         StartDodge();
     }
 
     public void DodgeRight()
     {
+        if (!isDodgeSystemEnabled) return;
         if (isDodgeActive && isRotating) return;
 
+        // Invoke the dodge right event
+        OnDodgeRight?.Invoke();
 
-        //animator.SetTrigger("RollRight");
-        targetRotation -= 90f;
+        targetRotation += 90f;  // Clockwise rotation
         StartDodge();
     }
 
@@ -268,5 +282,23 @@ public class DodgeSystem : MonoBehaviour
     public void SetSwipeTime(float time)
     {
         maxSwipeTime = time;
+    }
+
+    // LMJ: System enable/disable methods
+    public void SetDodgeSystemEnabled(bool enabled)
+    {
+        isDodgeSystemEnabled = enabled;
+
+        if (!enabled)
+        {
+            // Stop any ongoing rotation
+            isRotating = false;
+            isDodgeActive = false;
+        }
+    }
+
+    public bool IsDodgeSystemEnabled()
+    {
+        return isDodgeSystemEnabled;
     }
 }
