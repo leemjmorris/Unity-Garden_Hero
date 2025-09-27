@@ -317,14 +317,20 @@ public class MonsterManager : LivingEntity
 
     public void TakeDealingTimeDamage(int damage)
     {
-        if (currentStun > 0)
+        // During DealingTime, we should always be able to deal damage
+        // Remove the stun check since DealingTime means stun is broken
+
+        Debug.Log($"[MonsterManager] TakeDealingTimeDamage called - Damage: {damage}, IsAlive: {IsAlive()}, isDead: {isDead}, Phase: {currentPhaseIndex + 1}");
+
+        // Force alive state if needed for DealingTime
+        if (isDead && currentHealth > 0)
         {
-            Debug.LogWarning("Cannot deal direct damage while stun is active!");
-            return;
+            Debug.LogWarning($"[MonsterManager] Monster marked as dead but has HP! Resetting dead flag. HP: {currentHealth}/{maxHealth}");
+            isDead = false;
         }
 
         OnDamage(damage);
-        Debug.Log($"{monsterName} takes {damage} direct damage! Health: {currentHealth}/{maxHealth}");
+        Debug.Log($"{monsterName} takes {damage} direct damage! Health: {currentHealth}/{maxHealth}, Phase: {currentPhaseIndex + 1}/{totalPhases}");
     }
 
     public void ResetStun()
@@ -364,6 +370,44 @@ public class MonsterManager : LivingEntity
         // LMJ: Stop game elements like note generation
         StopGameElements();
 
+        // LMJ: Trigger player victory animation when monster dies on final phase
+        PlayerManager player = FindFirstObjectByType<PlayerManager>();
+        float playerVictoryAnimationLength = 0f;
+
+        if (player != null && player.IsAlive())
+        {
+            Debug.Log("[MonsterManager] Monster defeated on final phase - triggering player victory!");
+            player.PlayVictoryAnimation();
+
+            // Disable dodge system to prevent input during victory
+            DodgeSystem dodgeSystem = FindFirstObjectByType<DodgeSystem>();
+            if (dodgeSystem != null)
+            {
+                dodgeSystem.SetDodgeSystemEnabled(false);
+            }
+
+            // Get player victory animation length
+            if (player.GetComponent<Animator>() != null)
+            {
+                yield return null; // Wait one frame for animation to start
+
+                AnimatorStateInfo playerStateInfo = player.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0);
+                if (playerStateInfo.IsName("Victory") || playerStateInfo.IsName("Victory_SwordAndShield"))
+                {
+                    playerVictoryAnimationLength = playerStateInfo.length;
+                    Debug.Log($"[MonsterManager] Player victory animation length: {playerVictoryAnimationLength}");
+                }
+                else
+                {
+                    playerVictoryAnimationLength = 2.5f; // Fallback duration
+                }
+            }
+            else
+            {
+                playerVictoryAnimationLength = 2.5f; // Fallback duration
+            }
+        }
+
         // LMJ: Trigger death animation
         if (animator != null)
         {
@@ -389,9 +433,17 @@ public class MonsterManager : LivingEntity
             yield return new WaitForSeconds(2f);
         }
 
-        // LMJ: Trigger GameOver through event
+        // LMJ: Wait for player victory animation to complete before showing UI
+        if (playerVictoryAnimationLength > 0f)
+        {
+            Debug.Log($"[MonsterManager] Waiting for player victory animation to complete ({playerVictoryAnimationLength}s)");
+            yield return new WaitForSeconds(playerVictoryAnimationLength + 0.5f); // Small buffer
+        }
+
+        // LMJ: Trigger GameOver through event (will show Victory UI)
         if (OnDied != null)
         {
+            Debug.Log("[MonsterManager] Triggering OnDied event for Victory UI");
             OnDied.Invoke();
         }
 
@@ -412,16 +464,58 @@ public class MonsterManager : LivingEntity
         currentPhaseIndex++;
         LoadCurrentBossData();
 
+        // Check if we're currently in DealingTime
+        bool isDealingTime = gameManager != null && gameManager.IsDealingTimeActive();
+
+        // IMPORTANT: Reset dead flag to allow the new phase to take damage
+        isDead = false;
+
+        // LMJ: Clear any existing notes when transitioning phases
+        RhythmGameSystem rhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
+        if (rhythmSystem != null)
+        {
+            rhythmSystem.ClearAllNotes();
+            Debug.Log($"[MonsterManager] Cleared all notes for phase transition");
+        }
+
         if (csvDataLoaded && currentBossData != null)
         {
+            // Save old max values before initializing
+            float oldMaxHP = maxHealth;
+
             InitializeFromCSV();
-            Debug.Log($"{monsterName} advanced to Phase {currentPhaseIndex + 1}!");
+
+            // HP is fully restored by Initialize, currentHealth = maxHealth
+            Debug.Log($"{monsterName} advanced to Phase {currentPhaseIndex + 1}! HP restored to {currentHealth}/{maxHealth}, isDead reset to false");
         }
         else
         {
             // Fallback phase advancement
             Initialize(level + 1, attackPower + 5, defense + 1, maxHealth + 20);
             ResetStun();
+        }
+
+        // If we're in DealingTime, keep stun at 0 temporarily
+        // Otherwise, stun is already at max from InitializeFromCSV
+        if (isDealingTime)
+        {
+            currentStun = 0;
+            UpdateStunVisual();
+
+            // Keep dizzy animation active for new phase
+            if (animator != null)
+            {
+                animator.SetBool("isDealingTime", true);
+            }
+
+            Debug.Log($"[MonsterManager] Phase advanced during DealingTime - temporarily keeping stun at 0");
+        }
+        else
+        {
+            // Make sure stun is at max and visual is updated
+            OnStunChanged?.Invoke(currentStun);
+            UpdateStunVisual();
+            Debug.Log($"[MonsterManager] Phase advanced - Stun restored to {currentStun}/{maxStun}");
         }
 
         // Restart attack animations for new phase
@@ -510,7 +604,7 @@ public class MonsterManager : LivingEntity
         if (animator != null)
         {
             animator.SetBool("isDealingTime", true);
-            Debug.Log("[MonsterManager] Starting Dizzy animation (isDealingTime = true)");
+            Debug.Log($"[MonsterManager] Starting Dizzy animation - Phase: {currentPhaseIndex + 1}/{totalPhases}, Stun: {currentStun}/{maxStun}, HP: {currentHealth}/{maxHealth}");
         }
     }
 

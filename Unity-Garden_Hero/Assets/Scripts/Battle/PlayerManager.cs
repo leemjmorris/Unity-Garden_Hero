@@ -638,6 +638,46 @@ public class PlayerManager : LivingEntity
         }
     }
 
+    // LMJ: Victory Animation Method
+    public void PlayVictoryAnimation()
+    {
+        Debug.Log("[PlayerManager] PlayVictoryAnimation() called");
+
+        if (playerAnimator != null)
+        {
+            // Set Victory bool to true to start the victory animation
+            playerAnimator.SetBool("Victory", true);
+            Debug.Log("[PlayerManager] Victory animation triggered");
+
+            // Start coroutine to handle Victory to Dance transition
+            StartCoroutine(VictoryToDanceSequence());
+        }
+    }
+
+    private System.Collections.IEnumerator VictoryToDanceSequence()
+    {
+        // Wait for one frame to ensure animation has started
+        yield return null;
+
+        // Get the victory animation state info
+        AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+
+        // Wait for the animator to enter Victory state
+        while (!stateInfo.IsName("Victory") && !stateInfo.IsName("Victory_SwordAndShield"))
+        {
+            yield return null;
+            stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+        }
+
+        Debug.Log("[PlayerManager] Victory animation is playing");
+
+        // Wait for the Victory animation to complete (play once)
+        yield return new WaitForSeconds(stateInfo.length);
+
+        Debug.Log("[PlayerManager] Victory animation completed, looping Dance animation");
+        // Victory animation will automatically transition to Dance loop in the Animator
+    }
+
     // LMJ: Clean up event subscriptions
     void OnDestroy()
     {

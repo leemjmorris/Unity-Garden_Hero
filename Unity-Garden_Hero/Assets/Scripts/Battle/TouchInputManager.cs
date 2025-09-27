@@ -23,14 +23,11 @@ public class TouchInputManager : MonoBehaviour
     [Header("Swipe Settings")]
     [SerializeField] private float swipeThreshold = 50f;
     [SerializeField] private PlayerManager playerManager;
-    [SerializeField] private Transform mapTransform; // The map/camera that rotates
-    [SerializeField] private float rotationSpeed = 90f; // Degrees per rotation
 
     // Swipe detection variables
     private Vector2 startTouchPosition;
     private Vector2 endTouchPosition;
     private bool isTouching = false;
-    private bool isRotating = false;
 
     void Start()
     {

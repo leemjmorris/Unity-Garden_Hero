@@ -34,6 +34,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] protected LivingEntity monsterLivingEntity;
     [SerializeField] protected LivingEntity playerLivingEntity;
 
+    [Header("Dealing Time UI Control")]
+    [SerializeField] private GameObject[] hideInDealingTime; // LMJ: UI elements to hide during dealing time
+    [SerializeField] private GameObject[] showInDealingTime; // LMJ: UI elements to keep visible (like BossHealthInfo)
+
     [Header("Camera Feedback Effects")]
     [SerializeField] private MMFeedbacks dealingTimeStartFeedback; // LMJ: Camera effects when entering dealing time
     [SerializeField] private MMFeedbacks dealingTimeEndFeedback; // LMJ: Camera effects when exiting dealing time
@@ -129,11 +133,22 @@ public class GameManager : MonoBehaviour
             dealingTimeStartFeedback.PlayFeedbacks();
         }
 
-        // LMJ: Hide game UI
-        if (gameUICanvasGroup != null)
+        // LMJ: Hide specific UI elements
+        foreach (GameObject uiElement in hideInDealingTime)
         {
-            gameUICanvasGroup.alpha = 0f;
-            gameUICanvasGroup.interactable = false;
+            if (uiElement != null)
+            {
+                uiElement.SetActive(false);
+            }
+        }
+
+        // LMJ: Ensure specific UI elements stay visible (like BossHealthInfo)
+        foreach (GameObject uiElement in showInDealingTime)
+        {
+            if (uiElement != null)
+            {
+                uiElement.SetActive(true);
+            }
         }
 
         // LMJ: Show dealing time UI
@@ -199,11 +214,13 @@ public class GameManager : MonoBehaviour
         isDealingTimeActive = false;
         currentState = GameState.Playing;
 
-        // LMJ: Show game UI
-        if (gameUICanvasGroup != null)
+        // LMJ: Restore hidden UI elements
+        foreach (GameObject uiElement in hideInDealingTime)
         {
-            gameUICanvasGroup.alpha = 1f;
-            gameUICanvasGroup.interactable = true;
+            if (uiElement != null)
+            {
+                uiElement.SetActive(true);
+            }
         }
 
         // LMJ: Hide dealing time UI

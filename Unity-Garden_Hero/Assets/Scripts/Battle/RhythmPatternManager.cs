@@ -173,17 +173,28 @@ public class RhythmPatternManager : MonoBehaviour
 
     IEnumerator MonitorForNextPatternSet()
     {
+        bool isGeneratingNext = false;
+
         while (gameStarted)
         {
             yield return new WaitForSeconds(1f);
+
+            // Skip if GameManager is not in Playing state
+            GameManager gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager != null && gameManager.GetCurrentState() != GameState.Playing)
+            {
+                isGeneratingNext = false; // Reset flag when not playing
+                continue;
+            }
 
             float currentGameTime = NoteTimeManager.Instance.GetNoteTime();
             float timeUntilSetEnd = currentSetEndTime - currentGameTime;
 
             // LMJ: When approaching the end of current set, generate new set seamlessly
-            if (timeUntilSetEnd <= lookAheadTime * 2f && timeUntilSetEnd > 0f)
+            if (timeUntilSetEnd <= lookAheadTime * 2f && timeUntilSetEnd > 0f && !isGeneratingNext)
             {
-                
+                isGeneratingNext = true; // Set flag to prevent duplicate generation
+
                 List<RhythmNote> previousNotes = new List<RhythmNote>(allNotes);
                 int previousCount = allNotes.Count;
 
@@ -194,9 +205,11 @@ public class RhythmPatternManager : MonoBehaviour
                 List<RhythmNote> newNotes = allNotes.GetRange(previousCount, allNotes.Count - previousCount);
                 gameSystem.AddNotes(newNotes);
 
+                Debug.Log($"[RhythmPatternManager] Generated next pattern set. Time until end: {timeUntilSetEnd}");
 
                 // LMJ: Wait longer to prevent multiple generations
                 yield return new WaitForSeconds(lookAheadTime);
+                isGeneratingNext = false; // Reset flag after waiting
             }
         }
     }
@@ -218,19 +231,19 @@ public class RhythmPatternManager : MonoBehaviour
     // LMJ: New method for DealingTime recovery - start from current time immediately
     public void AddNextPatternSetFromCurrentTime()
     {
-        List<RhythmNote> previousNotes = new List<RhythmNote>(allNotes);
-        int previousCount = allNotes.Count;
+        // LMJ: Clear all existing notes first to prevent overlapping
+        allNotes.Clear();
 
         // LMJ: Start immediately from current game time (no delay)
         float currentGameTime = NoteTimeManager.Instance.GetNoteTime() - gameSystem.GameStartTime;
         currentSetStartTime = currentGameTime + 1f; // LMJ: Small buffer for smooth transition
-        
+
         CreateFullPatternSet();
 
-        // LMJ: Update the set end time tracking
-        List<RhythmNote> newNotes = allNotes.GetRange(previousCount, allNotes.Count - previousCount);
-        gameSystem.AddNotes(newNotes);
+        // LMJ: Add all newly created notes
+        gameSystem.AddNotes(allNotes);
 
+        Debug.Log($"[RhythmPatternManager] Added new pattern set from current time. Notes count: {allNotes.Count}, Start time: {currentSetStartTime}");
     }
 
     void OnDestroy()

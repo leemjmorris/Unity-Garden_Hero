@@ -296,6 +296,13 @@ public partial class RhythmGameSystem : MonoBehaviour
 
         if (closestNote != null)
         {
+            // LMJ: Defense Notes cannot be removed by key/touch input
+            if (closestNote.noteType == "Defense")
+            {
+                Debug.Log($"[RhythmGameSystem] Defense Note cannot be removed by key/touch input - Direction: {direction}");
+                return;
+            }
+
             float timeDiff = Mathf.Abs(currentGameTime - closestNote.hitTime);
 
             if (closestNote.IsLongNote() && !closestNote.HasStartedHold())
@@ -694,5 +701,59 @@ public partial class RhythmGameSystem : MonoBehaviour
     public float GetCurrentGameTime()
     {
         return NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
+    }
+
+    // LMJ: Method to clear Defense Notes when dodging
+    public void ClearDefenseNotesOnScreen()
+    {
+        List<RhythmNote> notesToRemove = new List<RhythmNote>();
+
+        foreach (RhythmNote note in allNotes)
+        {
+            if (note != null && note.noteType == "Defense" && IsNoteOnScreen(note))
+            {
+                notesToRemove.Add(note);
+                Debug.Log($"[RhythmGameSystem] Removing Defense Note on screen - Direction: {note.direction}");
+            }
+        }
+
+        foreach (RhythmNote note in notesToRemove)
+        {
+            allNotes.Remove(note);
+            Destroy(note.gameObject);
+        }
+
+        Debug.Log($"[RhythmGameSystem] Cleared {notesToRemove.Count} Defense Notes from screen");
+    }
+
+    // LMJ: Check if note is currently visible on screen
+    private bool IsNoteOnScreen(RhythmNote note)
+    {
+        if (note == null) return false;
+
+        RectTransform noteRect = note.GetComponent<RectTransform>();
+        if (noteRect == null) return false;
+
+        // Get the note's position relative to its parent canvas
+        Canvas canvas = noteRect.GetComponentInParent<Canvas>();
+        if (canvas == null) return false;
+
+        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+        if (canvasRect == null) return false;
+
+        // Convert note position to canvas space
+        Vector2 notePosition = noteRect.anchoredPosition;
+
+        // Get canvas bounds
+        Rect canvasBounds = canvasRect.rect;
+
+        // Check if note is within visible canvas area (with some margin for judgment line area)
+        float margin = 200f; // Pixels margin to account for judgment line area
+        bool isOnScreen = notePosition.x >= canvasBounds.xMin - margin &&
+                         notePosition.x <= canvasBounds.xMax + margin &&
+                         notePosition.y >= canvasBounds.yMin - margin &&
+                         notePosition.y <= canvasBounds.yMax + margin;
+
+        return isOnScreen;
     }
 }

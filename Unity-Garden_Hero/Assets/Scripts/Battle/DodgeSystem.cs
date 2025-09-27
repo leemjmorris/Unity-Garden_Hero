@@ -197,6 +197,9 @@ public class DodgeSystem : MonoBehaviour
         // Invoke the dodge left event
         OnDodgeLeft?.Invoke();
 
+        // LMJ: Clear Defense Notes on screen when dodging
+        ClearDefenseNotesOnDodge();
+
         targetRotation -= 90f;  // Counter-clockwise rotation
         StartDodge();
     }
@@ -208,6 +211,9 @@ public class DodgeSystem : MonoBehaviour
 
         // Invoke the dodge right event
         OnDodgeRight?.Invoke();
+
+        // LMJ: Clear Defense Notes on screen when dodging
+        ClearDefenseNotesOnDodge();
 
         targetRotation += 90f;  // Clockwise rotation
         StartDodge();
@@ -300,5 +306,20 @@ public class DodgeSystem : MonoBehaviour
     public bool IsDodgeSystemEnabled()
     {
         return isDodgeSystemEnabled;
+    }
+
+    // LMJ: Clear Defense Notes when dodging
+    void ClearDefenseNotesOnDodge()
+    {
+        RhythmGameSystem rhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
+        if (rhythmSystem != null)
+        {
+            rhythmSystem.ClearDefenseNotesOnScreen();
+            Debug.Log("[DodgeSystem] Cleared Defense Notes on dodge");
+        }
+        else
+        {
+            Debug.LogWarning("[DodgeSystem] Could not find RhythmGameSystem to clear Defense Notes");
+        }
     }
 }
