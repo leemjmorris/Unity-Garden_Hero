@@ -243,6 +243,23 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void Update()
     {
+        // Stop all note updates when game is over or monster is dead
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null && gameManager.GetCurrentState() == GameState.GameOver)
+        {
+            return;
+        }
+
+        // Also stop if monster is dead (final phase defeated)
+        if (monsterManager != null && !monsterManager.IsAlive())
+        {
+            // Check if this is the final phase
+            if (monsterManager.GetPhase() >= monsterManager.GetTotalPhases())
+            {
+                return;
+            }
+        }
+
         UpdateNotePositions();
         UpdateHeldNotes();
         CheckInputs();

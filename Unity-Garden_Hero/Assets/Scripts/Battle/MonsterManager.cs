@@ -387,6 +387,12 @@ public class MonsterManager : LivingEntity
         // LMJ: Stop game elements like note generation
         StopGameElements();
 
+        // Set game state to GameOver to stop note movement
+        if (gameManager != null)
+        {
+            gameManager.SetGameState(GameState.GameOver);
+        }
+
         // LMJ: Trigger player victory animation when monster dies on final phase
         PlayerManager player = FindFirstObjectByType<PlayerManager>();
         float playerVictoryAnimationLength = 0f;

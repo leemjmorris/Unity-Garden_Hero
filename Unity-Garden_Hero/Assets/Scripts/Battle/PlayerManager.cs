@@ -586,8 +586,8 @@ public class PlayerManager : LivingEntity
 
             Debug.Log($"[PlayerManager] Death animation triggered - Type: {randomDeathType}");
 
-            // Check animator state after setting trigger
-            StartCoroutine(CheckAnimatorStateAfterTrigger());
+            // Check animator state after setting trigger (disabled to avoid warnings)
+            // StartCoroutine(CheckAnimatorStateAfterTrigger());
         }
         else
         {

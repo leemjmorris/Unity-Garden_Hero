@@ -6,8 +6,8 @@ public class PhaseHeartUI : MonoBehaviour
 {
     [Header("Heart Container Settings")]
     [SerializeField] private List<GameObject> heartContainers = new List<GameObject>(8);
-    [SerializeField] private string activeHeartImageName = "mini-heart_0";
-    [SerializeField] private string inactiveHeartImageName = "mini-heart_1";
+    //[SerializeField] private string activeHeartImageName = "mini-heart_0";
+    //[SerializeField] private string inactiveHeartImageName = "mini-heart_1";
 
     [Header("Heart Sprites")]
     [SerializeField] private Sprite activeHeartSprite;   // mini-heart_0 (drag from HealthHeartSystem/Graphics)
