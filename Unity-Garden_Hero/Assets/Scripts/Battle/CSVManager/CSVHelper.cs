@@ -7,6 +7,7 @@ public static class CSVHelper
     public static int ToInt(string value, int defaultValue = 0)
     {
         if (string.IsNullOrEmpty(value)) return defaultValue;
+        if (value.Trim().ToUpper() == "NULL") return 0; // Treat "NULL" as 0
         if (int.TryParse(value, out int result)) return result;
         return defaultValue;
     }

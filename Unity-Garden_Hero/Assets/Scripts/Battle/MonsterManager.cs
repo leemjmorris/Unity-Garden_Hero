@@ -7,7 +7,7 @@ public class MonsterManager : LivingEntity
 {
     [Header("Monster CSV Settings")]
     [SerializeField] private int phaseId = 80000001; // 늑대 전사 페이즈 ID
-    [SerializeField] private int currentPhaseIndex = 1; // 현재 페이즈 인덱스
+    [SerializeField] private int currentPhaseIndex = 0; // 현재 페이즈 인덱스 (0부터 시작)
 
     [Header("Monster Info (Auto Loaded)")]
     [SerializeField] private string monsterName = "늑대 전사";
@@ -26,6 +26,10 @@ public class MonsterManager : LivingEntity
     [Header("STUN Events")]
     public UnityEvent OnStunBroken;
     public UnityEvent<float> OnStunChanged;
+
+    [Header("Phase Events")]
+    public UnityEvent<int> OnPhaseChanged;
+    public UnityEvent OnMonsterDead;
 
     [Header("Animation Settings")]
     [SerializeField] private Animator animator;
@@ -114,6 +118,9 @@ public class MonsterManager : LivingEntity
         csvDataLoaded = true;
         csvStatus = $"CSV loaded successfully - Phase ID: {phaseId}";
         Debug.Log($"[MonsterManager] CSV data loaded successfully for Phase ID: {phaseId}");
+
+        // Invoke initial phase event
+        OnPhaseChanged?.Invoke(currentPhaseIndex + 1);
     }
 
     PhaseData GetPhaseData(int phaseId)
@@ -137,6 +144,13 @@ public class MonsterManager : LivingEntity
         int[] bossIds = { currentPhaseData.BOSS_ID_1, currentPhaseData.BOSS_ID_2,
                          currentPhaseData.BOSS_ID_3, currentPhaseData.BOSS_ID_4,
                          currentPhaseData.BOSS_ID_5 };
+
+        Debug.Log($"[MonsterManager] Phase data for ID {phaseId}:");
+        Debug.Log($"  BOSS_ID_1: {currentPhaseData.BOSS_ID_1}");
+        Debug.Log($"  BOSS_ID_2: {currentPhaseData.BOSS_ID_2}");
+        Debug.Log($"  BOSS_ID_3: {currentPhaseData.BOSS_ID_3}");
+        Debug.Log($"  BOSS_ID_4: {currentPhaseData.BOSS_ID_4}");
+        Debug.Log($"  BOSS_ID_5: {currentPhaseData.BOSS_ID_5}");
 
         foreach (int bossId in bossIds)
         {
@@ -367,6 +381,9 @@ public class MonsterManager : LivingEntity
 
     IEnumerator DeathSequence()
     {
+        // LMJ: Trigger monster dead event immediately (for UI updates like hearts)
+        OnMonsterDead?.Invoke();
+
         // LMJ: Stop game elements like note generation
         StopGameElements();
 
@@ -463,6 +480,9 @@ public class MonsterManager : LivingEntity
     {
         currentPhaseIndex++;
         LoadCurrentBossData();
+
+        // Invoke phase changed event
+        OnPhaseChanged?.Invoke(currentPhaseIndex + 1);
 
         // Check if we're currently in DealingTime
         bool isDealingTime = gameManager != null && gameManager.IsDealingTimeActive();
