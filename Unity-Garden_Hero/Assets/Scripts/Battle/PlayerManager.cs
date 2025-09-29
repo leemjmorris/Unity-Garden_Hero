@@ -125,7 +125,6 @@ public class PlayerManager : LivingEntity
         {
             dodgeSystem.OnDodgeLeft.AddListener(PlayRollLeftAnimation);
             dodgeSystem.OnDodgeRight.AddListener(PlayRollRightAnimation);
-            Debug.Log("[PlayerManager] Subscribed to DodgeSystem events");
         }
 
         CalculateStats();
@@ -378,7 +377,6 @@ public class PlayerManager : LivingEntity
     // LMJ: Public damage method for external systems
     public void TakeDamage(int damage)
     {
-        Debug.Log($"[PlayerManager] TakeDamage wrapper called - Damage: {damage}");
         OnDamage(damage);
     }
     // LMJ: Stat level management
@@ -482,7 +480,6 @@ public class PlayerManager : LivingEntity
         if (Input.GetKeyDown(KeyCode.H)) OnDamage(10); // Test damage with LivingEntity
         if (Input.GetKeyDown(KeyCode.T))
         {
-            Debug.Log($"God Mode Inspector: {isGodMode}");
             UpdateStatSummary();
         }
     }
@@ -545,17 +542,14 @@ public class PlayerManager : LivingEntity
     // LMJ: Death Animation Method
     public void PlayDeathAnimation()
     {
-        Debug.Log("[PlayerManager] PlayDeathAnimation() called");
 
         if (playerAnimator != null)
         {
             // Check current animator state
             AnimatorStateInfo currentState = playerAnimator.GetCurrentAnimatorStateInfo(0);
-            Debug.Log($"[PlayerManager] Current animator state: {currentState.fullPathHash} (length: {currentState.length})");
 
             // Randomly choose between Die01 (0) and Die02 (1)
             int randomDeathType = Random.Range(0, 2); // 0 or 1
-            Debug.Log($"[PlayerManager] Setting deathType to: {randomDeathType}");
 
             // Check if parameters exist
             AnimatorControllerParameter[] parameters = playerAnimator.parameters;
@@ -567,31 +561,25 @@ public class PlayerManager : LivingEntity
                 if (param.name == "RandomOnDeath")
                 {
                     hasRandomOnDeath = true;
-                    Debug.Log($"[PlayerManager] Found RandomOnDeath parameter - Type: {param.type}");
                 }
                 if (param.name == "deathType")
                 {
                     hasDeathType = true;
-                    Debug.Log($"[PlayerManager] Found deathType parameter - Type: {param.type}");
                 }
             }
 
             if (!hasRandomOnDeath)
-                Debug.LogError("[PlayerManager] RandomOnDeath parameter not found in Animator!");
             if (!hasDeathType)
-                Debug.LogError("[PlayerManager] deathType parameter not found in Animator!");
 
             playerAnimator.SetInteger("deathType", randomDeathType);
             playerAnimator.SetTrigger("RandomOnDeath");
 
-            Debug.Log($"[PlayerManager] Death animation triggered - Type: {randomDeathType}");
 
             // Check animator state after setting trigger (disabled to avoid warnings)
             // StartCoroutine(CheckAnimatorStateAfterTrigger());
         }
         else
         {
-            Debug.LogWarning("[PlayerManager] Player Animator not found!");
         }
     }
 
@@ -602,16 +590,13 @@ public class PlayerManager : LivingEntity
         if (playerAnimator != null)
         {
             AnimatorStateInfo stateAfter = playerAnimator.GetCurrentAnimatorStateInfo(0);
-            Debug.Log($"[PlayerManager] Animator state after trigger: {stateAfter.fullPathHash}");
 
             // Check if we're in any die state
             if (stateAfter.IsName("Die01_SwordAndShield") || stateAfter.IsName("Die02_SwordAndShield"))
             {
-                Debug.Log("[PlayerManager] SUCCESS: Death animation is playing!");
             }
             else
             {
-                Debug.LogWarning($"[PlayerManager] PROBLEM: Not in death state. Current state hash: {stateAfter.fullPathHash}");
             }
         }
     }
@@ -634,20 +619,17 @@ public class PlayerManager : LivingEntity
             // Then set it again to restart the animation from the beginning
             playerAnimator.SetTrigger("TriggerRandomAtt");
 
-            Debug.Log($"[PlayerManager] Attack animation triggered - Type: {randomAttackType}");
         }
     }
 
     // LMJ: Victory Animation Method
     public void PlayVictoryAnimation()
     {
-        Debug.Log("[PlayerManager] PlayVictoryAnimation() called");
 
         if (playerAnimator != null)
         {
             // Set Victory bool to true to start the victory animation
             playerAnimator.SetBool("Victory", true);
-            Debug.Log("[PlayerManager] Victory animation triggered");
 
             // Start coroutine to handle Victory to Dance transition
             StartCoroutine(VictoryToDanceSequence());
@@ -669,12 +651,10 @@ public class PlayerManager : LivingEntity
             stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
         }
 
-        Debug.Log("[PlayerManager] Victory animation is playing");
 
         // Wait for the Victory animation to complete (play once)
         yield return new WaitForSeconds(stateInfo.length);
 
-        Debug.Log("[PlayerManager] Victory animation completed, looping Dance animation");
         // Victory animation will automatically transition to Dance loop in the Animator
     }
 

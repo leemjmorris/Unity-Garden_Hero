@@ -157,7 +157,7 @@ public class ShieldController : MonoBehaviour
         {
             case "Left": return leftShieldBrokenEffect;
             case "Right": return rightShieldBrokenEffect;
-            case "Up": return frontShieldBrokenEffect;
+            case "Center": return frontShieldBrokenEffect;
             default: return null;
         }
     }
@@ -168,7 +168,7 @@ public class ShieldController : MonoBehaviour
         {
             case "Left": return leftShield;
             case "Right": return rightShield;
-            case "Up": return frontShield;
+            case "Center": return frontShield;
             default: return null;
         }
     }

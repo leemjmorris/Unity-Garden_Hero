@@ -31,6 +31,9 @@ public class DodgeSystem : MonoBehaviour
     private float targetRotation = 0f;
     private float lastRotationEndTime = 0f;
 
+    // LMJ: Track active touch IDs to prevent swipe during multi-touch
+    private int activeTouchIdCount = 0;
+
     // Swipe input variables
     private Vector2 startTouchPosition;
     private Vector2 endTouchPosition;
@@ -136,6 +139,12 @@ public class DodgeSystem : MonoBehaviour
         Vector2 swipeDirection = endTouchPosition - startTouchPosition;
         float swipeDistance = swipeDirection.magnitude;
 
+        // LMJ: Don't process swipe if multiple touches are active (button inputs)
+        if (activeTouchIdCount > 1)
+        {
+            isDragging = false;
+            return;
+        }
 
         //LMJ: Check if swipe meets criteria
         if (swipeDistance >= minSwipeDistance && swipeTime <= maxSwipeTime)
@@ -308,18 +317,27 @@ public class DodgeSystem : MonoBehaviour
         return isDodgeSystemEnabled;
     }
 
-    // LMJ: Clear Defense Notes when dodging
+    // LMJ: Public methods for TouchInputManager to track button touches
+    public void RegisterTouchStart()
+    {
+        activeTouchIdCount++;
+    }
+
+    public void RegisterTouchEnd()
+    {
+        activeTouchIdCount = Mathf.Max(0, activeTouchIdCount - 1);
+    }
+
+    // LMJ: Clear Dodge Notes when dodging
     void ClearDefenseNotesOnDodge()
     {
         RhythmGameSystem rhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
         if (rhythmSystem != null)
         {
-            rhythmSystem.ClearDefenseNotesOnScreen();
-            Debug.Log("[DodgeSystem] Cleared Defense Notes on dodge");
+            rhythmSystem.ClearDodgeNotesOnScreen();
         }
         else
         {
-            Debug.LogWarning("[DodgeSystem] Could not find RhythmGameSystem to clear Defense Notes");
         }
     }
 }

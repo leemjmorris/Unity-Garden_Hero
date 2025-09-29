@@ -43,7 +43,6 @@ public class PhaseHeartUI : MonoBehaviour
 
         if (activeHeartSprite == null || inactiveHeartSprite == null)
         {
-            Debug.LogWarning("[PhaseHeartUI] Heart sprites not assigned in Inspector! Please assign mini-heart_0 and mini-heart_1 sprites from HealthHeartSystem/Graphics folder.");
         }
 
         InitializeHearts();
@@ -60,7 +59,6 @@ public class PhaseHeartUI : MonoBehaviour
 
         if (debugMode)
         {
-            Debug.Log($"[PhaseHeartUI] Initialized with {heartContainers.Count} heart containers");
         }
     }
 
@@ -73,7 +71,6 @@ public class PhaseHeartUI : MonoBehaviour
         currentPhase = monsterManager.GetPhase();
         remainingPhases = totalPhases - currentPhase + 1;
 
-        Debug.Log($"[PhaseHeartUI] MonsterManager data: Total={totalPhases}, Current={currentPhase}, Remaining={remainingPhases}");
 
         for (int i = 0; i < heartContainers.Count; i++)
         {
@@ -82,7 +79,6 @@ public class PhaseHeartUI : MonoBehaviour
             if (i < totalPhases)
             {
                 heartContainers[i].SetActive(true);
-                Debug.Log($"[PhaseHeartUI] Heart {i} activated (within totalPhases)");
 
                 // Hearts are deactivated from right to left
                 // So we check from the end
@@ -91,29 +87,24 @@ public class PhaseHeartUI : MonoBehaviour
                 {
                     // This heart represents a completed phase
                     SetHeartActive(heartContainers[i], false);
-                    Debug.Log($"[PhaseHeartUI] Heart {i} set to INACTIVE (completed phase)");
                 }
                 else
                 {
                     // This heart represents an active or future phase
                     SetHeartActive(heartContainers[i], true);
-                    Debug.Log($"[PhaseHeartUI] Heart {i} set to ACTIVE (active/future phase)");
                 }
             }
             else
             {
                 heartContainers[i].SetActive(false);
-                Debug.Log($"[PhaseHeartUI] Heart {i} deactivated (beyond totalPhases)");
             }
         }
 
         statusMessage = $"Initialized - Total: {totalPhases}, Current: {currentPhase}, Remaining: {remainingPhases}";
 
-        Debug.Log($"[PhaseHeartUI] {statusMessage}");
 
         if (debugMode)
         {
-            Debug.Log($"[PhaseHeartUI] Hearts initialized: Total={totalPhases}, Current={currentPhase}");
         }
     }
 
@@ -124,7 +115,6 @@ public class PhaseHeartUI : MonoBehaviour
 
     void OnMonsterDead()
     {
-        Debug.Log("[PhaseHeartUI] Monster died - deactivating all hearts");
 
         // Deactivate all hearts when monster dies
         for (int i = 0; i < heartContainers.Count; i++)
@@ -151,8 +141,7 @@ public class PhaseHeartUI : MonoBehaviour
 
         if (debugMode)
         {
-            Debug.Log($"[PhaseHeartUI] {statusMessage}");
-        }
+            }
     }
 
     void UpdateHeartDisplay()
@@ -204,7 +193,6 @@ public class PhaseHeartUI : MonoBehaviour
 
         if (debugMode)
         {
-            Debug.Log($"[PhaseHeartUI] Set heart {heartContainer.name} to {(isActive ? "Active" : "Inactive")}");
         }
     }
 

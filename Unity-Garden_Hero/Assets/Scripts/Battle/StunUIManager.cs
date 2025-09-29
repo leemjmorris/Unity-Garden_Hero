@@ -37,12 +37,14 @@ public class StunUIManager : MonoBehaviour
     {
         monsterManager.OnStunChanged.AddListener(OnStunChanged);
         monsterManager.OnStunBroken.AddListener(OnStunBroken);
+        monsterManager.OnStunRestored.AddListener(OnStunRestored);
     }
     
     void OnStunChanged(float newStun)
     {
+        Debug.Log($"[StunUIManager] OnStunChanged called with newStun: {newStun}");
         UpdateStunBar();
-        
+
         // LMJ: Trigger bump effect when stun decreases
         if (stunProgressBar != null)
         {
@@ -57,14 +59,26 @@ public class StunUIManager : MonoBehaviour
             stunProgressBar.SetBar01(0f);
         }
     }
+
+    void OnStunRestored()
+    {
+        if (stunProgressBar == null || monsterManager == null) return;
+
+        float stunPercentage = monsterManager.GetStunPercentage();
+        Debug.Log($"[StunUIManager] OnStunRestored - immediate update to: {stunPercentage:F2}");
+
+        // LMJ: Immediate update for stun restoration (no animation)
+        stunProgressBar.SetBar01(stunPercentage);
+    }
     
     void UpdateStunBar()
     {
         if (stunProgressBar == null || monsterManager == null) return;
-        
+
         float stunPercentage = monsterManager.GetStunPercentage();
-        
-        // LMJ: Update progress bar using MM Progress Bar API
+        Debug.Log($"[StunUIManager] UpdateStunBar - stunPercentage: {stunPercentage:F2}");
+
+        // LMJ: Use UpdateBar01 for animated progress (normal stun damage)
         stunProgressBar.UpdateBar01(stunPercentage);
     }
     
@@ -91,6 +105,7 @@ public class StunUIManager : MonoBehaviour
         {
             monsterManager.OnStunChanged.RemoveListener(OnStunChanged);
             monsterManager.OnStunBroken.RemoveListener(OnStunBroken);
+            monsterManager.OnStunRestored.RemoveListener(OnStunRestored);
         }
     }
     

@@ -14,6 +14,7 @@ public class TouchInputManager : MonoBehaviour
     [SerializeField] private RhythmGameSystem gameSystem;
     [SerializeField] private ShieldController shieldController;
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
+    [SerializeField] private DodgeSystem dodgeSystem;
 
     [Header("Long Note Settings")]
     private bool isLeftHolding = false;
@@ -39,6 +40,12 @@ public class TouchInputManager : MonoBehaviour
             playerManager = PlayerManager.Instance;
         }
 
+        // LMJ: Initialize DodgeSystem if not assigned
+        if (dodgeSystem == null)
+        {
+            dodgeSystem = FindFirstObjectByType<DodgeSystem>();
+        }
+
         // LMJ: Shield initialization is handled by ShieldController.Awake()
     }
 
@@ -60,13 +67,13 @@ public class TouchInputManager : MonoBehaviour
         if (leftCenterButton != null)
         {
             ClearButtonEvents(leftCenterButton);
-            AddButtonEvents(leftCenterButton, "Up");
+            AddButtonEvents(leftCenterButton, "Center");
         }
 
         if (rightCenterButton != null)
         {
             ClearButtonEvents(rightCenterButton);
-            AddButtonEvents(rightCenterButton, "Up");
+            AddButtonEvents(rightCenterButton, "Center");
         }
     }
 
@@ -123,6 +130,12 @@ public class TouchInputManager : MonoBehaviour
     {
         SetHoldingState(direction, true);
 
+        // LMJ: Register touch start for swipe detection prevention
+        if (dodgeSystem != null)
+        {
+            dodgeSystem.RegisterTouchStart();
+        }
+
         if (gameSystem != null)
         {
             gameSystem.CheckHitWithLongNote(direction);
@@ -153,6 +166,12 @@ public class TouchInputManager : MonoBehaviour
 
     public void OnButtonRelease(string direction, Button pressedButton = null)
     {
+        // LMJ: Register touch end for swipe detection prevention
+        if (dodgeSystem != null)
+        {
+            dodgeSystem.RegisterTouchEnd();
+        }
+
         if (IsHolding(direction))
         {
             SetHoldingState(direction, false);
@@ -199,7 +218,7 @@ public class TouchInputManager : MonoBehaviour
             case "Right":
                 isRightHolding = holding;
                 break;
-            case "Up":
+            case "Center":
                 isCenterHolding = holding;
                 break;
         }
@@ -213,7 +232,7 @@ public class TouchInputManager : MonoBehaviour
                 return isLeftHolding;
             case "Right":
                 return isRightHolding;
-            case "Up":
+            case "Center":
                 return isCenterHolding;
             default:
                 return false;
@@ -235,7 +254,7 @@ public class TouchInputManager : MonoBehaviour
             case "Right":
                 shieldController.ShowRightShield(show);
                 break;
-            case "Up":
+            case "Center":
                 shieldController.ShowFrontShield(show);
                 break;
         }
@@ -253,8 +272,8 @@ public class TouchInputManager : MonoBehaviour
             case "Right":
                 targetButton = rightButton;
                 break;
-            case "Up":
-                // LMJ: Animate both center buttons when Up is pressed
+            case "Center":
+                // LMJ: Animate both center buttons when Center is pressed
                 AnimateSingleButton(leftCenterButton, pressed);
                 AnimateSingleButton(rightCenterButton, pressed);
                 return;
@@ -324,14 +343,14 @@ public class TouchInputManager : MonoBehaviour
             OnButtonRelease("Right");
         }
 
-        // W key for Up/Center button
+        // W key for Center button
         if (Input.GetKeyDown(KeyCode.W))
         {
-            OnButtonPress("Up");
+            OnButtonPress("Center");
         }
         if (Input.GetKeyUp(KeyCode.W))
         {
-            OnButtonRelease("Up");
+            OnButtonRelease("Center");
         }
     }
 
@@ -405,13 +424,11 @@ public class TouchInputManager : MonoBehaviour
 
     void OnSwipeLeftToRight()
     {
-        Debug.Log("[TouchInputManager] Left to Right swipe detected");
         // Animation is now handled by DodgeSystem events
     }
 
     void OnSwipeRightToLeft()
     {
-        Debug.Log("[TouchInputManager] Right to Left swipe detected");
         // Animation is now handled by DodgeSystem events
     }
 }

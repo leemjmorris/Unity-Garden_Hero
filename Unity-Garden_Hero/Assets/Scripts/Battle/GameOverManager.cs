@@ -171,12 +171,10 @@ public class GameOverManager : MonoBehaviour
 
     System.Collections.IEnumerator DelayedGameOver(string message)
     {
-        Debug.Log($"[GameOverManager] Player died, waiting {victoryAnimationDelay}s for Victory animation...");
 
         // Wait for Victory animation to play
         yield return new WaitForSeconds(victoryAnimationDelay);
 
-        Debug.Log("[GameOverManager] Showing Game Over after Victory animation");
         ShowGameOver(message);
     }
 

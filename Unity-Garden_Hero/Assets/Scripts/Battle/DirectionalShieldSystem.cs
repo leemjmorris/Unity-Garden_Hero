@@ -79,9 +79,9 @@ public class DirectionalShieldSystem : MonoBehaviour
 
     private static readonly DirectionInfo[] directionInfos = new DirectionInfo[]
     {
-        new DirectionInfo("A(0°)", "Up"),
+        new DirectionInfo("A(0°)", "Center"),
         new DirectionInfo("B(90°)", "Left"),
-        new DirectionInfo("C(180°)", "Up"),
+        new DirectionInfo("C(180°)", "Center"),
         new DirectionInfo("D(270°)", "Right")
     };
 
@@ -167,13 +167,13 @@ public class DirectionalShieldSystem : MonoBehaviour
             {
                 shieldController.SetShieldBrokenState("Left", true);
                 shieldController.SetShieldBrokenState("Right", true);
-                shieldController.SetShieldBrokenState("Up", true);
+                shieldController.SetShieldBrokenState("Center", true);
             }
             else
             {
                 shieldController.SetShieldBrokenState("Left", false);
                 shieldController.SetShieldBrokenState("Right", false);
-                shieldController.SetShieldBrokenState("Up", false);
+                shieldController.SetShieldBrokenState("Center", false);
             }
         }
     }
@@ -234,7 +234,7 @@ public class DirectionalShieldSystem : MonoBehaviour
         {
             case "Left": return 1;
             case "Right": return 3;
-            case "Up": return 0;
+            case "Center": return 0;
             default: return -1;
         }
     }
@@ -250,11 +250,19 @@ public class DirectionalShieldSystem : MonoBehaviour
         {
             shields[i].FullRestore();
         }
+
+        // Update shield visuals immediately
+        UpdateAllShieldVisuals();
+
     }
 
     public void RestoreCurrentShield()
     {
         shields[currentDirection].FullRestore();
+
+        // Update shield visuals immediately
+        UpdateAllShieldVisuals();
+
     }
 
     void UpdateAllShieldVisuals()
@@ -336,7 +344,7 @@ public class DirectionalShieldSystem : MonoBehaviour
     {
         if (directionIndex >= 0 && directionIndex < directionInfos.Length)
             return directionInfos[directionIndex].visualDirection;
-        return "Up";
+        return "Center";
     }
 
     public int GetCurrentDirection()

@@ -67,14 +67,8 @@ public class PulseAnimation : MonoBehaviour
 
         float scale = 1f + progress * 2f;
 
-        if (direction == "Up")
-        {
-            rectTransform.localScale = new Vector3(1f, scale, 1f);
-        }
-        else
-        {
-            rectTransform.localScale = new Vector3(scale, 1f, 1f);
-        }
+        // Unified scale animation for all directions (Center style)
+        rectTransform.localScale = new Vector3(1f, scale, 1f);
 
         Color col = image.color;
         col.a = 1f - progress;
@@ -108,22 +102,22 @@ public partial class RhythmGameSystem : MonoBehaviour
     [Header("Miss Damage Settings")]
     [SerializeField] private MissDamageSettings missDamageSettings = new MissDamageSettings();
 
-    [Header("UI References")]
-    [SerializeField] private Canvas gameCanvas;
-    [SerializeField] private GameObject notePrefab;
+    [Header("Note Prefabs")]
+    [SerializeField] private GameObject normalNotePrefab;
+    [SerializeField] private GameObject longNotePrefab;
+    [SerializeField] private GameObject dodgeNotePrefab;
+    [SerializeField] private GameObject specialNotePrefab;
 
-    [Header("Lane References - Assign from Scene")]
+    [Header("Lane System - Left | Center | Right")]
     [SerializeField] private Transform leftLane;
+    [SerializeField] private Transform centerLane;
     [SerializeField] private Transform rightLane;
-    [SerializeField] private Transform upLane;
     [SerializeField] private Transform leftJudgmentLine;
+    [SerializeField] private Transform centerJudgmentLine;
     [SerializeField] private Transform rightJudgmentLine;
-    [SerializeField] private Transform upJudgmentLine;
 
-    [Header("Judgment Line Offsets")]
-    [SerializeField] private float leftJudgmentOffset = 310f;
-    [SerializeField] private float rightJudgmentOffset = -310f;
-    [SerializeField] private float upJudgmentOffset = -310f;
+    [Header("Note Movement Settings")]
+    [SerializeField] private float noteDelay = 2.0f; // Time before note reaches judgment line
 
     [Header("Timing Settings")]
     [SerializeField] private float perfectTolerance = 0.05f;
@@ -145,6 +139,7 @@ public partial class RhythmGameSystem : MonoBehaviour
     private Dictionary<string, Transform> judgmentLines = new Dictionary<string, Transform>();
     private List<RhythmNote> allNotes = new List<RhythmNote>();
     private Dictionary<string, RhythmNote> heldNotes = new Dictionary<string, RhythmNote>();
+    private Dictionary<string, float> holdTickTimers = new Dictionary<string, float>();
 
     public float GameStartTime { get; private set; }
 
@@ -155,65 +150,143 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void SetupLaneReferences()
     {
+        // Setup lane references for Left | Center | Right
         if (leftLane != null) lanes["Left"] = leftLane;
+        if (centerLane != null) lanes["Center"] = centerLane;
         if (rightLane != null) lanes["Right"] = rightLane;
-        if (upLane != null) lanes["Up"] = upLane;
 
         if (leftJudgmentLine != null) judgmentLines["Left"] = leftJudgmentLine;
+        if (centerJudgmentLine != null) judgmentLines["Center"] = centerJudgmentLine;
         if (rightJudgmentLine != null) judgmentLines["Right"] = rightJudgmentLine;
-        if (upJudgmentLine != null) judgmentLines["Up"] = upJudgmentLine;
 
-        SetJudgmentLinePositions();
+        // Initialize hold tick timers
+        holdTickTimers["Left"] = 0f;
+        holdTickTimers["Center"] = 0f;
+        holdTickTimers["Right"] = 0f;
     }
 
-    void SetJudgmentLinePositions()
+    // Convert JSON direction to Unity lane direction
+    string ConvertDirection(string jsonDirection)
     {
-        if (leftJudgmentLine != null)
+        return jsonDirection.ToLower() switch
         {
-            RectTransform rect = leftJudgmentLine.GetComponent<RectTransform>();
-            rect.anchoredPosition = new Vector2(leftJudgmentOffset, 0);
-        }
-
-        if (rightJudgmentLine != null)
-        {
-            RectTransform rect = rightJudgmentLine.GetComponent<RectTransform>();
-            rect.anchoredPosition = new Vector2(rightJudgmentOffset, 0);
-        }
-
-        if (upJudgmentLine != null)
-        {
-            RectTransform rect = upJudgmentLine.GetComponent<RectTransform>();
-            rect.anchoredPosition = new Vector2(upJudgmentOffset, 0);
-        }
+            "up" => "Center",
+            "left" => "Left",
+            "right" => "Right",
+            _ => jsonDirection // fallback
+        };
     }
 
-    public GameObject CreateNoteObject(string direction, float spawnDistance)
+    // Convert JSON note type to Unity note type
+    string ConvertNoteType(string jsonType)
     {
-        if (!lanes.ContainsKey(direction)) return null;
+        return jsonType.ToLower() switch
+        {
+            "charged" => "Long",
+            "defence" => "Dodge",
+            "defense" => "Dodge", // alternate spelling
+            _ => jsonType // Normal, Special, etc.
+        };
+    }
 
-        GameObject noteObj = Instantiate(notePrefab);
+    // Get appropriate note prefab based on type
+    GameObject GetNotePrefab(string noteType)
+    {
+        GameObject result = noteType switch
+        {
+            "Normal" => normalNotePrefab,
+            "Long" => longNotePrefab,
+            "Dodge" => dodgeNotePrefab,
+            "Special" => specialNotePrefab,
+            _ => normalNotePrefab // fallback
+        };
+
+        return result;
+    }
+
+    public GameObject CreateNoteObject(string jsonDirection, string jsonNoteType, float hitTime, float duration = 0f)
+    {
+        // Convert JSON data to Unity format
+        string direction = ConvertDirection(jsonDirection);
+        string noteType = ConvertNoteType(jsonNoteType);
+
+
+        if (!lanes.ContainsKey(direction))
+        {
+            return null;
+        }
+
+        // Get appropriate prefab
+        GameObject prefab = GetNotePrefab(noteType);
+        if (prefab == null)
+        {
+            return null;
+        }
+
+
+        // Create note object
+        GameObject noteObj = Instantiate(prefab);
         noteObj.transform.SetParent(lanes[direction], false);
 
+        // Calculate spawn position (spawn above judgment line)
+        float spawnDistance = noteSpeed * noteDelay;
         Vector2 spawnPos = GetSpawnPosition(direction, spawnDistance);
         RectTransform noteRect = noteObj.GetComponent<RectTransform>();
         noteRect.anchoredPosition = spawnPos;
+
+        // Setup note component
+        RhythmNote noteComponent = noteObj.GetComponent<RhythmNote>();
+        if (noteComponent != null)
+        {
+            noteComponent.Initialize(direction, hitTime, noteType, noteSpeed, duration);
+
+            // For Long notes, adjust height based on duration
+            if (noteType == "Long" && duration > 0)
+            {
+                // Set pivot to bottom center for proper Long Note scaling
+                noteRect.pivot = new Vector2(0.5f, 0f);
+
+                float longNoteHeight = duration * noteSpeed;
+                noteRect.sizeDelta = new Vector2(noteRect.sizeDelta.x, longNoteHeight);
+            }
+        }
 
         return noteObj;
     }
 
     Vector2 GetSpawnPosition(string direction, float distance)
     {
-        switch (direction)
+        // Get judgment line position and spawn above it
+        if (judgmentLines.ContainsKey(direction) && judgmentLines[direction] != null)
         {
-            case "Left":
-                return new Vector2(leftJudgmentOffset - distance, 0);
-            case "Right":
-                return new Vector2(rightJudgmentOffset + distance, 0);
-            case "Up":
-                return new Vector2(upJudgmentOffset + distance, 0);
-            default:
-                return Vector2.zero;
+            RectTransform judgmentRect = judgmentLines[direction].GetComponent<RectTransform>();
+            if (judgmentRect != null)
+            {
+                Vector2 judgmentPos = judgmentRect.anchoredPosition;
+                return new Vector2(judgmentPos.x, judgmentPos.y + distance);
+            }
         }
+
+        // Fallback: spawn in center of respective lane
+        return direction switch
+        {
+            "Left" => new Vector2(-200f, distance), // Left lane center
+            "Center" => new Vector2(0f, distance),  // Center lane
+            "Right" => new Vector2(200f, distance), // Right lane center
+            _ => new Vector2(0f, distance)
+        };
+    }
+
+    // Public method to change note speed during gameplay
+    public void SetNoteSpeed(float newSpeed)
+    {
+        noteSpeed = Mathf.Max(50f, newSpeed); // Minimum speed limit
+    }
+
+    // Public method to get current note speed
+    public float GetNoteSpeed()
+    {
+        return noteSpeed;
     }
 
     public void StartGame(float startTime, List<RhythmNote> notes)
@@ -262,6 +335,7 @@ public partial class RhythmGameSystem : MonoBehaviour
 
         UpdateNotePositions();
         UpdateHeldNotes();
+        UpdateLongNoteHoldTicks();
         CheckInputs();
         CheckMissedNotes();
         CheckMissedLongNotes();
@@ -275,12 +349,93 @@ public partial class RhythmGameSystem : MonoBehaviour
         {
             if (note == null) continue;
 
+            // Skip moving notes that are being held - they should stay at judgment line
+            if (note.IsHolding())
+            {
+                // Keep the note at judgment line (distance = 0)
+                Vector2 judgmentPos = GetSpawnPosition(note.direction, 0);
+                note.GetComponent<RectTransform>().anchoredPosition = judgmentPos;
+                continue;
+            }
+
             float timeUntilHit = note.hitTime - currentGameTime;
             float distanceFromJudgment = timeUntilHit * noteSpeed;
 
             Vector2 targetPos = GetSpawnPosition(note.direction, distanceFromJudgment);
             note.GetComponent<RectTransform>().anchoredPosition = targetPos;
         }
+    }
+
+    // DJ MAX style Long Note hold tick system
+    void UpdateLongNoteHoldTicks()
+    {
+        float tickInterval = 0.1f; // 100ms tick interval
+
+        foreach (var kvp in heldNotes)
+        {
+            string direction = kvp.Key;
+            RhythmNote note = kvp.Value;
+
+            if (note == null || !note.IsHolding()) continue;
+
+            // Update tick timer
+            holdTickTimers[direction] += Time.deltaTime;
+
+            // Process tick every interval
+            if (holdTickTimers[direction] >= tickInterval)
+            {
+                holdTickTimers[direction] = 0f;
+                ProcessLongNoteHoldTick(note, direction);
+            }
+        }
+    }
+
+    void ProcessLongNoteHoldTick(RhythmNote note, string direction)
+    {
+        // Give small bonus score for holding
+        if (monsterManager != null && playerManager != null)
+        {
+            int tickDamage = Mathf.RoundToInt(playerManager.GetStunAttackPower() * 0.1f);
+            monsterManager.TakeNoteHit(tickDamage, "Long_Hold_Tick", JudgmentResult.Perfect);
+        }
+
+        // Visual feedback for successful hold tick
+        CreateHoldTickEffect(direction);
+    }
+
+    void CreateHoldTickEffect(string direction)
+    {
+        if (!judgmentLines.ContainsKey(direction)) return;
+
+        GameObject tickEffect = new GameObject("HoldTickEffect");
+        tickEffect.transform.SetParent(judgmentLines[direction], false);
+
+        UnityEngine.UI.Image effectImg = tickEffect.AddComponent<UnityEngine.UI.Image>();
+        effectImg.color = new Color(1f, 1f, 0.5f, 0.6f);
+
+        RectTransform rect = tickEffect.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(80, 10);
+        rect.anchoredPosition = Vector2.zero;
+
+        // Simple fade out effect
+        StartCoroutine(FadeOutEffect(effectImg, 0.3f));
+    }
+
+    System.Collections.IEnumerator FadeOutEffect(UnityEngine.UI.Image image, float duration)
+    {
+        float elapsed = 0f;
+        Color startColor = image.color;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(startColor.a, 0f, elapsed / duration);
+            image.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+            yield return null;
+        }
+
+        if (image != null && image.gameObject != null)
+            Destroy(image.gameObject);
     }
 
     public void CheckInputs()
@@ -316,7 +471,12 @@ public partial class RhythmGameSystem : MonoBehaviour
             // LMJ: Defense Notes cannot be removed by key/touch input
             if (closestNote.noteType == "Defense")
             {
-                Debug.Log($"[RhythmGameSystem] Defense Note cannot be removed by key/touch input - Direction: {direction}");
+                return;
+            }
+
+            // LMJ: Dodge Notes can only be processed by dodge action (Q/E keys), not normal inputs
+            if (closestNote.noteType == "Dodge")
+            {
                 return;
             }
 
@@ -345,6 +505,12 @@ public partial class RhythmGameSystem : MonoBehaviour
         foreach (var note in allNotes)
         {
             if (note.direction != direction || note.IsHolding()) continue;
+
+            // Skip Dodge Notes - they can only be handled by dodge action
+            if (note.noteType == "Dodge") continue;
+
+            // Skip Defense Notes - they cannot be removed by normal input
+            if (note.noteType == "Defense") continue;
 
             float timeDiff = Mathf.Abs(currentGameTime - note.hitTime);
             if (timeDiff < minTimeDiff)
@@ -571,7 +737,6 @@ public partial class RhythmGameSystem : MonoBehaviour
             {
                 int missDamage = GetMissDamage(noteType);
                 playerManager.OnDamage(missDamage);
-                Debug.Log($"[RhythmGameSystem] Player takes miss damage: {missDamage} from {noteType}");
             }
 
             playerManager.ProcessNoteResult(noteType, result != JudgmentResult.Miss);
@@ -689,14 +854,8 @@ public partial class RhythmGameSystem : MonoBehaviour
 
         RectTransform pulseRect = pulse.GetComponent<RectTransform>();
 
-        if (direction == "Up")
-        {
-            pulseRect.sizeDelta = new Vector2(150, 10);
-        }
-        else
-        {
-            pulseRect.sizeDelta = new Vector2(10, 150);
-        }
+        // Unified pulse effect size for all directions (Center style)
+        pulseRect.sizeDelta = new Vector2(150, 10);
 
         pulseRect.anchoredPosition = Vector2.zero;
 
@@ -706,13 +865,8 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     Color GetDirectionColor(string direction)
     {
-        switch (direction)
-        {
-            case "Left": return new Color(1f, 0.2f, 0.2f, 0.8f);
-            case "Right": return new Color(0.2f, 0.2f, 1f, 0.8f);
-            case "Up": return new Color(0.2f, 1f, 0.2f, 0.8f);
-            default: return Color.white;
-        }
+        // 모든 방향 통일 - 완전 노란색
+        return new Color(1f, 1f, 0f, 0.8f); // Yellow
     }
 
     public float GetCurrentGameTime()
@@ -720,27 +874,43 @@ public partial class RhythmGameSystem : MonoBehaviour
         return NoteTimeManager.Instance.GetNoteTime() - GameStartTime;
     }
 
-    // LMJ: Method to clear Defense Notes when dodging
-    public void ClearDefenseNotesOnScreen()
+    // LMJ: Method to clear Dodge Notes when dodging - gives Perfect judgment without damage
+    public void ClearDodgeNotesOnScreen()
     {
         List<RhythmNote> notesToRemove = new List<RhythmNote>();
+        int dodgeCount = 0;
 
         foreach (RhythmNote note in allNotes)
         {
-            if (note != null && note.noteType == "Defense" && IsNoteOnScreen(note))
+            if (note != null && note.noteType == "Dodge" && IsNoteOnScreen(note))
             {
                 notesToRemove.Add(note);
-                Debug.Log($"[RhythmGameSystem] Removing Defense Note on screen - Direction: {note.direction}");
+                dodgeCount++;
             }
         }
 
+        // Remove all Dodge Notes and show Perfect judgment for each
         foreach (RhythmNote note in notesToRemove)
         {
+            // Show Perfect judgment without damage (Dodge Notes don't deal damage)
+            ShowJudgment(note.direction, JudgmentResult.Perfect);
+
+            // Create visual effect for successful dodge
+            CreateDodgeSuccessEffect(note.direction);
+
             allNotes.Remove(note);
             Destroy(note.gameObject);
         }
 
-        Debug.Log($"[RhythmGameSystem] Cleared {notesToRemove.Count} Defense Notes from screen");
+        if (dodgeCount > 0)
+        {
+        }
+    }
+
+    // Visual effect for successful dodge
+    void CreateDodgeSuccessEffect(string direction)
+    {
+        // You can add visual effects here if needed
     }
 
     // LMJ: Check if note is currently visible on screen

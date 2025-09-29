@@ -33,6 +33,8 @@ public class RhythmNote : MonoBehaviour
     private RectTransform rectTransform;
     private float originalBodyLength;
     private Vector2 originalBodyPosition;
+    private Vector2 initialPosition;
+    private Vector2 initialSizeDelta;
 
     private readonly Color headColor = new Color(1f, 0.9f, 0.2f, 1f);
     private readonly Color bodyColor = new Color(0.9f, 0.8f, 0.1f, 0.7f);
@@ -49,26 +51,14 @@ public class RhythmNote : MonoBehaviour
 
         rectTransform = GetComponent<RectTransform>();
 
-        if (direction == "Up")
-        {
-            rectTransform.localRotation = Quaternion.Euler(0, 0, 90);
-        }
-
-        Image defaultImage = GetComponent<Image>();
-        if (defaultImage != null)
-        {
-            defaultImage.enabled = false;
-        }
+        // Note: Keep Image components enabled for prefab-based notes
 
         if (IsLongNote())
         {
             holdEndTime = hitTime + duration;
-            CreateDJMaxLongNote();
+            // Note: Long note visuals are now handled by prefab, not generated dynamically
         }
-        else
-        {
-            CreateNormalNote();
-        }
+        // Note: Normal note visuals are now handled by prefab, not generated dynamically
 
         gameSystem = FindFirstObjectByType<RhythmGameSystem>();
     }
@@ -92,14 +82,8 @@ public class RhythmNote : MonoBehaviour
         normalRect.pivot = new Vector2(0.5f, 0.5f);
         normalRect.anchoredPosition = Vector2.zero;
 
-        if (direction == "Up")
-        {
-            normalRect.sizeDelta = new Vector2(100, 20);
-        }
-        else
-        {
-            normalRect.sizeDelta = new Vector2(20, 100);
-        }
+        // Unified note size for all directions
+        normalRect.sizeDelta = new Vector2(60, 60);
 
         Image noteImage = normalNote.AddComponent<Image>();
         noteImage.color = GetNoteColor(noteType);
@@ -122,14 +106,8 @@ public class RhythmNote : MonoBehaviour
         headRect.anchorMin = headRect.anchorMax = new Vector2(0.5f, 0.5f);
         headRect.pivot = new Vector2(0.5f, 0.5f);
 
-        if (direction == "Up")
-        {
-            headRect.sizeDelta = new Vector2(100, 20);
-        }
-        else
-        {
-            headRect.sizeDelta = new Vector2(20, 100);
-        }
+        // Unified head size for all directions
+        headRect.sizeDelta = new Vector2(60, 60);
 
         headImage = headCap.AddComponent<Image>();
         headImage.color = headColor;
@@ -148,14 +126,8 @@ public class RhythmNote : MonoBehaviour
 
         originalBodyLength = duration * speed;
 
-        if (direction == "Up")
-        {
-            bodyRect.sizeDelta = new Vector2(80, originalBodyLength);
-        }
-        else
-        {
-            bodyRect.sizeDelta = new Vector2(originalBodyLength, 80);
-        }
+        // All lanes use vertical body orientation (top-to-bottom)
+        bodyRect.sizeDelta = new Vector2(50, originalBodyLength);
 
         bodyImage = bodyObject.AddComponent<Image>();
         bodyImage.color = bodyColor;
@@ -170,14 +142,8 @@ public class RhythmNote : MonoBehaviour
         tailRect.anchorMin = tailRect.anchorMax = new Vector2(0.5f, 0.5f);
         tailRect.pivot = new Vector2(0.5f, 0.5f);
 
-        if (direction == "Up")
-        {
-            tailRect.sizeDelta = new Vector2(100, 20);
-        }
-        else
-        {
-            tailRect.sizeDelta = new Vector2(20, 100);
-        }
+        // Unified tail size for all directions
+        tailRect.sizeDelta = new Vector2(60, 60);
 
         tailImage = tailCap.AddComponent<Image>();
         tailImage.color = tailColor;
@@ -190,31 +156,17 @@ public class RhythmNote : MonoBehaviour
         RectTransform headRect = headCap.GetComponent<RectTransform>();
         RectTransform tailRect = tailCap.GetComponent<RectTransform>();
 
-        if (direction == "Right")
-        {
-            headRect.anchoredPosition = Vector2.zero;
-            bodyRect.anchoredPosition = new Vector2(bodyLength / 2, 0);
-            tailRect.anchoredPosition = new Vector2(bodyLength, 0);
-        }
-        else if (direction == "Left")
-        {
-            headRect.anchoredPosition = Vector2.zero;
-            bodyRect.anchoredPosition = new Vector2(-bodyLength / 2, 0);
-            tailRect.anchoredPosition = new Vector2(-bodyLength, 0);
-        }
-        else if (direction == "Up")
-        {
-            tailRect.anchoredPosition = Vector2.zero;
-            bodyRect.anchoredPosition = new Vector2(0, -bodyLength / 2);
-            headRect.anchoredPosition = new Vector2(0, -bodyLength);
-        }
+        // All lanes move from top to bottom
+        headRect.anchoredPosition = Vector2.zero;
+        bodyRect.anchoredPosition = new Vector2(0, bodyLength / 2);
+        tailRect.anchoredPosition = new Vector2(0, bodyLength);
 
         originalBodyPosition = bodyRect.anchoredPosition;
     }
 
     void Update()
     {
-        if (isHolding && bodyObject != null)
+        if (isHolding)
         {
             UpdateHoldingVisual();
         }
@@ -222,114 +174,124 @@ public class RhythmNote : MonoBehaviour
 
     void UpdateHoldingVisual()
     {
-        if (!isHolding || bodyObject == null) return;
-
-        // LMJ: Use custom note time instead of Time.time
-        float timeSinceHoldStart = NoteTimeManager.Instance.GetNoteTime() - holdStartTime;
-        float remainingDuration = duration - timeSinceHoldStart;
-        float progress = Mathf.Clamp01(timeSinceHoldStart / duration);
-        float remainingLength = remainingDuration * speed;
-        float consumedLength = timeSinceHoldStart * speed;
-
-        RectTransform bodyRect = bodyObject.GetComponent<RectTransform>();
-        RectTransform tailRect = tailCap != null ? tailCap.GetComponent<RectTransform>() : null;
-        RectTransform headRect = headCap != null ? headCap.GetComponent<RectTransform>() : null;
-
-        if (remainingLength <= 5f || progress >= 0.98f)
+        if (!isHolding || !IsLongNote())
         {
-            bodyObject.SetActive(false);
-            if (tailCap != null && direction != "Up")
-            {
-                tailRect.anchoredPosition = Vector2.zero;
-            }
-            if (headRect != null && direction == "Up")
-            {
-                headRect.anchoredPosition = Vector2.zero;
-            }
             return;
         }
 
-        if (direction == "Up")
+        // Calculate remaining duration
+        float timeSinceHoldStart = NoteTimeManager.Instance.GetNoteTime() - holdStartTime;
+        float remainingDuration = duration - timeSinceHoldStart;
+
+
+        // If hold is finished, hide the note
+        if (remainingDuration <= 0.05f)
         {
-            bodyRect.sizeDelta = new Vector2(80, remainingLength);
-            bodyRect.anchoredPosition = new Vector2(0, -consumedLength - remainingLength / 2);
-
-            if (headRect != null)
-            {
-                headRect.anchoredPosition = new Vector2(0, -consumedLength - remainingLength);
-            }
-
-            if (tailRect != null)
-            {
-                tailRect.anchoredPosition = Vector2.zero;
-            }
-        }
-        else if (direction == "Right")
-        {
-            bodyRect.sizeDelta = new Vector2(remainingLength, 80);
-            bodyRect.anchoredPosition = new Vector2(consumedLength + remainingLength / 2, 0);
-
-            if (tailRect != null)
-            {
-                tailRect.anchoredPosition = new Vector2(consumedLength + remainingLength, 0);
-            }
-        }
-        else
-        {
-            bodyRect.sizeDelta = new Vector2(remainingLength, 80);
-            bodyRect.anchoredPosition = new Vector2(-consumedLength - remainingLength / 2, 0);
-
-            if (tailRect != null)
-            {
-                tailRect.anchoredPosition = new Vector2(-consumedLength - remainingLength, 0);
-            }
+            gameObject.SetActive(false);
+            return;
         }
 
+        // DJMAX Style: Note stays at judgment line and is consumed from bottom
+        // Calculate remaining height based on remaining duration
+        float remainingHeight = remainingDuration * speed;
+
+        // Minimum height to maintain visual clarity
+        float minHeight = 35f;
+        remainingHeight = Mathf.Max(remainingHeight, minHeight);
+
+        // Update the height (pivot at bottom, so it shrinks from top)
+        rectTransform.sizeDelta = new Vector2(initialSizeDelta.x, remainingHeight);
+
+        // Since the note is fixed at judgment line, no position adjustment needed
+        // The visual effect is that the note is being "consumed" at the judgment line
+
+
+        // Optional: Add glow effect during hold
         ApplyHoldGlowEffect();
-
-        if (direction != "Up" && headCap != null && timeSinceHoldStart > 0.1f)
-        {
-            headCap.SetActive(false);
-        }
-        else if (direction == "Up" && tailCap != null && timeSinceHoldStart > 0.1f)
-        {
-            tailCap.SetActive(false);
-        }
     }
 
     void ApplyHoldGlowEffect()
     {
-        if (bodyImage != null)
-        {
-            float pulse = Mathf.Sin(Time.time * 5f) * 0.2f + 0.8f;
-            Color glowColor = Color.Lerp(bodyColor, holdingGlowColor, pulse);
-            bodyImage.color = glowColor;
-        }
+        // Simple glow effect for the entire prefab during hold
+        UnityEngine.UI.Image[] images = GetComponentsInChildren<UnityEngine.UI.Image>();
 
-        if (tailImage != null)
+        foreach (var image in images)
         {
-            float pulse = Mathf.Sin(Time.time * 3f) * 0.3f + 0.7f;
-            Color tailGlow = tailColor;
-            tailGlow.a = pulse;
-            tailImage.color = tailGlow;
+            if (image != null)
+            {
+                float pulse = Mathf.Sin(Time.time * 5f) * 0.3f + 0.7f;
+                Color originalColor = image.color;
+                originalColor.a = pulse;
+                image.color = originalColor;
+            }
         }
     }
 
     public void StartHold()
     {
-        if (!IsLongNote()) return;
+        if (!IsLongNote())
+        {
+            return;
+        }
+
 
         isHolding = true;
         holdStarted = true;
         holdStartTime = NoteTimeManager.Instance.GetNoteTime();
 
-        if (direction == "Up" && tailCap != null)
+        // Reset scale to normal in case it was modified
+        transform.localScale = Vector3.one;
+
+        // Store initial state WITHOUT changing pivot
+        initialPosition = rectTransform.anchoredPosition;
+        initialSizeDelta = rectTransform.sizeDelta;
+
+
+
+        // Simple hit effect for prefab-based Long Note
+        StartCoroutine(HitEffectForPrefab());
+    }
+
+    IEnumerator HitEffectForPrefab()
+    {
+        UnityEngine.UI.Image[] images = GetComponentsInChildren<UnityEngine.UI.Image>();
+        Color[] originalColors = new Color[images.Length];
+
+        // Store original colors
+        for (int i = 0; i < images.Length; i++)
         {
-            StartCoroutine(HitEffect(tailImage));
+            if (images[i] != null)
+                originalColors[i] = images[i].color;
         }
-        else if (headCap != null)
+
+        float duration = 0.2f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
         {
-            StartCoroutine(HitEffect(headImage));
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            for (int i = 0; i < images.Length; i++)
+            {
+                if (images[i] != null)
+                {
+                    images[i].color = Color.Lerp(originalColors[i], Color.white, 1f - t);
+                    images[i].transform.localScale = Vector3.Lerp(Vector3.one, Vector3.one * 1.2f, 1f - t);
+                }
+            }
+
+            yield return null;
+        }
+
+        // Restore original colors and scale
+        for (int i = 0; i < images.Length; i++)
+        {
+            if (images[i] != null)
+            {
+                images[i].color = originalColors[i];
+                images[i].transform.localScale = Vector3.one;
+            }
         }
     }
 

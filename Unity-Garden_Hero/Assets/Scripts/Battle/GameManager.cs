@@ -248,10 +248,11 @@ public class GameManager : MonoBehaviour
             rhythmGameSystem.enabled = true;
         }
 
-        // LMJ: Generate new notes immediately from current time
+        // LMJ: Generate new notes immediately from current time and restart pattern generation
         if (rhythmPatternManager != null)
         {
             rhythmPatternManager.AddNextPatternSetFromCurrentTime(); // LMJ: 새로운 메서드 사용
+            rhythmPatternManager.RestartPatternGeneration(); // LMJ: Restart infinite generation coroutine
         }
     }
 

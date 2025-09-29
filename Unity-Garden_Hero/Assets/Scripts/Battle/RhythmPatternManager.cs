@@ -40,6 +40,9 @@ public class RhythmPatternManager : MonoBehaviour
 
     void Start()
     {
+        // LMJ: Initialize random seed for true randomization
+        Random.InitState(System.DateTime.Now.Millisecond + System.DateTime.Now.Second * 1000);
+
         if (gameSystem == null)
             gameSystem = GetComponent<RhythmGameSystem>();
 
@@ -128,20 +131,15 @@ public class RhythmPatternManager : MonoBehaviour
 
         foreach (var noteData in pattern.notes)
         {
-            float spawnDistance = lookAheadTime * gameSystem.noteSpeed;
+            // LMJ: Calculate absolute hit time (pattern start + note time)
+            float actualHitTime = patternStartTime + noteData.time;
 
-            GameObject noteObj = gameSystem.CreateNoteObject(noteData.direction, spawnDistance);
+            // Use new CreateNoteObject method with JSON data
+            GameObject noteObj = gameSystem.CreateNoteObject(noteData.direction, noteData.type, actualHitTime, noteData.duration);
             if (noteObj != null)
             {
                 RhythmNote note = noteObj.GetComponent<RhythmNote>();
-                if (note == null)
-                {
-                    note = noteObj.AddComponent<RhythmNote>();
-                }
-
-                // LMJ: Calculate absolute hit time (pattern start + note time)
-                float actualHitTime = patternStartTime + noteData.time;
-                note.Initialize(noteData.direction, actualHitTime, noteData.type, gameSystem.noteSpeed, noteData.duration);
+                // Note: Initialize is now called inside CreateNoteObject, so we don't need to call it again
 
                 allNotes.Add(note);
             }
@@ -205,7 +203,6 @@ public class RhythmPatternManager : MonoBehaviour
                 List<RhythmNote> newNotes = allNotes.GetRange(previousCount, allNotes.Count - previousCount);
                 gameSystem.AddNotes(newNotes);
 
-                Debug.Log($"[RhythmPatternManager] Generated next pattern set. Time until end: {timeUntilSetEnd}");
 
                 // LMJ: Wait longer to prevent multiple generations
                 yield return new WaitForSeconds(lookAheadTime);
@@ -228,6 +225,23 @@ public class RhythmPatternManager : MonoBehaviour
         gameSystem.AddNotes(newNotes);
     }
 
+    // LMJ: Stop the pattern generation system
+    public void StopPatternGeneration()
+    {
+        gameStarted = false;
+        StopAllCoroutines();
+        Debug.Log("[RhythmPatternManager] Pattern generation stopped");
+    }
+
+    // LMJ: Restart the pattern generation system
+    public void RestartPatternGeneration()
+    {
+        StopAllCoroutines(); // Stop any existing coroutines first
+        gameStarted = true;
+        StartCoroutine(MonitorForNextPatternSet());
+        Debug.Log("[RhythmPatternManager] Pattern generation restarted");
+    }
+
     // LMJ: New method for DealingTime recovery - start from current time immediately
     public void AddNextPatternSetFromCurrentTime()
     {
@@ -243,7 +257,6 @@ public class RhythmPatternManager : MonoBehaviour
         // LMJ: Add all newly created notes
         gameSystem.AddNotes(allNotes);
 
-        Debug.Log($"[RhythmPatternManager] Added new pattern set from current time. Notes count: {allNotes.Count}, Start time: {currentSetStartTime}");
     }
 
     void OnDestroy()

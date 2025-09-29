@@ -116,7 +116,7 @@ public class ShieldDurabilitySystem : MonoBehaviour
             // LMJ: Disable all shields visually
             shieldController.SetShieldParticleEffect("Left", true);
             shieldController.SetShieldParticleEffect("Right", true);
-            shieldController.SetShieldParticleEffect("Up", true);
+            shieldController.SetShieldParticleEffect("Center", true);
         }
         
         StartCoroutine(ShieldBreakEffectAll());
@@ -134,7 +134,7 @@ public class ShieldDurabilitySystem : MonoBehaviour
             // LMJ: Restore all shields visually
             shieldController.SetShieldParticleEffect("Left", false);
             shieldController.SetShieldParticleEffect("Right", false);
-            shieldController.SetShieldParticleEffect("Up", false);
+            shieldController.SetShieldParticleEffect("Center", false);
         }
         
         UpdateShieldVisuals();

@@ -26,6 +26,7 @@ public class MonsterManager : LivingEntity
     [Header("STUN Events")]
     public UnityEvent OnStunBroken;
     public UnityEvent<float> OnStunChanged;
+    public UnityEvent OnStunRestored;
 
     [Header("Phase Events")]
     public UnityEvent<int> OnPhaseChanged;
@@ -88,7 +89,6 @@ public class MonsterManager : LivingEntity
         if (CSVManager.Instance == null)
         {
             csvStatus = "CSVManager.Instance is null";
-            Debug.LogError("[MonsterManager] CSVManager.Instance is null!");
             return;
         }
 
@@ -96,7 +96,6 @@ public class MonsterManager : LivingEntity
         if (csvDataAsset?.phaseDataList == null || csvDataAsset?.bossDataList == null)
         {
             csvStatus = "CSV data asset or lists are null";
-            Debug.LogError("[MonsterManager] CSV data not available!");
             return;
         }
 
@@ -105,7 +104,6 @@ public class MonsterManager : LivingEntity
         if (currentPhaseData == null)
         {
             csvStatus = $"Phase data not found for ID: {phaseId}";
-            Debug.LogError($"[MonsterManager] Phase data not found for ID: {phaseId}");
             return;
         }
 
@@ -117,7 +115,6 @@ public class MonsterManager : LivingEntity
 
         csvDataLoaded = true;
         csvStatus = $"CSV loaded successfully - Phase ID: {phaseId}";
-        Debug.Log($"[MonsterManager] CSV data loaded successfully for Phase ID: {phaseId}");
 
         // Invoke initial phase event
         OnPhaseChanged?.Invoke(currentPhaseIndex + 1);
@@ -145,12 +142,6 @@ public class MonsterManager : LivingEntity
                          currentPhaseData.BOSS_ID_3, currentPhaseData.BOSS_ID_4,
                          currentPhaseData.BOSS_ID_5 };
 
-        Debug.Log($"[MonsterManager] Phase data for ID {phaseId}:");
-        Debug.Log($"  BOSS_ID_1: {currentPhaseData.BOSS_ID_1}");
-        Debug.Log($"  BOSS_ID_2: {currentPhaseData.BOSS_ID_2}");
-        Debug.Log($"  BOSS_ID_3: {currentPhaseData.BOSS_ID_3}");
-        Debug.Log($"  BOSS_ID_4: {currentPhaseData.BOSS_ID_4}");
-        Debug.Log($"  BOSS_ID_5: {currentPhaseData.BOSS_ID_5}");
 
         foreach (int bossId in bossIds)
         {
@@ -160,7 +151,6 @@ public class MonsterManager : LivingEntity
             }
         }
 
-        Debug.Log($"[MonsterManager] Total phases: {totalPhases}");
     }
 
     int GetBossIdForPhaseIndex(int phaseIndex)
@@ -184,7 +174,6 @@ public class MonsterManager : LivingEntity
         if (currentBossId <= 0)
         {
             csvStatus = $"Invalid boss ID for phase index: {currentPhaseIndex}";
-            Debug.LogError($"[MonsterManager] Invalid boss ID for phase index: {currentPhaseIndex}");
             return;
         }
 
@@ -192,11 +181,9 @@ public class MonsterManager : LivingEntity
         if (currentBossData == null)
         {
             csvStatus = $"Boss data not found for ID: {currentBossId}";
-            Debug.LogError($"[MonsterManager] Boss data not found for ID: {currentBossId}");
             return;
         }
 
-        Debug.Log($"[MonsterManager] Loaded boss data for ID: {currentBossId} ({currentBossData.BOSS_NAME})");
     }
 
     BossData GetBossData(int bossId)
@@ -247,7 +234,6 @@ public class MonsterManager : LivingEntity
         UpdateStunVisual();
 
         csvStatus = $"Initialized {monsterName} Phase {currentBossData.PHASE} - HP:{bossHealth}, STUN:{maxStun}";
-        Debug.Log($"[MonsterManager] {csvStatus}");
     }
 
     void InitializeFallback()
@@ -263,7 +249,6 @@ public class MonsterManager : LivingEntity
         UpdateStunVisual();
 
         csvStatus = "Using fallback values - CSV data not available";
-        Debug.LogWarning("[MonsterManager] " + csvStatus);
     }
 
     public void TakeNoteHit(int playerAttack, string noteType, JudgmentResult judgment)
@@ -286,7 +271,6 @@ public class MonsterManager : LivingEntity
 
             if (currentStun <= 0)
             {
-                Debug.Log($"{monsterName}'s stun is broken! Entering DealingTime...");
                 UpdateStunVisual();
                 OnStunBroken?.Invoke();
             }
@@ -301,7 +285,6 @@ public class MonsterManager : LivingEntity
         {
             // 체력에 직접 데미지 (DealingTime 중)
             OnDamage(finalDamage);
-            Debug.Log($"[MonsterManager] HP hit: -{finalDamage}, remaining: {currentHealth}");
         }
     }
 
@@ -334,23 +317,21 @@ public class MonsterManager : LivingEntity
         // During DealingTime, we should always be able to deal damage
         // Remove the stun check since DealingTime means stun is broken
 
-        Debug.Log($"[MonsterManager] TakeDealingTimeDamage called - Damage: {damage}, IsAlive: {IsAlive()}, isDead: {isDead}, Phase: {currentPhaseIndex + 1}");
 
         // Force alive state if needed for DealingTime
         if (isDead && currentHealth > 0)
         {
-            Debug.LogWarning($"[MonsterManager] Monster marked as dead but has HP! Resetting dead flag. HP: {currentHealth}/{maxHealth}");
             isDead = false;
         }
 
         OnDamage(damage);
-        Debug.Log($"{monsterName} takes {damage} direct damage! Health: {currentHealth}/{maxHealth}, Phase: {currentPhaseIndex + 1}/{totalPhases}");
     }
 
     public void ResetStun()
     {
         currentStun = maxStun;
         OnStunChanged?.Invoke(currentStun);
+        OnStunRestored?.Invoke(); // New event for immediate UI update
         UpdateStunVisual();
 
         Debug.Log($"{monsterName}'s stun restored to {currentStun}!");
@@ -358,7 +339,6 @@ public class MonsterManager : LivingEntity
 
     protected override void OnDeath()
     {
-        Debug.Log($"{monsterName} Phase {currentPhaseIndex + 1} has been defeated!");
 
         // Stop attack animations
         if (attackAnimationCoroutine != null)
@@ -399,7 +379,6 @@ public class MonsterManager : LivingEntity
 
         if (player != null && player.IsAlive())
         {
-            Debug.Log("[MonsterManager] Monster defeated on final phase - triggering player victory!");
             player.PlayVictoryAnimation();
 
             // Disable dodge system to prevent input during victory
@@ -418,7 +397,6 @@ public class MonsterManager : LivingEntity
                 if (playerStateInfo.IsName("Victory") || playerStateInfo.IsName("Victory_SwordAndShield"))
                 {
                     playerVictoryAnimationLength = playerStateInfo.length;
-                    Debug.Log($"[MonsterManager] Player victory animation length: {playerVictoryAnimationLength}");
                 }
                 else
                 {
@@ -435,7 +413,6 @@ public class MonsterManager : LivingEntity
         if (animator != null)
         {
             animator.SetTrigger("OnDeath");
-            Debug.Log($"[MonsterManager] Playing death animation for {monsterName}");
 
             // LMJ: Wait for one frame to ensure animation has started
             yield return null;
@@ -459,14 +436,12 @@ public class MonsterManager : LivingEntity
         // LMJ: Wait for player victory animation to complete before showing UI
         if (playerVictoryAnimationLength > 0f)
         {
-            Debug.Log($"[MonsterManager] Waiting for player victory animation to complete ({playerVictoryAnimationLength}s)");
             yield return new WaitForSeconds(playerVictoryAnimationLength + 0.5f); // Small buffer
         }
 
         // LMJ: Trigger GameOver through event (will show Victory UI)
         if (OnDied != null)
         {
-            Debug.Log("[MonsterManager] Triggering OnDied event for Victory UI");
             OnDied.Invoke();
         }
 
@@ -490,6 +465,19 @@ public class MonsterManager : LivingEntity
         // Invoke phase changed event
         OnPhaseChanged?.Invoke(currentPhaseIndex + 1);
 
+        // LMJ: Restore all shields when entering new phase (especially phase 2)
+        DirectionalShieldSystem shieldSystem = FindFirstObjectByType<DirectionalShieldSystem>();
+        if (shieldSystem != null)
+        {
+            shieldSystem.RestoreAllShields();
+        }
+
+        ShieldDurabilitySystem durabilitySystem = FindFirstObjectByType<ShieldDurabilitySystem>();
+        if (durabilitySystem != null)
+        {
+            durabilitySystem.RestoreAllShields();
+        }
+
         // Check if we're currently in DealingTime
         bool isDealingTime = gameManager != null && gameManager.IsDealingTimeActive();
 
@@ -501,7 +489,6 @@ public class MonsterManager : LivingEntity
         if (rhythmSystem != null)
         {
             rhythmSystem.ClearAllNotes();
-            Debug.Log($"[MonsterManager] Cleared all notes for phase transition");
         }
 
         if (csvDataLoaded && currentBossData != null)
@@ -512,7 +499,6 @@ public class MonsterManager : LivingEntity
             InitializeFromCSV();
 
             // HP is fully restored by Initialize, currentHealth = maxHealth
-            Debug.Log($"{monsterName} advanced to Phase {currentPhaseIndex + 1}! HP restored to {currentHealth}/{maxHealth}, isDead reset to false");
         }
         else
         {
@@ -526,6 +512,7 @@ public class MonsterManager : LivingEntity
         if (isDealingTime)
         {
             currentStun = 0;
+            OnStunChanged?.Invoke(currentStun);
             UpdateStunVisual();
 
             // Keep dizzy animation active for new phase
@@ -534,14 +521,12 @@ public class MonsterManager : LivingEntity
                 animator.SetBool("isDealingTime", true);
             }
 
-            Debug.Log($"[MonsterManager] Phase advanced during DealingTime - temporarily keeping stun at 0");
         }
         else
         {
             // Make sure stun is at max and visual is updated
             OnStunChanged?.Invoke(currentStun);
             UpdateStunVisual();
-            Debug.Log($"[MonsterManager] Phase advanced - Stun restored to {currentStun}/{maxStun}");
         }
 
         // Restart attack animations for new phase
@@ -604,7 +589,6 @@ public class MonsterManager : LivingEntity
         int randomAttack = Random.Range(0, 3);
         animator.SetInteger("randomAtt", randomAttack);
 
-        Debug.Log($"[MonsterManager] Playing Attack animation: Attack0{randomAttack + 1}");
 
         // Reset the parameter after a short delay to allow transition back to idle
         StartCoroutine(ResetAttackParameter());
@@ -630,7 +614,6 @@ public class MonsterManager : LivingEntity
         if (animator != null)
         {
             animator.SetBool("isDealingTime", true);
-            Debug.Log($"[MonsterManager] Starting Dizzy animation - Phase: {currentPhaseIndex + 1}/{totalPhases}, Stun: {currentStun}/{maxStun}, HP: {currentHealth}/{maxHealth}");
         }
     }
 
@@ -639,7 +622,6 @@ public class MonsterManager : LivingEntity
         if (animator != null)
         {
             animator.SetBool("isDealingTime", false);
-            Debug.Log("[MonsterManager] Stopping Dizzy animation (isDealingTime = false)");
         }
     }
 
@@ -651,7 +633,6 @@ public class MonsterManager : LivingEntity
             animator.ResetTrigger("GetHit");
             // Set the trigger to play GetHit animation
             animator.SetTrigger("GetHit");
-            Debug.Log("[MonsterManager] Playing GetHit animation");
         }
     }
 
@@ -667,7 +648,6 @@ public class MonsterManager : LivingEntity
             }
 
             animator.SetBool("isVictory", true);
-            Debug.Log($"[MonsterManager] {monsterName} is victorious! Playing victory animation");
 
             // Ensure victory animation keeps looping
             StartCoroutine(EnsureVictoryLoop());
@@ -692,7 +672,6 @@ public class MonsterManager : LivingEntity
                     animator.SetBool("isVictory", false);
                     yield return null; // Wait one frame
                     animator.SetBool("isVictory", true);
-                    Debug.Log($"[MonsterManager] Re-triggered victory animation to ensure loop");
                 }
             }
         }
@@ -728,7 +707,6 @@ public class MonsterManager : LivingEntity
         }
         else
         {
-            Debug.Log("Cannot advance - already at final phase");
         }
     }
 
@@ -741,8 +719,7 @@ public class MonsterManager : LivingEntity
     [ContextMenu("📊 Log Monster Status")]
     public void LogMonsterStatus()
     {
-        Debug.Log($"[MonsterManager Status]\n" +
-                 $"Name: {monsterName}\n" +
+        Debug.Log($"Name: {monsterName}\n" +
                  $"Phase: {currentPhaseIndex + 1}/{totalPhases}\n" +
                  $"Boss ID: {currentBossId}\n" +
                  $"HP: {currentHealth}/{maxHealth}\n" +
