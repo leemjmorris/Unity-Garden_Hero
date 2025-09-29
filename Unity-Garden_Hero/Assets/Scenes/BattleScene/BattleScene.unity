@@ -1197,6 +1197,7 @@ MonoBehaviour:
   mapTransform: {fileID: 1783859416}
   rotationSpeed: 10
   directionalShieldSystem: {fileID: 1717503336}
+  gameManager: {fileID: 0}
   OnDodgeLeft:
     m_PersistentCalls:
       m_Calls: []

@@ -200,13 +200,29 @@ public class GameOverManager : MonoBehaviour
         Time.timeScale = 1f;
         StopAllCoroutines();
 
+        // LMJ: Stop all coroutines on all MonoBehaviours
         var allManagers = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
         foreach (var manager in allManagers)
         {
             manager.StopAllCoroutines();
         }
 
+        // LMJ: Reset DontDestroyOnLoad singletons before scene restart
+        ResetPersistentSingletons();
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    void ResetPersistentSingletons()
+    {
+        // LMJ: Reset NoteTimeManager state
+        if (NoteTimeManager.Instance != null)
+        {
+            NoteTimeManager.Instance.ResetForRestart();
+        }
+
+        // LMJ: CSVManager data should persist, but ensure clean state
+        // No reset needed for CSVManager as data should remain loaded
     }
 
     void OnDestroy()

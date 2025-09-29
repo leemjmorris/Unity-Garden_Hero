@@ -30,6 +30,11 @@ public class TouchInputManager : MonoBehaviour
     private Vector2 endTouchPosition;
     private bool isTouching = false;
 
+    [Header("Button Press Detection")]
+    [SerializeField] private float simultaneousPressThreshold = 0.1f; // Time window for simultaneous press detection
+    private float lastButtonPressTime = 0f;
+    private int buttonsPressed = 0;
+
     void Start()
     {
         SetupButtonEvents();
@@ -130,10 +135,28 @@ public class TouchInputManager : MonoBehaviour
     {
         SetHoldingState(direction, true);
 
+        // LMJ: Track button press timing for simultaneous press detection
+        float currentTime = Time.time;
+        if (currentTime - lastButtonPressTime <= simultaneousPressThreshold)
+        {
+            buttonsPressed++;
+        }
+        else
+        {
+            buttonsPressed = 1; // Reset count for new press sequence
+        }
+        lastButtonPressTime = currentTime;
+
         // LMJ: Register touch start for swipe detection prevention
         if (dodgeSystem != null)
         {
             dodgeSystem.RegisterTouchStart();
+
+            // LMJ: If multiple buttons pressed simultaneously, block swipe completely
+            if (buttonsPressed > 1)
+            {
+                dodgeSystem.BlockSwipeTemporarily();
+            }
         }
 
         if (gameSystem != null)
@@ -397,11 +420,28 @@ public class TouchInputManager : MonoBehaviour
 
     void DetectSwipe()
     {
+        // LMJ: Don't process swipe if any buttons were pressed recently (prevent conflict)
+        if (Time.time - lastButtonPressTime <= simultaneousPressThreshold * 2)
+        {
+            return;
+        }
+
         Vector2 swipeDirection = endTouchPosition - startTouchPosition;
         float swipeDistance = swipeDirection.magnitude;
 
         if (swipeDistance < swipeThreshold)
             return;
+
+        // LMJ: Additional check - don't swipe if multiple buttons are currently being held
+        int currentlyHeld = 0;
+        if (isLeftHolding) currentlyHeld++;
+        if (isRightHolding) currentlyHeld++;
+        if (isCenterHolding) currentlyHeld++;
+
+        if (currentlyHeld > 0)
+        {
+            return; // Don't swipe if any buttons are being held
+        }
 
         // Normalize the swipe direction
         swipeDirection.Normalize();

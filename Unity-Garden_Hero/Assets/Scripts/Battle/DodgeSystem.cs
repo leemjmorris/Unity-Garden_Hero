@@ -19,6 +19,9 @@ public class DodgeSystem : MonoBehaviour
     [Header("Shield System")]
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
+    [Header("Game Manager")]
+    [SerializeField] private GameManager gameManager;
+
     [Header("Dodge Events")]
     public UnityEvent OnDodgeLeft;
     public UnityEvent OnDodgeRight;
@@ -34,6 +37,11 @@ public class DodgeSystem : MonoBehaviour
     // LMJ: Track active touch IDs to prevent swipe during multi-touch
     private int activeTouchIdCount = 0;
 
+    // LMJ: Temporary swipe blocking for simultaneous button presses
+    private bool isSwipeTemporarilyBlocked = false;
+    private float swipeBlockEndTime = 0f;
+    [SerializeField] private float swipeBlockDuration = 0.2f;
+
     // Swipe input variables
     private Vector2 startTouchPosition;
     private Vector2 endTouchPosition;
@@ -42,7 +50,11 @@ public class DodgeSystem : MonoBehaviour
 
     void Start()
     {
-        // No button setup needed anymore
+        // Find GameManager if not assigned
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
     }
 
     void Update()
@@ -56,7 +68,20 @@ public class DodgeSystem : MonoBehaviour
         // Don't handle any input if dodge system is disabled
         if (!isDodgeSystemEnabled) return;
 
-        if (enableSwipeInput)
+        // Don't handle input during DealingTime
+        if (gameManager != null && gameManager.IsDealingTimeActive())
+        {
+            // Debug.Log("DodgeSystem: Input blocked during DealingTime");
+            return;
+        }
+
+        // LMJ: Check and update temporary swipe block
+        if (isSwipeTemporarilyBlocked && Time.time >= swipeBlockEndTime)
+        {
+            isSwipeTemporarilyBlocked = false;
+        }
+
+        if (enableSwipeInput && !isSwipeTemporarilyBlocked)
             HandleSwipeInput();
 
         if (enableKeyboardInput)
@@ -326,6 +351,13 @@ public class DodgeSystem : MonoBehaviour
     public void RegisterTouchEnd()
     {
         activeTouchIdCount = Mathf.Max(0, activeTouchIdCount - 1);
+    }
+
+    // LMJ: Method to temporarily block swipe when buttons are pressed simultaneously
+    public void BlockSwipeTemporarily()
+    {
+        isSwipeTemporarilyBlocked = true;
+        swipeBlockEndTime = Time.time + swipeBlockDuration;
     }
 
     // LMJ: Clear Dodge Notes when dodging

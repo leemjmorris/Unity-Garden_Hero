@@ -91,24 +91,24 @@ public class PlayerManager : LivingEntity
 
     void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-
-            // LMJ: Initialize breakdown display
-            strengthStats = new StatBreakdown("💪 Strength");
-            dexterityStats = new StatBreakdown("⚡ Dexterity");
-            constitutionStats = new StatBreakdown("🛡️ Constitution");
-
-            // LMJ: Store initial values
-            prevStrengthLevel = strengthLevel;
-            prevDexterityLevel = dexterityLevel;
-            prevConstitutionLevel = constitutionLevel;
-        }
-        else
+        // LMJ: Clear static instance on scene restart to ensure proper singleton behavior
+        if (instance != null && instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        instance = this;
+
+        // LMJ: Initialize breakdown display
+        strengthStats = new StatBreakdown("💪 Strength");
+        dexterityStats = new StatBreakdown("⚡ Dexterity");
+        constitutionStats = new StatBreakdown("🛡️ Constitution");
+
+        // LMJ: Store initial values
+        prevStrengthLevel = strengthLevel;
+        prevDexterityLevel = dexterityLevel;
+        prevConstitutionLevel = constitutionLevel;
     }
 
     void Start()
@@ -665,6 +665,12 @@ public class PlayerManager : LivingEntity
         {
             dodgeSystem.OnDodgeLeft.RemoveListener(PlayRollLeftAnimation);
             dodgeSystem.OnDodgeRight.RemoveListener(PlayRollRightAnimation);
+        }
+
+        // LMJ: Clear static instance when this object is destroyed for proper restart
+        if (instance == this)
+        {
+            instance = null;
         }
     }
 }

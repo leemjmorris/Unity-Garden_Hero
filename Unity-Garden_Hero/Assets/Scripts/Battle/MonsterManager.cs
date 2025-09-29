@@ -367,9 +367,14 @@ public class MonsterManager : LivingEntity
         // LMJ: Stop game elements like note generation
         StopGameElements();
 
-        // Set game state to GameOver to stop note movement
+        // LMJ: End DealingTime immediately if monster dies during it
         if (gameManager != null)
         {
+            if (gameManager.IsDealingTimeActive())
+            {
+                gameManager.EndDealingTime();
+            }
+
             gameManager.SetGameState(GameState.GameOver);
         }
 
@@ -459,6 +464,15 @@ public class MonsterManager : LivingEntity
 
     void AdvancePhase()
     {
+        // LMJ: Check if we're currently in DealingTime BEFORE ending it
+        bool wasDealingTime = gameManager != null && gameManager.IsDealingTimeActive();
+
+        // LMJ: End DealingTime immediately when advancing to next phase
+        if (wasDealingTime)
+        {
+            gameManager.EndDealingTime();
+        }
+
         currentPhaseIndex++;
         LoadCurrentBossData();
 
@@ -477,9 +491,6 @@ public class MonsterManager : LivingEntity
         {
             durabilitySystem.RestoreAllShields();
         }
-
-        // Check if we're currently in DealingTime
-        bool isDealingTime = gameManager != null && gameManager.IsDealingTimeActive();
 
         // IMPORTANT: Reset dead flag to allow the new phase to take damage
         isDead = false;
@@ -507,18 +518,18 @@ public class MonsterManager : LivingEntity
             ResetStun();
         }
 
-        // If we're in DealingTime, keep stun at 0 temporarily
+        // If we WERE in DealingTime, keep stun at 0 temporarily for the new phase
         // Otherwise, stun is already at max from InitializeFromCSV
-        if (isDealingTime)
+        if (wasDealingTime)
         {
             currentStun = 0;
             OnStunChanged?.Invoke(currentStun);
             UpdateStunVisual();
 
-            // Keep dizzy animation active for new phase
+            // Keep dizzy animation active for new phase (but not actually in DealingTime anymore)
             if (animator != null)
             {
-                animator.SetBool("isDealingTime", true);
+                animator.SetBool("isDealingTime", false); // New phase starts in normal state
             }
 
         }
@@ -534,6 +545,32 @@ public class MonsterManager : LivingEntity
         {
             attackAnimationCoroutine = StartCoroutine(AutoAttackAnimation());
         }
+
+        // LMJ: Ensure notes restart properly after phase transition
+        if (gameManager != null && gameManager.GetCurrentState() == GameState.Playing)
+        {
+            RhythmGameSystem gameRhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
+            if (gameRhythmSystem != null && !gameRhythmSystem.enabled)
+            {
+                gameRhythmSystem.enabled = true;
+            }
+
+            RhythmPatternManager patternManager = FindFirstObjectByType<RhythmPatternManager>();
+            if (patternManager != null)
+            {
+                // Small delay to ensure everything is properly initialized
+                StartCoroutine(DelayedRestartNotes(patternManager));
+            }
+        }
+    }
+
+    IEnumerator DelayedRestartNotes(RhythmPatternManager patternManager)
+    {
+        // Wait a small amount to ensure phase transition is complete
+        yield return new WaitForSeconds(0.1f);
+
+        patternManager.AddNextPatternSetFromCurrentTime();
+        patternManager.RestartPatternGeneration();
     }
 
     void UpdateStunVisual()

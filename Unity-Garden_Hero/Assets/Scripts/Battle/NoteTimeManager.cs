@@ -84,4 +84,13 @@ public class NoteTimeManager : MonoBehaviour
     {
         return realTime - totalPausedTime;
     }
+
+    // LMJ: Reset all time-related states for game restart
+    public void ResetForRestart()
+    {
+        isPaused = false;
+        gameTime = 0f;
+        pauseStartTime = 0f;
+        totalPausedTime = 0f;
+    }
 }

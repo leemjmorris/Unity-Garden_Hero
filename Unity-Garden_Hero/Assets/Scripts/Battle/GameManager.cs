@@ -207,7 +207,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void EndDealingTime()
+    public void EndDealingTime()
     {
         if (!isDealingTimeActive) return;
 
