@@ -49,6 +49,9 @@ public class MonsterManager : LivingEntity
     [Header("Debug Info")]
     [SerializeField] private string csvStatus;
 
+    [Header("Manager References")]
+    [SerializeField] private RhythmGameSystem rhythmGameSystem;
+
     // CSV 데이터 캐시
     private PhaseData currentPhaseData;
     private BossData currentBossData;
@@ -269,6 +272,12 @@ public class MonsterManager : LivingEntity
 
             OnStunChanged?.Invoke(currentStun);
 
+            // Combo System - Add combo when monster takes stun damage
+            if (rhythmGameSystem != null)
+            {
+                rhythmGameSystem.OnMonsterStunDamage();
+            }
+
             if (currentStun <= 0)
             {
                 UpdateStunVisual();
@@ -285,6 +294,12 @@ public class MonsterManager : LivingEntity
         {
             // 체력에 직접 데미지 (DealingTime 중)
             OnDamage(finalDamage);
+
+            // Combo System - Add combo when monster takes HP damage
+            if (rhythmGameSystem != null)
+            {
+                rhythmGameSystem.OnMonsterStunDamage();
+            }
         }
     }
 

@@ -154,6 +154,13 @@ public class PlayerManager : LivingEntity
         // Don't take damage if already dead
         if (!IsAlive()) return;
 
+        // Combo System - Reset combo when player takes damage
+        RhythmGameSystem rhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
+        if (rhythmSystem != null)
+        {
+            rhythmSystem.OnPlayerDamaged();
+        }
+
         base.OnDamage(damageInfo);
 
         // Only play GetHit animation if still alive after damage
@@ -169,6 +176,13 @@ public class PlayerManager : LivingEntity
 
         // Don't take damage if already dead
         if (!IsAlive()) return;
+
+        // Combo System - Reset combo when player takes damage
+        RhythmGameSystem rhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
+        if (rhythmSystem != null)
+        {
+            rhythmSystem.OnPlayerDamaged();
+        }
 
         base.OnDamage(simpleDamage);
 

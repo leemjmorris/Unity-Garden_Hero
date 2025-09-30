@@ -115,6 +115,15 @@ public class DirectionalShieldSystem : MonoBehaviour
             if (shieldVisuals[i] != null)
             {
                 shieldRenderers[i] = shieldVisuals[i].GetComponent<Renderer>();
+
+                // LMJ: Reset shield to default color (white) with full opacity
+                if (shieldRenderers[i] != null)
+                {
+                    Color defaultColor = Color.white;
+                    defaultColor.a = 1f;
+                    shieldRenderers[i].material.color = defaultColor;
+                }
+
                 // Don't activate shields at start - they should only show when player presses buttons
                 shieldVisuals[i].SetActive(false);
             }
@@ -273,18 +282,25 @@ public class DirectionalShieldSystem : MonoBehaviour
             if (shieldRenderers[i] != null)
             {
                 int shieldIndex = GetShieldIndexForVisual(i);
-                Color targetColor = GetShieldColor(shields[shieldIndex]);
 
-                if (shieldIndex == currentDirection)
+                // LMJ: Only change transparency, not color
+                Color currentColor = shieldRenderers[i].material.color;
+
+                // Check if shield is broken (durability <= 0)
+                if (shields[shieldIndex].currentDurability <= 0)
                 {
-                    targetColor.a = 1f;
+                    currentColor.a = 0.3f; // Broken shield - semi-transparent
+                }
+                else if (shieldIndex == currentDirection)
+                {
+                    currentColor.a = 1f; // Active shield - fully opaque
                 }
                 else
                 {
-                    targetColor.a = 0.7f;
+                    currentColor.a = 0.7f; // Inactive shield - slightly transparent
                 }
 
-                shieldRenderers[i].material.color = targetColor;
+                shieldRenderers[i].material.color = currentColor;
             }
         }
     }

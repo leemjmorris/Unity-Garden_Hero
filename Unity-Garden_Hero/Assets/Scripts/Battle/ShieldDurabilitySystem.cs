@@ -43,13 +43,10 @@ public class ShieldDurabilitySystem : MonoBehaviour
     
     void InitializeShields()
     {
-        if (leftShield != null)
-            leftShieldRenderer = leftShield.GetComponent<Renderer>();
-        if (rightShield != null)
-            rightShieldRenderer = rightShield.GetComponent<Renderer>();
-        if (frontShield != null)
-            frontShieldRenderer = frontShield.GetComponent<Renderer>();
-        
+        if (leftShield != null) leftShieldRenderer = leftShield.GetComponent<Renderer>();
+        if (rightShield != null) rightShieldRenderer = rightShield.GetComponent<Renderer>();
+        if (frontShield != null) frontShieldRenderer = frontShield.GetComponent<Renderer>();
+
         currentDurability = maxDurability;
         isSystemDisabled = false;
         
@@ -158,12 +155,9 @@ public class ShieldDurabilitySystem : MonoBehaviour
     {
         Color targetColor = GetDurabilityColor();
         
-        if (leftShieldRenderer != null && !isSystemDisabled)
-            leftShieldRenderer.material.color = targetColor;
-        if (rightShieldRenderer != null && !isSystemDisabled)
-            rightShieldRenderer.material.color = targetColor;
-        if (frontShieldRenderer != null && !isSystemDisabled)
-            frontShieldRenderer.material.color = targetColor;
+        if (leftShieldRenderer != null && !isSystemDisabled) leftShieldRenderer.material.color = targetColor;
+        if (rightShieldRenderer != null && !isSystemDisabled) rightShieldRenderer.material.color = targetColor;
+        if (frontShieldRenderer != null && !isSystemDisabled) frontShieldRenderer.material.color = targetColor;
     }
     
     Color GetDurabilityColor()
@@ -192,21 +186,15 @@ public class ShieldDurabilitySystem : MonoBehaviour
     {
         Color originalColor = GetDurabilityColor();
         
-        if (leftShieldRenderer != null)
-            leftShieldRenderer.material.color = Color.white;
-        if (rightShieldRenderer != null)
-            rightShieldRenderer.material.color = Color.white;
-        if (frontShieldRenderer != null)
-            frontShieldRenderer.material.color = Color.white;
-        
+        if (leftShieldRenderer != null) leftShieldRenderer.material.color = Color.white;
+        if (rightShieldRenderer != null) rightShieldRenderer.material.color = Color.white;
+        if (frontShieldRenderer != null) frontShieldRenderer.material.color = Color.white;
+
         yield return new WaitForSeconds(damageFlashDuration);
-        
-        if (leftShieldRenderer != null)
-            leftShieldRenderer.material.color = originalColor;
-        if (rightShieldRenderer != null)
-            rightShieldRenderer.material.color = originalColor;
-        if (frontShieldRenderer != null)
-            frontShieldRenderer.material.color = originalColor;
+
+        if (leftShieldRenderer != null) leftShieldRenderer.material.color = originalColor;
+        if (rightShieldRenderer != null) rightShieldRenderer.material.color = originalColor;
+        if (frontShieldRenderer != null) frontShieldRenderer.material.color = originalColor;
     }
     
     IEnumerator ShieldBreakEffectAll()

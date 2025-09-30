@@ -6,10 +6,12 @@ using TMPro;
 public class GameOverManager : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private Canvas gameOverCanvas;
-    [SerializeField] private GameObject gameOverPanel;
-    [SerializeField] private Button restartButton;
-    [SerializeField] private TextMeshProUGUI gameOverText;
+    [SerializeField] private Canvas victoryCanvas;
+    [SerializeField] private Canvas defeatCanvas;
+    [SerializeField] private Button victoryRestartButton;
+    [SerializeField] private Button victoryNextButton;
+    [SerializeField] private Button defeatRestartButton;
+    [SerializeField] private Button defeatQuitButton;
 
     [Header("Manager References")]
     [SerializeField] private PlayerManager playerManager;
@@ -18,101 +20,47 @@ public class GameOverManager : MonoBehaviour
     [Header("Victory Animation Settings")]
     [SerializeField, Range(0f, 10f)] private float victoryAnimationDelay = 2.5f;
 
+    [Header("Fade Settings")]
+    [SerializeField, Range(0f, 5f)] private float fadeInDuration = 1f;
+
     void Start()
     {
-        CreateGameOverUI();
+        SetupButtonListeners();
         SetupEventListeners();
+        HideAllCanvas();
     }
 
-    void CreateGameOverUI()
+    void SetupButtonListeners()
     {
-        if (gameOverCanvas == null)
+        if (victoryRestartButton != null)
         {
-            GameObject canvasObj = new GameObject("GameOverCanvas");
-            gameOverCanvas = canvasObj.AddComponent<Canvas>();
-            gameOverCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            gameOverCanvas.sortingOrder = 100;
-
-            CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-
-            canvasObj.AddComponent<GraphicRaycaster>();
+            victoryRestartButton.onClick.AddListener(RestartGame);
         }
 
-        if (gameOverPanel == null)
+        if (defeatRestartButton != null)
         {
-            gameOverPanel = new GameObject("GameOverPanel");
-            gameOverPanel.transform.SetParent(gameOverCanvas.transform, false);
-
-            RectTransform panelRect = gameOverPanel.AddComponent<RectTransform>();
-            panelRect.anchorMin = Vector2.zero;
-            panelRect.anchorMax = Vector2.one;
-            panelRect.offsetMin = Vector2.zero;
-            panelRect.offsetMax = Vector2.zero;
-
-            Image panelBg = gameOverPanel.AddComponent<Image>();
-            panelBg.color = new Color(0, 0, 0, 0.8f);
+            defeatRestartButton.onClick.AddListener(RestartGame);
         }
 
-        CreateGameOverText();
-        CreateRestartButton();
+        if (defeatQuitButton != null)
+        {
+            defeatQuitButton.onClick.AddListener(QuitGame);
+        }
 
-        gameOverPanel.SetActive(false);
+        // NextButton은 일단 연결 없이 유지
     }
 
-    void CreateGameOverText()
+    void HideAllCanvas()
     {
-        GameObject textObj = new GameObject("GameOverText");
-        textObj.transform.SetParent(gameOverPanel.transform, false);
+        if (victoryCanvas != null)
+        {
+            victoryCanvas.gameObject.SetActive(false);
+        }
 
-        RectTransform textRect = textObj.AddComponent<RectTransform>();
-        textRect.anchorMin = new Vector2(0.5f, 0.5f);
-        textRect.anchorMax = new Vector2(0.5f, 0.5f);
-        textRect.anchoredPosition = new Vector2(0, 100);
-        textRect.sizeDelta = new Vector2(800, 100);
-
-        gameOverText = textObj.AddComponent<TextMeshProUGUI>();
-        gameOverText.text = "GAME OVER";
-        gameOverText.fontSize = 80;
-        gameOverText.color = Color.red;
-        gameOverText.alignment = TextAlignmentOptions.Center;
-        gameOverText.fontStyle = FontStyles.Bold;
-    }
-
-    void CreateRestartButton()
-    {
-        GameObject buttonObj = new GameObject("RestartButton");
-        buttonObj.transform.SetParent(gameOverPanel.transform, false);
-
-        RectTransform buttonRect = buttonObj.AddComponent<RectTransform>();
-        buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
-        buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
-        buttonRect.anchoredPosition = new Vector2(0, -50);
-        buttonRect.sizeDelta = new Vector2(300, 80);
-
-        restartButton = buttonObj.AddComponent<Button>();
-
-        Image buttonImage = buttonObj.AddComponent<Image>();
-        buttonImage.color = new Color(0.2f, 0.6f, 1f, 1f);
-
-        GameObject buttonTextObj = new GameObject("ButtonText");
-        buttonTextObj.transform.SetParent(buttonObj.transform, false);
-
-        RectTransform textRect = buttonTextObj.AddComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
-
-        TextMeshProUGUI buttonText = buttonTextObj.AddComponent<TextMeshProUGUI>();
-        buttonText.text = "RESTART";
-        buttonText.fontSize = 40;
-        buttonText.color = Color.white;
-        buttonText.alignment = TextAlignmentOptions.Center;
-        buttonText.fontStyle = FontStyles.Bold;
-
-        restartButton.onClick.AddListener(RestartGame);
+        if (defeatCanvas != null)
+        {
+            defeatCanvas.gameObject.SetActive(false);
+        }
     }
 
     void SetupEventListeners()
@@ -160,38 +108,67 @@ public class GameOverManager : MonoBehaviour
 
     void OnPlayerDeath()
     {
-        // Don't show Game Over immediately, let Victory animation play first
-        StartCoroutine(DelayedGameOver("GAME OVER"));
+        // Don't show Defeat immediately, let death animation play first
+        StartCoroutine(DelayedDefeat());
     }
 
     void OnMonsterDeath()
     {
-        ShowGameOver("VICTORY!");
+        ShowVictory();
     }
 
-    System.Collections.IEnumerator DelayedGameOver(string message)
+    System.Collections.IEnumerator DelayedDefeat()
     {
-
-        // Wait for Victory animation to play
+        // Wait for death animation to play
         yield return new WaitForSeconds(victoryAnimationDelay);
 
-        ShowGameOver(message);
+        ShowDefeat();
     }
 
-    void ShowGameOver(string message)
+    void ShowVictory()
     {
-        gameOverText.text = message;
-
-        if (message == "VICTORY!")
+        if (victoryCanvas != null)
         {
-            gameOverText.color = Color.green;
+            StartCoroutine(FadeInCanvas(victoryCanvas));
         }
-        else
+    }
+
+    void ShowDefeat()
+    {
+        if (defeatCanvas != null)
         {
-            gameOverText.color = Color.red;
+            StartCoroutine(FadeInCanvas(defeatCanvas));
+        }
+    }
+
+    System.Collections.IEnumerator FadeInCanvas(Canvas canvas)
+    {
+        // Canvas 활성화
+        canvas.gameObject.SetActive(true);
+
+        // CanvasGroup 가져오거나 추가
+        CanvasGroup canvasGroup = canvas.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = canvas.gameObject.AddComponent<CanvasGroup>();
         }
 
-        gameOverPanel.SetActive(true);
+        // 초기 alpha 값 0으로 설정
+        canvasGroup.alpha = 0f;
+
+        // Fade In 진행
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeInDuration)
+        {
+            elapsedTime += Time.unscaledDeltaTime; // unscaledDeltaTime 사용 (Time.timeScale 영향 안받음)
+            canvasGroup.alpha = Mathf.Clamp01(elapsedTime / fadeInDuration);
+            yield return null;
+        }
+
+        // 최종 alpha 값 1로 설정
+        canvasGroup.alpha = 1f;
+
+        // Fade In 완료 후 게임 정지
         Time.timeScale = 0f;
     }
 
@@ -213,6 +190,15 @@ public class GameOverManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
+    void QuitGame()
+    {
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
+
     void ResetPersistentSingletons()
     {
         // LMJ: Reset NoteTimeManager state
@@ -229,9 +215,19 @@ public class GameOverManager : MonoBehaviour
     {
         StopAllCoroutines();
 
-        if (restartButton != null)
+        if (victoryRestartButton != null)
         {
-            restartButton.onClick.RemoveAllListeners();
+            victoryRestartButton.onClick.RemoveAllListeners();
+        }
+
+        if (defeatRestartButton != null)
+        {
+            defeatRestartButton.onClick.RemoveAllListeners();
+        }
+
+        if (defeatQuitButton != null)
+        {
+            defeatQuitButton.onClick.RemoveAllListeners();
         }
 
         if (playerManager != null && playerManager.OnDied != null)
@@ -264,10 +260,16 @@ public class GameOverManager : MonoBehaviour
     void Update()
     {
         // LMJ: Fallback check for player death (only trigger once)
-        if (playerManager != null && !playerManager.IsAlive() && !playerDeathHandled && gameOverPanel != null && !gameOverPanel.activeInHierarchy)
+        if (playerManager != null && !playerManager.IsAlive() && !playerDeathHandled)
         {
-            playerDeathHandled = true;
-            OnPlayerDeath();
+            bool bothCanvasHidden = (victoryCanvas == null || !victoryCanvas.gameObject.activeInHierarchy) &&
+                                   (defeatCanvas == null || !defeatCanvas.gameObject.activeInHierarchy);
+
+            if (bothCanvasHidden)
+            {
+                playerDeathHandled = true;
+                OnPlayerDeath();
+            }
         }
     }
 }

@@ -130,6 +130,7 @@ public partial class RhythmGameSystem : MonoBehaviour
     [SerializeField] private JudgmentTextManager judgmentTextManager;
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
+    [SerializeField] private ComboSystem comboSystem;
 
     [Header("Long Note Settings")]
     [SerializeField] private float longNoteHeadMultiplier = 0.5f;
@@ -724,6 +725,7 @@ public partial class RhythmGameSystem : MonoBehaviour
             {
                 ProcessNoteDamage(note, JudgmentResult.Miss);
                 ShowJudgment(note.direction, JudgmentResult.Miss);
+
                 allNotes.RemoveAt(i);
                 Destroy(note.gameObject);
             }
@@ -816,6 +818,24 @@ public partial class RhythmGameSystem : MonoBehaviour
         if (timeDiff <= perfectTolerance) return JudgmentResult.Perfect;
         if (timeDiff <= goodTolerance) return JudgmentResult.Good;
         return JudgmentResult.Miss;
+    }
+
+    // Combo System - Called when monster takes stun damage
+    public void OnMonsterStunDamage()
+    {
+        if (comboSystem != null)
+        {
+            comboSystem.AddCombo();
+        }
+    }
+
+    // Combo System - Called when player takes damage
+    public void OnPlayerDamaged()
+    {
+        if (comboSystem != null)
+        {
+            comboSystem.ResetCombo();
+        }
     }
 
     void ShowJudgment(string direction, JudgmentResult result)
