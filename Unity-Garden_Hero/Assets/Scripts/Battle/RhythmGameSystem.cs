@@ -319,9 +319,15 @@ public partial class RhythmGameSystem : MonoBehaviour
     {
         // Stop all note updates when game is over or monster is dead
         GameManager gameManager = FindFirstObjectByType<GameManager>();
-        if (gameManager != null && gameManager.GetCurrentState() == GameState.GameOver)
+        if (gameManager != null)
         {
-            return;
+            GameState currentState = gameManager.GetCurrentState();
+
+            // Block updates when game is over or paused
+            if (currentState == GameState.GameOver || currentState == GameState.Paused)
+            {
+                return;
+            }
         }
 
         // Also stop if monster is dead (final phase defeated)

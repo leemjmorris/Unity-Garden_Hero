@@ -144,8 +144,9 @@ public class TouchInputManager : MonoBehaviour
 
     public void OnButtonPress(string direction, Button pressedButton = null)
     {
-        // LMJ: Block input during DealingTime
+        // LMJ: Block input during DealingTime or when paused
         if (inputsDisabled) return;
+        if (gameManager != null && gameManager.GetCurrentState() == GameState.Paused) return;
 
         SetHoldingState(direction, true);
 
@@ -206,8 +207,9 @@ public class TouchInputManager : MonoBehaviour
 
     public void OnButtonRelease(string direction, Button pressedButton = null)
     {
-        // LMJ: Block input during DealingTime
+        // LMJ: Block input during DealingTime or when paused
         if (inputsDisabled) return;
+        if (gameManager != null && gameManager.GetCurrentState() == GameState.Paused) return;
 
         // LMJ: Check if all buttons are released
         SetHoldingState(direction, false);
@@ -367,6 +369,12 @@ public class TouchInputManager : MonoBehaviour
 
     void Update()
     {
+        // LMJ: Block all input when game is paused
+        if (gameManager != null && gameManager.GetCurrentState() == GameState.Paused)
+        {
+            return;
+        }
+
         HandleSwipeInput();
         HandleKeyboardInput();
     }

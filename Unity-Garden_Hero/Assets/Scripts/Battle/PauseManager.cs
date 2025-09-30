@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 public class PauseManager : MonoBehaviour
 {
@@ -23,6 +24,13 @@ public class PauseManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI noteSpeedText;
     [SerializeField] private RhythmGameSystem rhythmGameSystem;
 
+    [Header("Game Manager")]
+    [SerializeField] private GameManager gameManager;
+
+    [Header("Input Systems")]
+    [SerializeField] private DodgeSystem dodgeSystem;
+    [SerializeField] private TouchInputManager touchInputManager;
+
     private bool isPaused = false;
     private float currentSpeedMultiplier = 4.0f; // Default: 4x (noteSpeed = 800)
     private const float MIN_SPEED = 1.0f;
@@ -32,24 +40,34 @@ public class PauseManager : MonoBehaviour
 
     void Start()
     {
+        // Find GameManager if not assigned
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+
+        // Find input systems if not assigned
+        if (dodgeSystem == null)
+        {
+            dodgeSystem = FindFirstObjectByType<DodgeSystem>();
+        }
+
+        if (touchInputManager == null)
+        {
+            touchInputManager = FindFirstObjectByType<TouchInputManager>();
+        }
+
         // Initialize pause panel as inactive
         if (pausePanel != null)
         {
             pausePanel.SetActive(false);
         }
 
-        // Setup button listeners
-        if (pauseButton != null)
-            pauseButton.onClick.AddListener(OpenPauseMenu);
-
-        if (closeButton != null)
-            closeButton.onClick.AddListener(ClosePauseMenu);
-
-        if (restartButton != null)
-            restartButton.onClick.AddListener(RestartBattle);
-
-        if (quitButton != null)
-            quitButton.onClick.AddListener(QuitGame);
+        // Setup button listeners using PointerUp for safer input handling
+        SetupButtonWithPointerUp(pauseButton, OpenPauseMenu);
+        SetupButtonWithPointerUp(closeButton, ClosePauseMenu);
+        SetupButtonWithPointerUp(restartButton, RestartBattle);
+        SetupButtonWithPointerUp(quitButton, QuitGame);
 
         if (noteSpeedDecreaseButton != null)
             noteSpeedDecreaseButton.onClick.AddListener(DecreaseNoteSpeed);
@@ -89,9 +107,18 @@ public class PauseManager : MonoBehaviour
 
     public void OpenPauseMenu()
     {
+        // Reset all input states to prevent ghost inputs
+        ResetInputStates();
+
         if (pausePanel != null)
         {
             pausePanel.SetActive(true);
+        }
+
+        // Set GameState to Paused
+        if (gameManager != null)
+        {
+            gameManager.SetGameState(GameState.Paused);
         }
 
         Time.timeScale = 0f;
@@ -102,9 +129,18 @@ public class PauseManager : MonoBehaviour
 
     public void ClosePauseMenu()
     {
+        // Reset all input states to prevent ghost inputs
+        ResetInputStates();
+
         if (pausePanel != null)
         {
             pausePanel.SetActive(false);
+        }
+
+        // Resume GameState to Playing
+        if (gameManager != null)
+        {
+            gameManager.SetGameState(GameState.Playing);
         }
 
         Time.timeScale = 1f;
@@ -211,5 +247,43 @@ public class PauseManager : MonoBehaviour
         //     audioManager.SetSFXVolume(value);
         // }
         Debug.Log($"[PauseManager] SFX volume changed to {value} (AudioManager not connected yet)");
+    }
+
+    private void ResetInputStates()
+    {
+        // Reset DodgeSystem swipe state to prevent ghost swipes
+        if (dodgeSystem != null)
+        {
+            dodgeSystem.ResetSwipeBlock();
+            Debug.Log("[PauseManager] Reset DodgeSystem swipe state");
+        }
+
+        // Reset TouchInputManager button states (if needed in future)
+        // TouchInputManager doesn't have a public reset method yet, but DodgeSystem reset should be sufficient
+    }
+
+    // LMJ: Setup button to trigger on PointerUp instead of onClick (safer for pause menu)
+    private void SetupButtonWithPointerUp(Button button, UnityEngine.Events.UnityAction action)
+    {
+        if (button == null) return;
+
+        // Remove default onClick listener
+        button.onClick.RemoveAllListeners();
+
+        // Add EventTrigger for PointerUp
+        EventTrigger trigger = button.gameObject.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = button.gameObject.AddComponent<EventTrigger>();
+        }
+
+        // Clear existing triggers for this button
+        trigger.triggers.Clear();
+
+        // Add PointerUp event
+        EventTrigger.Entry pointerUpEntry = new EventTrigger.Entry();
+        pointerUpEntry.eventID = EventTriggerType.PointerUp;
+        pointerUpEntry.callback.AddListener((data) => { action.Invoke(); });
+        trigger.triggers.Add(pointerUpEntry);
     }
 }

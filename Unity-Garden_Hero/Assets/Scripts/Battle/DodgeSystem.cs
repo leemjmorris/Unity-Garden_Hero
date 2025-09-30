@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections;
 
 public class DodgeSystem : MonoBehaviour
 {
@@ -9,8 +10,14 @@ public class DodgeSystem : MonoBehaviour
     [SerializeField] private float minSwipeDistance = 50f;
     [SerializeField] private float maxSwipeTime = 1f;
 
+    [Header("Cooldown Settings")]
+    [SerializeField] private float dodgeCooldown = 0.5f; // Cooldown duration in seconds
+    [SerializeField] private bool showCooldownDebug = false;
+
     [Header("System Control")]
     private bool isDodgeSystemEnabled = true;
+    private bool isOnCooldown = false;
+    private Coroutine cooldownCoroutine = null;
 
     [Header("Rotation Settings")]
     [SerializeField] private Transform mapTransform;
@@ -69,11 +76,19 @@ public class DodgeSystem : MonoBehaviour
         // Don't handle any input if dodge system is disabled
         if (!isDodgeSystemEnabled) return;
 
-        // Don't handle input during DealingTime
-        if (gameManager != null && gameManager.IsDealingTimeActive())
+        // Don't handle input during DealingTime or when paused
+        if (gameManager != null)
         {
-            // Debug.Log("DodgeSystem: Input blocked during DealingTime");
-            return;
+            if (gameManager.IsDealingTimeActive())
+            {
+                // Debug.Log("DodgeSystem: Input blocked during DealingTime");
+                return;
+            }
+
+            if (gameManager.GetCurrentState() == GameState.Paused)
+            {
+                return;
+            }
         }
 
         // LMJ: Check and update temporary swipe block
@@ -233,6 +248,12 @@ public class DodgeSystem : MonoBehaviour
     {
         if (!isDodgeSystemEnabled) return;
         if (isDodgeActive && isRotating) return;
+        if (isOnCooldown)
+        {
+            if (showCooldownDebug)
+                Debug.Log("[DodgeSystem] Dodge blocked - on cooldown");
+            return;
+        }
 
         // Invoke the dodge left event
         OnDodgeLeft?.Invoke();
@@ -242,12 +263,19 @@ public class DodgeSystem : MonoBehaviour
 
         targetRotation -= 90f;  // Counter-clockwise rotation
         StartDodge();
+        StartCooldown();
     }
 
     public void DodgeRight()
     {
         if (!isDodgeSystemEnabled) return;
         if (isDodgeActive && isRotating) return;
+        if (isOnCooldown)
+        {
+            if (showCooldownDebug)
+                Debug.Log("[DodgeSystem] Dodge blocked - on cooldown");
+            return;
+        }
 
         // Invoke the dodge right event
         OnDodgeRight?.Invoke();
@@ -257,6 +285,7 @@ public class DodgeSystem : MonoBehaviour
 
         targetRotation += 90f;  // Clockwise rotation
         StartDodge();
+        StartCooldown();
     }
 
     void StartDodge()
@@ -393,5 +422,52 @@ public class DodgeSystem : MonoBehaviour
         else
         {
         }
+    }
+
+    // LMJ: Start cooldown after dodge
+    void StartCooldown()
+    {
+        if (cooldownCoroutine != null)
+        {
+            StopCoroutine(cooldownCoroutine);
+        }
+
+        cooldownCoroutine = StartCoroutine(CooldownCoroutine());
+    }
+
+    // LMJ: Cooldown coroutine
+    IEnumerator CooldownCoroutine()
+    {
+        isOnCooldown = true;
+
+        if (showCooldownDebug)
+            Debug.Log($"[DodgeSystem] Cooldown started - {dodgeCooldown}s");
+
+        yield return new WaitForSeconds(dodgeCooldown);
+
+        isOnCooldown = false;
+
+        if (showCooldownDebug)
+            Debug.Log("[DodgeSystem] Cooldown ended - dodge available");
+
+        cooldownCoroutine = null;
+    }
+
+    // LMJ: Public getter for cooldown state
+    public bool IsOnCooldown()
+    {
+        return isOnCooldown;
+    }
+
+    // LMJ: Public getter for cooldown duration
+    public float GetCooldownDuration()
+    {
+        return dodgeCooldown;
+    }
+
+    // LMJ: Public setter for cooldown duration (runtime adjustment)
+    public void SetCooldownDuration(float duration)
+    {
+        dodgeCooldown = Mathf.Max(0f, duration); // Ensure non-negative
     }
 }
