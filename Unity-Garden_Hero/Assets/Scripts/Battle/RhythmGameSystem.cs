@@ -127,6 +127,7 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     [Header("Manager References")]
     [SerializeField] private MonsterManager monsterManager;
+    [SerializeField] private JudgmentTextManager judgmentTextManager;
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
 
@@ -813,6 +814,23 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void ShowJudgment(string direction, JudgmentResult result)
     {
+        Debug.Log($"[RhythmGameSystem] ShowJudgment called: direction={direction}, result={result}");
+
+        // LMJ: Use JudgmentTextManager if available, otherwise fallback to old system
+        if (judgmentTextManager != null)
+        {
+            Debug.Log("[RhythmGameSystem] Using JudgmentTextManager");
+            Debug.Log($"[RhythmGameSystem] Calling ShowJudgment with direction: {direction}, result: {result}");
+            judgmentTextManager.ShowJudgment(direction, result);
+            Debug.Log("[RhythmGameSystem] ShowJudgment call completed");
+            return;
+        }
+        else
+        {
+            Debug.LogWarning("[RhythmGameSystem] JudgmentTextManager is null, using fallback system");
+        }
+
+        // LMJ: Fallback to old judgment display system
         if (!judgmentLines.ContainsKey(direction)) return;
 
         GameObject judgmentText = new GameObject("JudgmentText");

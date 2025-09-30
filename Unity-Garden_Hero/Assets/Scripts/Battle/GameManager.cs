@@ -127,6 +127,21 @@ public class GameManager : MonoBehaviour
         isDealingTimeActive = true;
         dealingTimeTimer = dealingTimeDuration;
 
+        // LMJ: Disable all touch inputs to prevent shield stuck issue
+        TouchInputManager touchInput = FindFirstObjectByType<TouchInputManager>();
+        if (touchInput != null)
+        {
+            touchInput.DisableAllInputs();
+        }
+
+        // LMJ: Force hide all shields directly through ShieldController with coroutine enforcement
+        ShieldController shieldController = FindFirstObjectByType<ShieldController>();
+        if (shieldController != null)
+        {
+            shieldController.ForceHideShields(true);
+            Debug.Log("[GameManager] Activated force hide shields with coroutine on DealingTime entry");
+        }
+
         // LMJ: Play camera feedback effects for dealing time start
         if (dealingTimeStartFeedback != null)
         {
@@ -213,6 +228,20 @@ public class GameManager : MonoBehaviour
 
         isDealingTimeActive = false;
         currentState = GameState.Playing;
+
+        // LMJ: Re-enable shields first
+        ShieldController shieldController = FindFirstObjectByType<ShieldController>();
+        if (shieldController != null)
+        {
+            shieldController.ForceHideShields(false);
+        }
+
+        // LMJ: Re-enable all touch inputs
+        TouchInputManager touchInput = FindFirstObjectByType<TouchInputManager>();
+        if (touchInput != null)
+        {
+            touchInput.EnableAllInputs();
+        }
 
         // LMJ: Restore hidden UI elements
         foreach (GameObject uiElement in hideInDealingTime)

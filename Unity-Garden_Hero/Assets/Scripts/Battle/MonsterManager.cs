@@ -502,6 +502,13 @@ public class MonsterManager : LivingEntity
             rhythmSystem.ClearAllNotes();
         }
 
+        // LMJ: Reset DodgeSystem swipe block state when entering new phase
+        DodgeSystem dodgeSystem = FindFirstObjectByType<DodgeSystem>();
+        if (dodgeSystem != null)
+        {
+            dodgeSystem.ResetSwipeBlock();
+        }
+
         if (csvDataLoaded && currentBossData != null)
         {
             // Save old max values before initializing
@@ -518,26 +525,37 @@ public class MonsterManager : LivingEntity
             ResetStun();
         }
 
-        // If we WERE in DealingTime, keep stun at 0 temporarily for the new phase
-        // Otherwise, stun is already at max from InitializeFromCSV
+        // LMJ: Update StunUIManager to re-subscribe to the new phase's stun events FIRST
+        StunUIManager stunUI = FindFirstObjectByType<StunUIManager>();
+        if (stunUI != null)
+        {
+            stunUI.SetMonsterManager(this);
+        }
+
+        // If we WERE in DealingTime, reset stun to max for the new phase
+        // The phase transition means dealing time is over, so stun should be restored
         if (wasDealingTime)
         {
-            currentStun = 0;
+            // Phase transition from dealing time - restore stun to max
+            currentStun = maxStun;
             OnStunChanged?.Invoke(currentStun);
             UpdateStunVisual();
 
-            // Keep dizzy animation active for new phase (but not actually in DealingTime anymore)
+            // Trigger restored event for immediate UI update
+            OnStunRestored?.Invoke();
+
+            // Stop dizzy animation for new phase
             if (animator != null)
             {
-                animator.SetBool("isDealingTime", false); // New phase starts in normal state
+                animator.SetBool("isDealingTime", false);
             }
-
         }
         else
         {
-            // Make sure stun is at max and visual is updated
+            // Normal phase transition - stun is already at max from InitializeFromCSV
             OnStunChanged?.Invoke(currentStun);
             UpdateStunVisual();
+            OnStunRestored?.Invoke();
         }
 
         // Restart attack animations for new phase

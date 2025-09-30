@@ -15,6 +15,9 @@ public class ShieldController : MonoBehaviour
     [Header("Systems")]
     [SerializeField] private TouchInputManager touchInputManager;
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
+    private GameManager gameManager;
+
+    private bool forceHideShields = false;
 
     void Awake()
     {
@@ -24,34 +27,94 @@ public class ShieldController : MonoBehaviour
 
     void Start()
     {
+        // LMJ: Find GameManager reference
+        gameManager = FindFirstObjectByType<GameManager>();
+
         // LMJ: Only handle particle effects here, shield visibility is handled in Awake()
         if (rightShieldBrokenEffect != null) rightShieldBrokenEffect.Stop();
         if (leftShieldBrokenEffect != null) leftShieldBrokenEffect.Stop();
         if (frontShieldBrokenEffect != null) frontShieldBrokenEffect.Stop();
     }
 
-    void HideAllShields()
+    public void HideAllShields()
     {
         if (leftShield != null) leftShield.SetActive(false);
         if (rightShield != null) rightShield.SetActive(false);
         if (frontShield != null) frontShield.SetActive(false);
+
+        // Also stop all particle effects
+        if (rightShieldBrokenEffect != null) rightShieldBrokenEffect.Stop();
+        if (leftShieldBrokenEffect != null) leftShieldBrokenEffect.Stop();
+        if (frontShieldBrokenEffect != null) frontShieldBrokenEffect.Stop();
+    }
+
+    public void ForceHideShields(bool hide)
+    {
+        forceHideShields = hide;
+        if (hide)
+        {
+            HideAllShields();
+            StartCoroutine(EnsureShieldsStayHidden());
+        }
+    }
+
+    private System.Collections.IEnumerator EnsureShieldsStayHidden()
+    {
+        while (forceHideShields || IsDealingTimeActive())
+        {
+            // Force hide shields every frame while condition is true
+            if (leftShield != null && leftShield.activeSelf) leftShield.SetActive(false);
+            if (rightShield != null && rightShield.activeSelf) rightShield.SetActive(false);
+            if (frontShield != null && frontShield.activeSelf) frontShield.SetActive(false);
+
+            yield return null; // Wait one frame
+        }
+    }
+
+    private bool IsDealingTimeActive()
+    {
+        return gameManager != null && gameManager.IsDealingTimeActive();
     }
 
     public void ShowLeftShield(bool show)
     {
         if (leftShield == null) return;
+
+        // LMJ: Don't show shields during DealingTime or when force hidden
+        if (show && (forceHideShields || IsDealingTimeActive()))
+        {
+            Debug.Log("[ShieldController] Blocked ShowLeftShield during DealingTime");
+            return;
+        }
+
         leftShield.SetActive(show);
     }
 
     public void ShowRightShield(bool show)
     {
         if (rightShield == null) return;
+
+        // LMJ: Don't show shields during DealingTime or when force hidden
+        if (show && (forceHideShields || IsDealingTimeActive()))
+        {
+            Debug.Log("[ShieldController] Blocked ShowRightShield during DealingTime");
+            return;
+        }
+
         rightShield.SetActive(show);
     }
 
     public void ShowFrontShield(bool show)
     {
         if (frontShield == null) return;
+
+        // LMJ: Don't show shields during DealingTime or when force hidden
+        if (show && (forceHideShields || IsDealingTimeActive()))
+        {
+            Debug.Log("[ShieldController] Blocked ShowFrontShield during DealingTime");
+            return;
+        }
+
         frontShield.SetActive(show);
     }
 

@@ -40,7 +40,8 @@ public class DodgeSystem : MonoBehaviour
     // LMJ: Temporary swipe blocking for simultaneous button presses
     private bool isSwipeTemporarilyBlocked = false;
     private float swipeBlockEndTime = 0f;
-    [SerializeField] private float swipeBlockDuration = 0.2f;
+    [SerializeField] private float swipeBlockDuration = 0.3f;
+    [SerializeField] private float extendedSwipeBlockDuration = 0.5f;
 
     // Swipe input variables
     private Vector2 startTouchPosition;
@@ -144,10 +145,15 @@ public class DodgeSystem : MonoBehaviour
 
     void StartSwipe(Vector2 position)
     {
+        // Don't start swipe if blocked or if buttons are active
+        if (isSwipeTemporarilyBlocked || activeTouchIdCount > 0)
+        {
+            return;
+        }
+
         startTouchPosition = position;
         startTime = Time.time;
         isDragging = true;
-
     }
 
     void UpdateSwipe(Vector2 position)
@@ -164,8 +170,8 @@ public class DodgeSystem : MonoBehaviour
         Vector2 swipeDirection = endTouchPosition - startTouchPosition;
         float swipeDistance = swipeDirection.magnitude;
 
-        // LMJ: Don't process swipe if multiple touches are active (button inputs)
-        if (activeTouchIdCount > 1)
+        // LMJ: Don't process swipe if blocked or if buttons are active
+        if (isSwipeTemporarilyBlocked || activeTouchIdCount > 0)
         {
             isDragging = false;
             return;
@@ -353,11 +359,27 @@ public class DodgeSystem : MonoBehaviour
         activeTouchIdCount = Mathf.Max(0, activeTouchIdCount - 1);
     }
 
-    // LMJ: Method to temporarily block swipe when buttons are pressed simultaneously
+    // LMJ: Method to temporarily block swipe when buttons are pressed
     public void BlockSwipeTemporarily()
     {
         isSwipeTemporarilyBlocked = true;
         swipeBlockEndTime = Time.time + swipeBlockDuration;
+    }
+
+    // LMJ: Method to extend swipe block duration for multiple simultaneous button presses
+    public void ExtendSwipeBlock()
+    {
+        isSwipeTemporarilyBlocked = true;
+        swipeBlockEndTime = Time.time + extendedSwipeBlockDuration;
+    }
+
+    // LMJ: Method to reset swipe block state (for phase transitions)
+    public void ResetSwipeBlock()
+    {
+        isSwipeTemporarilyBlocked = false;
+        swipeBlockEndTime = 0f;
+        activeTouchIdCount = 0;
+        isDragging = false;
     }
 
     // LMJ: Clear Dodge Notes when dodging

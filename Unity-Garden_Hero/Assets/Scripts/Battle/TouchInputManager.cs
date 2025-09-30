@@ -35,6 +35,14 @@ public class TouchInputManager : MonoBehaviour
     private float lastButtonPressTime = 0f;
     private int buttonsPressed = 0;
 
+    [Header("DealingTime Control")]
+    private bool inputsDisabled = false;
+    private GameManager gameManager;
+
+    [Header("Touch Tracking for Swipe Prevention")]
+    private float lastButtonReleaseTime = 0f;
+    private const float SWIPE_PREVENTION_WINDOW = 0.3f; // Prevent swipe for 0.3s after button release
+
     void Start()
     {
         SetupButtonEvents();
@@ -50,6 +58,9 @@ public class TouchInputManager : MonoBehaviour
         {
             dodgeSystem = FindFirstObjectByType<DodgeSystem>();
         }
+
+        // LMJ: Initialize GameManager
+        gameManager = FindFirstObjectByType<GameManager>();
 
         // LMJ: Shield initialization is handled by ShieldController.Awake()
     }
@@ -133,6 +144,9 @@ public class TouchInputManager : MonoBehaviour
 
     public void OnButtonPress(string direction, Button pressedButton = null)
     {
+        // LMJ: Block input during DealingTime
+        if (inputsDisabled) return;
+
         SetHoldingState(direction, true);
 
         // LMJ: Track button press timing for simultaneous press detection
@@ -152,10 +166,13 @@ public class TouchInputManager : MonoBehaviour
         {
             dodgeSystem.RegisterTouchStart();
 
-            // LMJ: If multiple buttons pressed simultaneously, block swipe completely
+            // LMJ: Block swipe immediately when any button is pressed
+            dodgeSystem.BlockSwipeTemporarily();
+
+            // LMJ: If multiple buttons pressed simultaneously, extend the block duration
             if (buttonsPressed > 1)
             {
-                dodgeSystem.BlockSwipeTemporarily();
+                dodgeSystem.ExtendSwipeBlock();
             }
         }
 
@@ -189,10 +206,21 @@ public class TouchInputManager : MonoBehaviour
 
     public void OnButtonRelease(string direction, Button pressedButton = null)
     {
-        // LMJ: Register touch end for swipe detection prevention
+        // LMJ: Block input during DealingTime
+        if (inputsDisabled) return;
+
+        // LMJ: Check if all buttons are released
+        SetHoldingState(direction, false);
+        if (!isLeftHolding && !isRightHolding && !isCenterHolding)
+        {
+            lastButtonReleaseTime = Time.time;
+        }
+
+        // LMJ: Register touch end and extend swipe block after release
         if (dodgeSystem != null)
         {
             dodgeSystem.RegisterTouchEnd();
+            dodgeSystem.BlockSwipeTemporarily(); // Block swipe briefly after button release
         }
 
         if (IsHolding(direction))
@@ -470,5 +498,60 @@ public class TouchInputManager : MonoBehaviour
     void OnSwipeRightToLeft()
     {
         // Animation is now handled by DodgeSystem events
+    }
+
+    // LMJ: Public methods for enabling/disabling inputs during DealingTime
+    public void DisableAllInputs()
+    {
+        Debug.Log("[TouchInputManager] DisableAllInputs called");
+
+        // Set flag first to prevent any new inputs
+        inputsDisabled = true;
+
+        // Force release all currently held buttons
+        bool wasLeftHolding = isLeftHolding;
+        bool wasRightHolding = isRightHolding;
+        bool wasCenterHolding = isCenterHolding;
+
+        // Clear all holding states
+        isLeftHolding = false;
+        isRightHolding = false;
+        isCenterHolding = false;
+
+        // Release any active long notes
+        if (gameSystem != null)
+        {
+            if (wasLeftHolding) gameSystem.ReleaseLongNote("Left");
+            if (wasRightHolding) gameSystem.ReleaseLongNote("Right");
+            if (wasCenterHolding) gameSystem.ReleaseLongNote("Center");
+        }
+
+        // Hide all shields using the controller's method
+        if (shieldController != null)
+        {
+            shieldController.HideAllShields();
+            Debug.Log("[TouchInputManager] Called shieldController.HideAllShields()");
+        }
+        else
+        {
+            Debug.LogWarning("[TouchInputManager] shieldController is null!");
+        }
+
+        // Reset button visuals
+        AnimateSingleButton(leftButton, false);
+        AnimateSingleButton(rightButton, false);
+        AnimateSingleButton(leftCenterButton, false);
+        AnimateSingleButton(rightCenterButton, false);
+
+        // Reset dodge system touch tracking
+        if (dodgeSystem != null)
+        {
+            dodgeSystem.ResetSwipeBlock();
+        }
+    }
+
+    public void EnableAllInputs()
+    {
+        inputsDisabled = false;
     }
 }

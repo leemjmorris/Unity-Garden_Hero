@@ -89,13 +89,13 @@ public class StunUIManager : MonoBehaviour
         {
             UnsubscribeFromEvents();
         }
-        
+
         monsterManager = manager;
-        
+
         if (monsterManager != null)
         {
+            InitializeStunBar();
             SubscribeToStunEvents();
-            UpdateStunBar();
         }
     }
     

@@ -542,14 +542,17 @@ public class PlayerManager : LivingEntity
     // LMJ: Death Animation Method
     public void PlayDeathAnimation()
     {
+        Debug.Log("[PlayerManager] PlayDeathAnimation called");
 
         if (playerAnimator != null)
         {
             // Check current animator state
             AnimatorStateInfo currentState = playerAnimator.GetCurrentAnimatorStateInfo(0);
+            Debug.Log($"[PlayerManager] Current animator state: {currentState.shortNameHash}");
 
             // Randomly choose between Die01 (0) and Die02 (1)
             int randomDeathType = Random.Range(0, 2); // 0 or 1
+            Debug.Log($"[PlayerManager] Selected death type: {randomDeathType}");
 
             // Check if parameters exist
             AnimatorControllerParameter[] parameters = playerAnimator.parameters;
@@ -569,17 +572,26 @@ public class PlayerManager : LivingEntity
             }
 
             if (!hasRandomOnDeath)
+            {
+                Debug.LogError("[PlayerManager] RandomOnDeath trigger parameter not found in Animator!");
+                return;
+            }
             if (!hasDeathType)
+            {
+                Debug.LogError("[PlayerManager] deathType integer parameter not found in Animator!");
+                return;
+            }
 
             playerAnimator.SetInteger("deathType", randomDeathType);
             playerAnimator.SetTrigger("RandomOnDeath");
-
+            Debug.Log("[PlayerManager] Death animation triggered successfully");
 
             // Check animator state after setting trigger (disabled to avoid warnings)
             // StartCoroutine(CheckAnimatorStateAfterTrigger());
         }
         else
         {
+            Debug.LogError("[PlayerManager] playerAnimator is null!");
         }
     }
 
