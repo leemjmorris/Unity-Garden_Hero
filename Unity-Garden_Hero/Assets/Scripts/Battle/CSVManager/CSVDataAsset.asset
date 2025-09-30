@@ -13,156 +13,156 @@ MonoBehaviour:
   m_Name: CSVDataAsset
   m_EditorClassIdentifier: 
   bossDataList:
-  - BOSS_ID: 20128001
+  - BOSS_ID: 20100001
     BOSS_NAME: "\uB291\uB300 \uC804\uC0AC"
     PHASE: 1
-    NORMAL_ATT: 28
+    NORMAL_ATT: 25
     NORMAL_DEF_ATT: 1
-    LONG_ATT: 50
+    LONG_ATT: 75
     LONG_DEF_ATT: 1
     SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
     STUN: 250
     STUN_RECOVERY: 7
     DEF: 1
-    STUN_DEF: 2
+    STUN_DEF: 0
     HP: 20000
     PT_ID: 70000001
-  - BOSS_ID: 20228002
+  - BOSS_ID: 20200002
     BOSS_NAME: "\uB291\uB300 \uC804\uC0AC"
     PHASE: 2
-    NORMAL_ATT: 28
+    NORMAL_ATT: 25
     NORMAL_DEF_ATT: 1
-    LONG_ATT: 50
+    LONG_ATT: 75
     LONG_DEF_ATT: 1
     SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
     STUN: 250
     STUN_RECOVERY: 5
     DEF: 2
-    STUN_DEF: 3
+    STUN_DEF: 0
     HP: 20000
     PT_ID: 70000001
-  - BOSS_ID: 20600003
-    BOSS_NAME: "\uB291\uB300 \uAD11\uC804\uC0AC"
+  - BOSS_ID: 20100003
+    BOSS_NAME: "\uB4E4\uC950 \uC804\uC0AC"
     PHASE: 1
-    NORMAL_ATT: 500
+    NORMAL_ATT: 25
     NORMAL_DEF_ATT: 2
-    LONG_ATT: 70
+    LONG_ATT: 75
     LONG_DEF_ATT: 1
     SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
     STUN: 400
     STUN_RECOVERY: 7
     DEF: 0
-    STUN_DEF: 2
+    STUN_DEF: 0
     HP: 6000
     PT_ID: 70000002
-  - BOSS_ID: 20700004
-    BOSS_NAME: "\uB291\uB300 \uAD11\uC804\uC0AC"
+  - BOSS_ID: 20200004
+    BOSS_NAME: "\uB4E4\uC950 \uC804\uC0AC"
     PHASE: 2
-    NORMAL_ATT: 500
+    NORMAL_ATT: 25
     NORMAL_DEF_ATT: 2
-    LONG_ATT: 70
+    LONG_ATT: 75
     LONG_DEF_ATT: 1
     SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
     STUN: 400
     STUN_RECOVERY: 5
     DEF: 2
-    STUN_DEF: 3
+    STUN_DEF: 0
     HP: 5000
     PT_ID: 70000002
-  - BOSS_ID: 20900005
-    BOSS_NAME: "\uB291\uB300 \uAD11\uC804\uC0AC"
+  - BOSS_ID: 20300005
+    BOSS_NAME: "\uB4E4\uC950 \uC804\uC0AC"
     PHASE: 3
-    NORMAL_ATT: 600
+    NORMAL_ATT: 25
     NORMAL_DEF_ATT: 2
-    LONG_ATT: 70
+    LONG_ATT: 75
     LONG_DEF_ATT: 2
     SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
     STUN: 300
     STUN_RECOVERY: 5
     DEF: 2
-    STUN_DEF: 3
+    STUN_DEF: 0
     HP: 5000
     PT_ID: 70000002
-  - BOSS_ID: 20900006
-    BOSS_NAME: "\uB291\uB300 \uB300\uC804\uC0AC"
+  - BOSS_ID: 20100006
+    BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
     PHASE: 1
-    NORMAL_ATT: 800
+    NORMAL_ATT: 25
     NORMAL_DEF_ATT: 2
-    LONG_ATT: 100
+    LONG_ATT: 75
     LONG_DEF_ATT: 1
     SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
     STUN: 700
     STUN_RECOVERY: 5
     DEF: 3
-    STUN_DEF: 2
+    STUN_DEF: 0
     HP: 7000
     PT_ID: 70000003
-  - BOSS_ID: 21000007
-    BOSS_NAME: "\uB291\uB300 \uB300\uC804\uC0AC"
+  - BOSS_ID: 20200007
+    BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
     PHASE: 2
-    NORMAL_ATT: 800
+    NORMAL_ATT: 25
     NORMAL_DEF_ATT: 3
-    LONG_ATT: 100
+    LONG_ATT: 75
     LONG_DEF_ATT: 2
     SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
     STUN: 700
     STUN_RECOVERY: 4
     DEF: 2
-    STUN_DEF: 3
+    STUN_DEF: 0
     HP: 7000
     PT_ID: 70000003
-  - BOSS_ID: 21100008
-    BOSS_NAME: "\uB291\uB300 \uB300\uC804\uC0AC"
+  - BOSS_ID: 20300008
+    BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
     PHASE: 3
-    NORMAL_ATT: 800
+    NORMAL_ATT: 25
     NORMAL_DEF_ATT: 4
-    LONG_ATT: 100
+    LONG_ATT: 75
     LONG_DEF_ATT: 2
     SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
     STUN: 600
     STUN_RECOVERY: 3
     DEF: 2
-    STUN_DEF: 4
+    STUN_DEF: 0
     HP: 6000
     PT_ID: 70000003
-  - BOSS_ID: 20105009
+  - BOSS_ID: 20100009
     BOSS_NAME: "\uD5C8\uC218\uC544\uBE44"
     PHASE: 1
     NORMAL_ATT: 5
     NORMAL_DEF_ATT: 1
     LONG_ATT: 1
     LONG_DEF_ATT: 1
-    SPECIAL_ATT: 1
-    SPECIAL_DEF_ATT: 1
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
     STUN: 300
     STUN_RECOVERY: 10
     DEF: 0
     STUN_DEF: 0
     HP: 5000
-    PT_ID: 0
-  - BOSS_ID: 20205010
+    PT_ID: 70000004
+  - BOSS_ID: 20200010
     BOSS_NAME: "\uD5C8\uC218\uC544\uBE44"
     PHASE: 2
     NORMAL_ATT: 5
     NORMAL_DEF_ATT: 1
     LONG_ATT: 1
     LONG_DEF_ATT: 1
-    SPECIAL_ATT: 1
-    SPECIAL_DEF_ATT: 1
+    SPECIAL_ATT: 0
+    SPECIAL_DEF_ATT: 0
     STUN: 400
     STUN_RECOVERY: 10
     DEF: 0
     STUN_DEF: 0
     HP: 5000
-    PT_ID: 0
+    PT_ID: 70000004
   consumableDataList:
   - ITME_ID: 60010001
     ITEM_NAME: "\uCEE4\uD53C"
@@ -225,7 +225,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.2
     BT_MAX_STACK: 3
     MAX_STACK: 99
-    DURATION: 20000
+    DURATION: 20
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_14_poison.png
@@ -238,7 +238,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.4
     BT_MAX_STACK: 2
     MAX_STACK: 99
-    DURATION: 40000
+    DURATION: 40
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_22_deadly_poison.png
@@ -251,7 +251,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.7
     BT_MAX_STACK: 1
     MAX_STACK: 99
-    DURATION: 60000
+    DURATION: 60
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_41_magical_substance.png
@@ -264,7 +264,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.2
     BT_MAX_STACK: 3
     MAX_STACK: 99
-    DURATION: 10000
+    DURATION: 10
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_12_magic_potion.png
@@ -277,7 +277,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.4
     BT_MAX_STACK: 2
     MAX_STACK: 99
-    DURATION: 13000
+    DURATION: 13
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_20_littlemana_flask.png
@@ -290,7 +290,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.7
     BT_MAX_STACK: 1
     MAX_STACK: 99
-    DURATION: 15000
+    DURATION: 15
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_30_bigmana_flask.png
@@ -303,7 +303,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.2
     BT_MAX_STACK: 3
     MAX_STACK: 99
-    DURATION: 20000
+    DURATION: 20
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_15_reactive_potion.png
@@ -316,7 +316,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.3
     BT_MAX_STACK: 2
     MAX_STACK: 99
-    DURATION: 25000
+    DURATION: 25
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_24_energy_potion.png
@@ -329,7 +329,7 @@ MonoBehaviour:
     EFF_FLOAT_VALUE: 0.4
     BT_MAX_STACK: 1
     MAX_STACK: 99
-    DURATION: 30000
+    DURATION: 30
     COOLTIME: 5
     MAX_DROP_VALUE: 3
     ITEM_IMAGE: Alchemy_34_bigenergy_flask.png
@@ -508,7 +508,7 @@ MonoBehaviour:
     DEF_ATT_EFF: 1
     DEE_EFF: 1
     HP_EFF: 0
-    DURABILITY: 125
+    DURABILITY: 50
   - GR_EFF_ID: 40001006
     EFF_NAME: "\uB358\uC804 \uC774\uB07C \uD2F0\uC544\uBA67"
     ATT_EFF: 1
@@ -543,7 +543,7 @@ MonoBehaviour:
     DEF_ATT_EFF: 1
     DEE_EFF: 2
     HP_EFF: 0
-    DURABILITY: 900
+    DURABILITY: 60
   - GR_EFF_ID: 40002011
     EFF_NAME: "\uAC00\uC8FD \uD22C\uAD6C"
     ATT_EFF: 2
@@ -578,7 +578,7 @@ MonoBehaviour:
     DEF_ATT_EFF: 2
     DEE_EFF: 3
     HP_EFF: 0
-    DURABILITY: 1100
+    DURABILITY: 75
   - GR_EFF_ID: 40001016
     EFF_NAME: "\uB291\uB300 \uD138 \uD22C\uAD6C"
     ATT_EFF: 1
@@ -613,7 +613,7 @@ MonoBehaviour:
     DEF_ATT_EFF: 1
     DEE_EFF: 4
     HP_EFF: 0
-    DURABILITY: 750
+    DURABILITY: 75
   linkDataList:
   - GROUP: "\uD328\uD134 \uACBD\uB85C"
     LINK: \Assets\MonsterPatterns\
@@ -621,23 +621,31 @@ MonoBehaviour:
     LINK: \Assets\GEAR_IMAGE\
   - GROUP: "\uC18C\uBAA8\uD488 \uC774\uBBF8\uC9C0 \uACBD\uB85C"
     LINK: \Assets\GEAR_IMAGE\
+  - GROUP: "\uBCF4\uC2A4 \uD504\uB9AC\uD3A9 \uACBD\uB85C"
+    LINK: \Assets\Prefabs\
   phaseDataList:
   - PHASE_ID: 80000001
-    BOSS_ID_1: 20128001
-    BOSS_ID_2: 20228002
+    BOSS_ID_1: 20100001
+    BOSS_ID_2: 20200002
     BOSS_ID_3: 0
     BOSS_ID_4: 0
     BOSS_ID_5: 0
   - PHASE_ID: 80000002
-    BOSS_ID_1: 20110003
-    BOSS_ID_2: 20210004
-    BOSS_ID_3: 20320005
+    BOSS_ID_1: 20100003
+    BOSS_ID_2: 20200004
+    BOSS_ID_3: 20300005
     BOSS_ID_4: 0
     BOSS_ID_5: 0
   - PHASE_ID: 80000003
-    BOSS_ID_1: 20120006
-    BOSS_ID_2: 20220007
-    BOSS_ID_3: 20330008
+    BOSS_ID_1: 20100006
+    BOSS_ID_2: 20200007
+    BOSS_ID_3: 20300008
+    BOSS_ID_4: 0
+    BOSS_ID_5: 0
+  - PHASE_ID: 80000004
+    BOSS_ID_1: 20100009
+    BOSS_ID_2: 20100010
+    BOSS_ID_3: 0
     BOSS_ID_4: 0
     BOSS_ID_5: 0
   patternDataList:
@@ -674,6 +682,17 @@ MonoBehaviour:
     PT_8: NULL
     PT_9: NULL
     PT_10: NULL
+  - PT_ID: 70000004
+    PT_1: dummy_dodge1
+    PT_2: dummy_long1
+    PT_3: dummy_long2
+    PT_4: dummy_nomal1
+    PT_5: dummy_nomal2
+    PT_6: NULL
+    PT_7: NULL
+    PT_8: NULL
+    PT_9: NULL
+    PT_10: NULL
   stageDataList:
   - STAGE_ID: 90000001
     PHASE_ID: 80000001
@@ -681,6 +700,8 @@ MonoBehaviour:
     PHASE_ID: 80000002
   - STAGE_ID: 90000003
     PHASE_ID: 80000003
+  - STAGE_ID: 90000004
+    PHASE_ID: 80000004
   statDataList:
   - STAT_ID: 10100001
     STAT_LV: 1
@@ -968,137 +989,137 @@ MonoBehaviour:
     ATT: 0
     DEF_ATT: 0
     HP: 250
-    DEF: 10
+    DEF: 0
   - STAT_ID: 10202042
     STAT_LV: 2
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 275
-    DEF: 11
+    DEF: 0
   - STAT_ID: 10302043
     STAT_LV: 3
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 300
-    DEF: 12
+    DEF: 0
   - STAT_ID: 10402044
     STAT_LV: 4
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 325
-    DEF: 13
+    DEF: 0
   - STAT_ID: 10502045
     STAT_LV: 5
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 350
-    DEF: 14
+    DEF: 0
   - STAT_ID: 10602046
     STAT_LV: 6
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 375
-    DEF: 15
+    DEF: 0
   - STAT_ID: 10702047
     STAT_LV: 7
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 400
-    DEF: 16
+    DEF: 0
   - STAT_ID: 10802048
     STAT_LV: 8
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 425
-    DEF: 17
+    DEF: 0
   - STAT_ID: 10902049
     STAT_LV: 9
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 450
-    DEF: 18
+    DEF: 0
   - STAT_ID: 11002050
     STAT_LV: 10
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 475
-    DEF: 19
+    DEF: 0
   - STAT_ID: 11102051
     STAT_LV: 11
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 500
-    DEF: 20
+    DEF: 0
   - STAT_ID: 11202052
     STAT_LV: 12
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 525
-    DEF: 21
+    DEF: 0
   - STAT_ID: 11302053
     STAT_LV: 13
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 550
-    DEF: 22
+    DEF: 0
   - STAT_ID: 11402054
     STAT_LV: 14
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 575
-    DEF: 23
+    DEF: 0
   - STAT_ID: 11502055
     STAT_LV: 15
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 600
-    DEF: 24
+    DEF: 0
   - STAT_ID: 11602056
     STAT_LV: 16
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 625
-    DEF: 25
+    DEF: 0
   - STAT_ID: 11702057
     STAT_LV: 17
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 650
-    DEF: 26
+    DEF: 0
   - STAT_ID: 11802058
     STAT_LV: 18
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 675
-    DEF: 27
+    DEF: 0
   - STAT_ID: 11902059
     STAT_LV: 19
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 700
-    DEF: 28
+    DEF: 0
   - STAT_ID: 12002060
     STAT_LV: 20
     STAT: 2
     ATT: 0
     DEF_ATT: 0
     HP: 725
-    DEF: 29
+    DEF: 0
