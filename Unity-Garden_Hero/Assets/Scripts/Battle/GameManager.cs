@@ -19,8 +19,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameState currentState = GameState.Playing;
 
     [Header("DealingTime Settings")]
-    [SerializeField] private float dealingTimeDuration = 10f;
     [SerializeField] private float touchDamageMultiplier = 1.5f;
+    [Tooltip("DealingTime duration is now determined by Boss STUN_RECOVERY from CSV")]
+    [SerializeField] private bool useBossStunRecovery = true;
+    [SerializeField] private float fallbackDealingTimeDuration = 10f; // Used if STUN_RECOVERY is not available
 
     [Header("UI References")]
     [SerializeField] private CanvasGroup gameUICanvasGroup;
@@ -125,7 +127,12 @@ public class GameManager : MonoBehaviour
 
         currentState = GameState.DealingTime;
         isDealingTimeActive = true;
-        dealingTimeTimer = dealingTimeDuration;
+
+        // LMJ: Get DealingTime duration from MonsterManager's STUN_RECOVERY
+        float duration = GetDealingTimeDuration();
+        dealingTimeTimer = duration;
+
+        Debug.Log($"[GameManager] Starting DealingTime - Duration: {duration}s (STUN_RECOVERY from boss)");
 
         // LMJ: Disable all touch inputs to prevent shield stuck issue
         TouchInputManager touchInput = FindFirstObjectByType<TouchInputManager>();
@@ -291,6 +298,22 @@ public class GameManager : MonoBehaviour
     public void SetGameState(GameState newState)
     {
         currentState = newState;
+    }
+
+    // LMJ: Get DealingTime duration from MonsterManager's STUN_RECOVERY
+    private float GetDealingTimeDuration()
+    {
+        if (useBossStunRecovery && monsterManager != null)
+        {
+            int stunRecovery = monsterManager.GetStunRecovery();
+            if (stunRecovery > 0)
+            {
+                return stunRecovery; // STUN_RECOVERY is in seconds
+            }
+        }
+
+        // Fallback to default duration
+        return fallbackDealingTimeDuration;
     }
 
     void OnDestroy()

@@ -741,6 +741,7 @@ public class MonsterManager : LivingEntity
     public int GetPhase() => currentPhaseIndex + 1;
     public int GetCurrentBossId() => currentBossId;
     public int GetTotalPhases() => totalPhases;
+    public int GetStunRecovery() => stunRecovery; // LMJ: Get STUN_RECOVERY for DealingTime duration
 
     // Context Menu methods
     [ContextMenu("🔄 Reload CSV Data")]
