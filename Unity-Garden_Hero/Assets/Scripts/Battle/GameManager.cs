@@ -46,6 +46,7 @@ public class GameManager : MonoBehaviour
 
     [Header("System References")]
     [SerializeField] private MonsterManager monsterManager;
+    [SerializeField] private Transform bossPrefabsParent; // BossPrefabs 부모 - 자동으로 활성화된 보스 찾기
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private RhythmGameSystem rhythmGameSystem;
     [SerializeField] private RhythmPatternManager rhythmPatternManager;
@@ -58,13 +59,68 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // LMJ: Subscribe to monster stun broken event
-        if (monsterManager != null)
-        {
-            monsterManager.OnStunBroken.AddListener(StartDealingTime);
-        }
+        // Find active monster if not manually assigned
+        FindAndSetupMonster();
 
         SetupUI();
+    }
+
+    void Update()
+    {
+        // Continuously check for active monster if we don't have one
+        if (monsterManager == null && bossPrefabsParent != null)
+        {
+            FindAndSetupMonster();
+        }
+
+        HandleInput();
+        UpdateDealingTime();
+    }
+
+    void FindAndSetupMonster()
+    {
+        MonsterManager newMonster = null;
+
+        // First try: Use bossPrefabsParent to find active monster
+        if (bossPrefabsParent != null)
+        {
+            foreach (Transform child in bossPrefabsParent)
+            {
+                if (child.gameObject.activeSelf)
+                {
+                    MonsterManager monster = child.GetComponent<MonsterManager>();
+                    if (monster != null)
+                    {
+                        newMonster = monster;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Fallback: Find any MonsterManager in scene
+        if (newMonster == null && monsterManager == null)
+        {
+            newMonster = FindFirstObjectByType<MonsterManager>();
+        }
+
+        // Setup new monster if found
+        if (newMonster != null && newMonster != monsterManager)
+        {
+            // Unsubscribe from old monster
+            if (monsterManager != null)
+            {
+                monsterManager.OnStunBroken.RemoveListener(StartDealingTime);
+            }
+
+            // Set new monster
+            monsterManager = newMonster;
+
+            // Subscribe to new monster
+            monsterManager.OnStunBroken.AddListener(StartDealingTime);
+
+            Debug.Log($"[GameManager] Connected to new monster: {monsterManager.gameObject.name}");
+        }
     }
 
     void SetupUI()
@@ -78,12 +134,6 @@ public class GameManager : MonoBehaviour
         {
             dealingTimeInstructionText.text = "Touch the Boss to Deal Damage!";
         }
-    }
-
-    void Update()
-    {
-        HandleInput();
-        UpdateDealingTime();
     }
 
     void HandleInput()

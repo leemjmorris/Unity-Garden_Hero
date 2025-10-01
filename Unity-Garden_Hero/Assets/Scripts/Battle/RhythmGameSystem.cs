@@ -127,6 +127,7 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     [Header("Manager References")]
     [SerializeField] private MonsterManager monsterManager;
+    [SerializeField] private Transform bossPrefabsParent; // BossPrefabs 부모 - 자동으로 활성화된 보스 찾기
     [SerializeField] private JudgmentTextManager judgmentTextManager;
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private DirectionalShieldSystem directionalShieldSystem;
@@ -148,6 +149,11 @@ public partial class RhythmGameSystem : MonoBehaviour
     void Awake()
     {
         SetupLaneReferences();
+    }
+
+    void Start()
+    {
+        FindAndSetupMonster();
     }
 
     void SetupLaneReferences()
@@ -318,6 +324,12 @@ public partial class RhythmGameSystem : MonoBehaviour
 
     void Update()
     {
+        // Continuously check for active monster if we don't have one
+        if (monsterManager == null && bossPrefabsParent != null)
+        {
+            FindAndSetupMonster();
+        }
+
         // Stop all note updates when game is over or monster is dead
         GameManager gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager != null)
@@ -347,6 +359,41 @@ public partial class RhythmGameSystem : MonoBehaviour
         CheckInputs();
         CheckMissedNotes();
         CheckMissedLongNotes();
+    }
+
+    void FindAndSetupMonster()
+    {
+        MonsterManager newMonster = null;
+
+        // First try: Use bossPrefabsParent to find active monster
+        if (bossPrefabsParent != null)
+        {
+            foreach (Transform child in bossPrefabsParent)
+            {
+                if (child.gameObject.activeSelf)
+                {
+                    MonsterManager monster = child.GetComponent<MonsterManager>();
+                    if (monster != null)
+                    {
+                        newMonster = monster;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Fallback: Find any MonsterManager in scene
+        if (newMonster == null && monsterManager == null)
+        {
+            newMonster = FindFirstObjectByType<MonsterManager>();
+        }
+
+        // Setup new monster if found
+        if (newMonster != null && newMonster != monsterManager)
+        {
+            monsterManager = newMonster;
+            Debug.Log($"[RhythmGameSystem] Connected to monster: {monsterManager.gameObject.name}");
+        }
     }
 
     void UpdateNotePositions()

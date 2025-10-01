@@ -16,6 +16,8 @@ public class GameOverManager : MonoBehaviour
     [Header("Manager References")]
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private MonsterManager monsterManager;
+    [SerializeField] private Transform bossPrefabsParent; // BossPrefabs 부모 - 자동으로 활성화된 보스 찾기
+    [SerializeField] private BossStageManager bossStageManager;
 
     [Header("Victory Animation Settings")]
     [SerializeField, Range(0f, 10f)] private float victoryAnimationDelay = 2.5f;
@@ -26,8 +28,67 @@ public class GameOverManager : MonoBehaviour
     void Start()
     {
         SetupButtonListeners();
+        FindAndSetupMonster();
         SetupEventListeners();
         HideAllCanvas();
+    }
+
+    void Update()
+    {
+        // Continuously check for active monster if we don't have one
+        if (monsterManager == null && bossPrefabsParent != null)
+        {
+            FindAndSetupMonster();
+            SetupEventListeners(); // Re-setup listeners when new monster is found
+        }
+
+        // LMJ: Fallback check for player death (only trigger once)
+        if (playerManager != null && !playerManager.IsAlive() && !playerDeathHandled)
+        {
+            bool bothCanvasHidden = (victoryCanvas == null || !victoryCanvas.gameObject.activeInHierarchy) &&
+                                   (defeatCanvas == null || !defeatCanvas.gameObject.activeInHierarchy);
+
+            if (bothCanvasHidden)
+            {
+                playerDeathHandled = true;
+                OnPlayerDeath();
+            }
+        }
+    }
+
+    void FindAndSetupMonster()
+    {
+        MonsterManager newMonster = null;
+
+        // First try: Use bossPrefabsParent to find active monster
+        if (bossPrefabsParent != null)
+        {
+            foreach (Transform child in bossPrefabsParent)
+            {
+                if (child.gameObject.activeSelf)
+                {
+                    MonsterManager monster = child.GetComponent<MonsterManager>();
+                    if (monster != null)
+                    {
+                        newMonster = monster;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Fallback: Find any MonsterManager in scene
+        if (newMonster == null && monsterManager == null)
+        {
+            newMonster = FindFirstObjectByType<MonsterManager>();
+        }
+
+        // Setup new monster if found
+        if (newMonster != null && newMonster != monsterManager)
+        {
+            monsterManager = newMonster;
+            Debug.Log($"[GameOverManager] Connected to monster: {monsterManager.gameObject.name}");
+        }
     }
 
     void SetupButtonListeners()
@@ -35,6 +96,11 @@ public class GameOverManager : MonoBehaviour
         if (victoryRestartButton != null)
         {
             victoryRestartButton.onClick.AddListener(RestartGame);
+        }
+
+        if (victoryNextButton != null)
+        {
+            victoryNextButton.onClick.AddListener(OnNextStage);
         }
 
         if (defeatRestartButton != null)
@@ -46,8 +112,6 @@ public class GameOverManager : MonoBehaviour
         {
             defeatQuitButton.onClick.AddListener(QuitGame);
         }
-
-        // NextButton은 일단 연결 없이 유지
     }
 
     void HideAllCanvas()
@@ -97,12 +161,22 @@ public class GameOverManager : MonoBehaviour
                     {
                         onDiedEvent.RemoveAllListeners();
                         onDiedEvent.AddListener(OnMonsterDeath);
+                        Debug.Log($"[GameOverManager] Subscribed to {monsterManager.gameObject.name}.OnDied event");
                     }
                 }
-                catch (System.Exception)
+                catch (System.Exception e)
                 {
+                    Debug.LogError($"[GameOverManager] Failed to subscribe to OnDied: {e.Message}");
                 }
             }
+            else
+            {
+                Debug.LogWarning("[GameOverManager] MonsterManager does not have OnDied event!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[GameOverManager] MonsterManager is null in SetupEventListeners!");
         }
     }
 
@@ -114,6 +188,7 @@ public class GameOverManager : MonoBehaviour
 
     void OnMonsterDeath()
     {
+        Debug.Log("[GameOverManager] OnMonsterDeath called! Showing Victory UI...");
         ShowVictory();
     }
 
@@ -172,6 +247,36 @@ public class GameOverManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    void OnNextStage()
+    {
+        Debug.Log("[GameOverManager] Advancing to next stage - RESTARTING GAME...");
+
+        // BossStageManager가 없으면 찾기
+        if (bossStageManager == null)
+        {
+            bossStageManager = FindFirstObjectByType<BossStageManager>();
+        }
+
+        if (bossStageManager == null)
+        {
+            Debug.LogWarning("[GameOverManager] BossStageManager not found! Cannot advance to next stage.");
+            return;
+        }
+
+        // 다음 스테이지 ID 저장
+        int nextStageId = bossStageManager.GetCurrentStageId() + 1;
+        PlayerPrefs.SetInt("NextStageId", nextStageId);
+        PlayerPrefs.Save();
+
+        Debug.Log($"[GameOverManager] Saved next stage ID: {nextStageId}. Restarting game...");
+
+        // 게임 완전 재시작 (깔끔한 상태로 시작)
+        RestartGame();
+    }
+
+    // NOTE: ResetGameForNextStage() removed - we now restart the entire game for clean state
+    // Stage progression is handled via PlayerPrefs and BossStageManager
+
     void RestartGame()
     {
         Time.timeScale = 1f;
@@ -220,6 +325,11 @@ public class GameOverManager : MonoBehaviour
             victoryRestartButton.onClick.RemoveAllListeners();
         }
 
+        if (victoryNextButton != null)
+        {
+            victoryNextButton.onClick.RemoveAllListeners();
+        }
+
         if (defeatRestartButton != null)
         {
             defeatRestartButton.onClick.RemoveAllListeners();
@@ -256,20 +366,4 @@ public class GameOverManager : MonoBehaviour
 
     // LMJ: Alternative method to check for player death if event doesn't work
     private bool playerDeathHandled = false;
-
-    void Update()
-    {
-        // LMJ: Fallback check for player death (only trigger once)
-        if (playerManager != null && !playerManager.IsAlive() && !playerDeathHandled)
-        {
-            bool bothCanvasHidden = (victoryCanvas == null || !victoryCanvas.gameObject.activeInHierarchy) &&
-                                   (defeatCanvas == null || !defeatCanvas.gameObject.activeInHierarchy);
-
-            if (bothCanvasHidden)
-            {
-                playerDeathHandled = true;
-                OnPlayerDeath();
-            }
-        }
-    }
 }

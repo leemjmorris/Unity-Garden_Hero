@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(python -c \"import re; content=open(r''C:\\Users\\LMJ\\Desktop\\Unity_Project\\Unity-Garden_Hero\\Unity-Garden_Hero\\Assets\\Prefabs\\BossTypeLizzard.prefab'', ''r'', encoding=''utf-8'').read(); matches=re.findall(r''(phaseId|autoDetectFromPrefabName):\\s*\\d+'', content); print(''\\n''.join(matches[:10]) if matches else ''Not found'')\")"
     ],
     "deny": [],
     "ask": []

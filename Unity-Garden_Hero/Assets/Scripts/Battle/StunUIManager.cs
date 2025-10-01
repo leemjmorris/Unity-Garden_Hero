@@ -8,10 +8,17 @@ public class StunUIManager : MonoBehaviour
     
     [Header("Monster Reference")]
     [SerializeField] private MonsterManager monsterManager;
-    
+    [SerializeField] private Transform bossPrefabsParent; // BossPrefabs 부모 오브젝트
+
     void Start()
     {
-        // LMJ: Auto-find MonsterManager if not assigned
+        // Auto-find active monster from BossPrefabs parent
+        if (monsterManager == null && bossPrefabsParent != null)
+        {
+            FindActiveMonster();
+        }
+
+        // Fallback: Find any MonsterManager in scene
         if (monsterManager == null)
         {
             monsterManager = FindFirstObjectByType<MonsterManager>();
@@ -21,6 +28,39 @@ public class StunUIManager : MonoBehaviour
         {
             InitializeStunBar();
             SubscribeToStunEvents();
+        }
+        else
+        {
+            Debug.LogWarning("[StunUIManager] Monster target not found. Will retry in Update.");
+        }
+    }
+
+    void Update()
+    {
+        // 타겟이 없으면 계속 찾기
+        if (monsterManager == null && bossPrefabsParent != null)
+        {
+            FindActiveMonster();
+        }
+    }
+
+    void FindActiveMonster()
+    {
+        if (bossPrefabsParent == null) return;
+
+        // BossPrefabs의 자식 중 활성화된 몬스터 찾기
+        foreach (Transform child in bossPrefabsParent)
+        {
+            if (child.gameObject.activeSelf)
+            {
+                MonsterManager monster = child.GetComponent<MonsterManager>();
+                if (monster != null)
+                {
+                    SetMonsterManager(monster);
+                    Debug.Log($"[StunUIManager] Found active monster: {child.name}");
+                    return;
+                }
+            }
         }
     }
     
@@ -42,7 +82,15 @@ public class StunUIManager : MonoBehaviour
     
     void OnStunChanged(float newStun)
     {
-        Debug.Log($"[StunUIManager] OnStunChanged called with newStun: {newStun}");
+        if (monsterManager != null)
+        {
+            Debug.Log($"[StunUIManager] OnStunChanged - Monster:{monsterManager.gameObject.name}, NewStun:{newStun}, Percentage:{monsterManager.GetStunPercentage():F2}");
+        }
+        else
+        {
+            Debug.LogWarning($"[StunUIManager] OnStunChanged called but monsterManager is NULL! newStun:{newStun}");
+        }
+
         UpdateStunBar();
 
         // LMJ: Trigger bump effect when stun decreases
@@ -96,6 +144,7 @@ public class StunUIManager : MonoBehaviour
         {
             InitializeStunBar();
             SubscribeToStunEvents();
+            UpdateStunBar();
         }
     }
     

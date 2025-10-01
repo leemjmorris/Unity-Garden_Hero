@@ -1229,8 +1229,8 @@ RectTransform:
   m_GameObject: {fileID: 160677323}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.43, y: 0.43, z: 0.43}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 850366575}
   m_Father: {fileID: 202615762}
@@ -1380,8 +1380,8 @@ RectTransform:
   m_GameObject: {fileID: 173339552}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.43, y: 0.43, z: 0.43}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 568906200}
   m_Father: {fileID: 1406774387}
@@ -1614,8 +1614,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -35}
-  m_SizeDelta: {x: 0, y: 368}
+  m_AnchoredPosition: {x: 0, y: -90.001}
+  m_SizeDelta: {x: 0, y: 786.15}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &225987103
 GameObject:
@@ -1992,7 +1992,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stunProgressBar: {fileID: 1077255872}
-  monsterManager: {fileID: 490134566}
+  monsterManager: {fileID: 0}
+  bossPrefabsParent: {fileID: 631369074}
 --- !u!1 &302282747 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2802441542059086990, guid: c00ccb9a4ef0c604883058daad576616, type: 3}
@@ -2396,7 +2397,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6084180052570567520, guid: d10d538e532c2f2419830c7335a3efbf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 715734872}
   m_SourcePrefab: {fileID: 100100000, guid: d10d538e532c2f2419830c7335a3efbf, type: 3}
 --- !u!224 &410066596 stripped
 RectTransform:
@@ -2705,7 +2709,9 @@ MonoBehaviour:
   defeatRestartButton: {fileID: 664031788}
   defeatQuitButton: {fileID: 1082114086}
   playerManager: {fileID: 1160532685}
-  monsterManager: {fileID: 490134566}
+  monsterManager: {fileID: 0}
+  bossPrefabsParent: {fileID: 631369074}
+  bossStageManager: {fileID: 631369075}
   victoryAnimationDelay: 3
   fadeInDuration: 1
 --- !u!4 &439153874
@@ -3280,7 +3286,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 70}
+  m_SizeDelta: {x: 0, y: 180}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &568906199
 GameObject:
@@ -3591,6 +3597,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 631369074}
+  - component: {fileID: 631369075}
   m_Layer: 0
   m_Name: BossPrefabs
   m_TagString: Untagged
@@ -3616,6 +3623,26 @@ Transform:
   - {fileID: 344792298}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &631369075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 631369073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a2ad2ed00661474cbe358e80dfe7580, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentStageId: 90000001
+  bossPrefabsParent: {fileID: 631369074}
+  csvStatus: 
+  currentPhaseId: 0
+  currentBossPrefabName: 
+  OnStageChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &634826922 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2802441542059086990, guid: c00ccb9a4ef0c604883058daad576616, type: 3}
@@ -3977,6 +4004,80 @@ GameObject:
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 958387464658433630, guid: 5b9c93bdb1b3a154e9fdac1af3eb7a08, type: 3}
   m_PrefabInstance: {fileID: 8741941740267805077}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &715734871 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6084180052570567520, guid: d10d538e532c2f2419830c7335a3efbf, type: 3}
+  m_PrefabInstance: {fileID: 403082022}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &715734872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 715734871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625fbaeb9196cfa42a407fdb9dd335af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  level: 1
+  attackPower: 10
+  defense: 0
+  maxHealth: 100
+  currentHealth: 100
+  isDead: 0
+  OnDamageReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  autoDetectFromPrefabName: 1
+  phaseId: 80000001
+  currentPhaseIndex: 0
+  monsterName: "\uB291\uB300 \uC804\uC0AC"
+  currentBossId: 0
+  totalPhases: 0
+  maxStun: 100
+  currentStun: 100
+  stunRecovery: 0
+  stunDefense: 0
+  stunObject: {fileID: 1077255869}
+  OnStunBroken:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStunChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStunRestored:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPhaseChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnMonsterDead:
+    m_PersistentCalls:
+      m_Calls: []
+  animator: {fileID: 715734873}
+  minAttackInterval: 2
+  maxAttackInterval: 5
+  normalAttMultiplier: 1
+  normalDefAttMultiplier: 1
+  longAttMultiplier: 1
+  longDefAttMultiplier: 1
+  specialAttMultiplier: 1
+  specialDefAttMultiplier: 1
+  csvStatus: 
+  rhythmGameSystem: {fileID: 1003656420}
+--- !u!95 &715734873 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2537863662270565881, guid: d10d538e532c2f2419830c7335a3efbf, type: 3}
+  m_PrefabInstance: {fileID: 403082022}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &729059557 stripped
 GameObject:
@@ -4369,6 +4470,80 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 822961363}
   m_CullTransparentMesh: 1
+--- !u!1 &828716005 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1679828357760749964, guid: 16cd898937e505e45b14cbc6f3785661, type: 3}
+  m_PrefabInstance: {fileID: 844942441}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &828716006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828716005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625fbaeb9196cfa42a407fdb9dd335af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  level: 1
+  attackPower: 10
+  defense: 0
+  maxHealth: 100
+  currentHealth: 100
+  isDead: 0
+  OnDamageReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  autoDetectFromPrefabName: 1
+  phaseId: 80000001
+  currentPhaseIndex: 0
+  monsterName: "\uB291\uB300 \uC804\uC0AC"
+  currentBossId: 0
+  totalPhases: 0
+  maxStun: 100
+  currentStun: 100
+  stunRecovery: 0
+  stunDefense: 0
+  stunObject: {fileID: 1077255869}
+  OnStunBroken:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStunChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStunRestored:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPhaseChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnMonsterDead:
+    m_PersistentCalls:
+      m_Calls: []
+  animator: {fileID: 828716007}
+  minAttackInterval: 2
+  maxAttackInterval: 5
+  normalAttMultiplier: 1
+  normalDefAttMultiplier: 1
+  longAttMultiplier: 1
+  longDefAttMultiplier: 1
+  specialAttMultiplier: 1
+  specialDefAttMultiplier: 1
+  csvStatus: 
+  rhythmGameSystem: {fileID: 1003656420}
+--- !u!95 &828716007 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1625632882986672722, guid: 16cd898937e505e45b14cbc6f3785661, type: 3}
+  m_PrefabInstance: {fileID: 844942441}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &844942441
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4428,7 +4603,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1679828357760749964, guid: 16cd898937e505e45b14cbc6f3785661, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 828716006}
   m_SourcePrefab: {fileID: 100100000, guid: 16cd898937e505e45b14cbc6f3785661, type: 3}
 --- !u!1 &850366574
 GameObject:
@@ -4521,16 +4699,16 @@ RectTransform:
   m_GameObject: {fileID: 852702359}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 2092035652}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -15}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 275, y: 76}
-  m_Pivot: {x: 0.5, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &852702361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5299,6 +5477,7 @@ MonoBehaviour:
   missTolerance: 0.15
   noteSpeed: 800
   monsterManager: {fileID: 490134566}
+  bossPrefabsParent: {fileID: 631369074}
   judgmentTextManager: {fileID: 1291157326}
   playerManager: {fileID: 1160532685}
   directionalShieldSystem: {fileID: 1717503336}
@@ -5616,7 +5795,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stunProgressBar: {fileID: 1077255872}
-  monsterManager: {fileID: 490134566}
+  monsterManager: {fileID: 0}
+  bossPrefabsParent: {fileID: 631369074}
 --- !u!1001 &1079997985
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5894,7 +6074,7 @@ MonoBehaviour:
   gameSystem: {fileID: 1003656420}
   shieldController: {fileID: 899923388}
   directionalShieldSystem: {fileID: 1717503336}
-  dodgeSystem: {fileID: 0}
+  dodgeSystem: {fileID: 423770217}
   swipeThreshold: 50
   playerManager: {fileID: 1160532685}
   simultaneousPressThreshold: 0.1
@@ -6352,16 +6532,16 @@ RectTransform:
   m_GameObject: {fileID: 1181034886}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 560217845}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -15}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 328, y: 81}
-  m_Pivot: {x: 0.5, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1181034888
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6849,7 +7029,8 @@ MonoBehaviour:
   - {fileID: 1328384212}
   dealingTimeStartFeedback: {fileID: 0}
   dealingTimeEndFeedback: {fileID: 0}
-  monsterManager: {fileID: 490134566}
+  monsterManager: {fileID: 0}
+  bossPrefabsParent: {fileID: 631369074}
   playerManager: {fileID: 1160532685}
   rhythmGameSystem: {fileID: 1003656420}
   rhythmPatternManager: {fileID: 1003656418}
@@ -7403,12 +7584,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -7590,8 +7771,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -35}
-  m_SizeDelta: {x: 0, y: 368}
+  m_AnchoredPosition: {x: 0, y: -90.001}
+  m_SizeDelta: {x: 0, y: 786.15}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &1419411219
 PrefabInstance:
@@ -8143,6 +8324,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healthProgressBar: {fileID: 1544201895}
   targetEntity: {fileID: 1160532685}
+  bossPrefabsParent: {fileID: 0}
   isPlayerUI: 1
   healthyColor: {r: 0.3529412, g: 0.54901963, b: 0.08627451, a: 1}
   warningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -10719,9 +10901,9 @@ MonoBehaviour:
   noteSpeedIncreaseButton: {fileID: 1597378337}
   noteSpeedText: {fileID: 88593368}
   rhythmGameSystem: {fileID: 1003656420}
-  gameManager: {fileID: 0}
-  dodgeSystem: {fileID: 0}
-  touchInputManager: {fileID: 0}
+  gameManager: {fileID: 1279204728}
+  dodgeSystem: {fileID: 423770217}
+  touchInputManager: {fileID: 1092343930}
 --- !u!1 &1924977961
 GameObject:
   m_ObjectHideFlags: 0
@@ -10909,12 +11091,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -11724,7 +11906,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 70}
+  m_SizeDelta: {x: 0, y: 180}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &2093315247
 GameObject:
@@ -11914,7 +12096,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthProgressBar: {fileID: 2147183211}
-  targetEntity: {fileID: 490134566}
+  targetEntity: {fileID: 0}
+  bossPrefabsParent: {fileID: 631369074}
   isPlayerUI: 0
   healthyColor: {r: 0.454902, g: 0, b: 0, a: 1}
   warningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}

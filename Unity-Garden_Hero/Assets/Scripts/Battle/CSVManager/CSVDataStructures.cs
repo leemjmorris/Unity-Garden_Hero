@@ -14,18 +14,28 @@ public class BossData
     public int BOSS_ID;           // INT
     public string BOSS_NAME;      // STRING
     public int PHASE;             // INT
-    public int NORMAL_ATT;        // INT
-    public int NORMAL_DEF_ATT;    // INT
-    public int LONG_ATT;          // INT
-    public int LONG_DEF_ATT;      // INT
-    public int SPECIAL_ATT;       // INT
-    public int SPECIAL_DEF_ATT;   // INT
     public float STUN;            // FLOAT
     public int STUN_RECOVERY;     // INT
     public int DEF;               // INT
     public int STUN_DEF;          // INT
     public float HP;              // FLOAT
     public int PT_ID;             // INT
+    public string BOSS_PREFABS;   // STRING
+    public int BOSS_ATT_ID;       // INT - BS_ATT.csv 참조용
+}
+
+[System.Serializable]
+public class BossAttData
+{
+    public int BOSS_ATT_ID;       // INT
+    public string BOSS_NAME;      // STRING
+    public int PHASE;             // INT
+    public int NORMAL_ATT;        // INT
+    public int NORMAL_DEF_ATT;    // INT
+    public int LONG_ATT;          // INT
+    public int LONG_DEF_ATT;      // INT
+    public int SPECIAL_ATT;       // INT
+    public int SPECIAL_DEF_ATT;   // INT
 }
 
 [System.Serializable]

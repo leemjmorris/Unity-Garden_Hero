@@ -8,6 +8,9 @@ public class CSVDataAsset : ScriptableObject
     [Header("Boss Data")]
     public List<BossData> bossDataList = new List<BossData>();
 
+    [Header("Boss Attack Data")]
+    public List<BossAttData> bossAttDataList = new List<BossAttData>();
+
     [Header("Consumable Data")]
     public List<ConsumableData> consumableDataList = new List<ConsumableData>();
 
@@ -37,6 +40,7 @@ public class CSVDataAsset : ScriptableObject
 
     // LMJ: Dictionary for fast lookup (built at runtime)
     private Dictionary<string, BossData> bossDataDict;
+    private Dictionary<int, BossAttData> bossAttDataDict;
     private Dictionary<string, ConsumableData> consumableDataDict;
     private Dictionary<string, GearData> gearDataDict;
     private Dictionary<string, GearSetData> gearSetDataDict;
@@ -58,6 +62,12 @@ public class CSVDataAsset : ScriptableObject
         foreach (var data in bossDataList)
         {
             bossDataDict[data.BOSS_ID.ToString()] = data;
+        }
+
+        bossAttDataDict = new Dictionary<int, BossAttData>();
+        foreach (var data in bossAttDataList)
+        {
+            bossAttDataDict[data.BOSS_ATT_ID] = data;
         }
 
         consumableDataDict = new Dictionary<string, ConsumableData>();
@@ -122,6 +132,12 @@ public class CSVDataAsset : ScriptableObject
     {
         if (bossDataDict == null) BuildDictionaries();
         return bossDataDict.ContainsKey(bossId) ? bossDataDict[bossId] : null;
+    }
+
+    public BossAttData GetBossAttData(int bossAttId)
+    {
+        if (bossAttDataDict == null) BuildDictionaries();
+        return bossAttDataDict.ContainsKey(bossAttId) ? bossAttDataDict[bossAttId] : null;
     }
 
     public ConsumableData GetConsumableData(string consId)
@@ -189,6 +205,7 @@ public class CSVDataAsset : ScriptableObject
     public void LoadAllCSVData()
     {
         LoadBossData();
+        LoadBossAttData();
         LoadConsumableData();
         LoadGearData();
         LoadGearSetData();
@@ -219,27 +236,62 @@ public class CSVDataAsset : ScriptableObject
             try
             {
                 string[] values = SplitCSVLine(line);
-                if (values.Length >= 15)
+                if (values.Length >= 11)
                 {
                     BossData data = new BossData
                     {
                         BOSS_ID = CSVHelper.ToInt(values[0]),
                         BOSS_NAME = values[1].Trim(),
                         PHASE = CSVHelper.ToInt(values[2]),
+                        STUN = CSVHelper.ToFloat(values[3]),
+                        STUN_RECOVERY = CSVHelper.ToInt(values[4]),
+                        DEF = CSVHelper.ToInt(values[5]),
+                        STUN_DEF = CSVHelper.ToInt(values[6]),
+                        HP = CSVHelper.ToFloat(values[7]),
+                        PT_ID = CSVHelper.ToInt(values[8]),
+                        BOSS_PREFABS = values[9].Trim(),
+                        BOSS_ATT_ID = CSVHelper.ToInt(values[10])
+                    };
+                    bossDataList.Add(data);
+                }
+            }
+            catch (System.Exception)
+            {
+            }
+        }
+    }
+
+    void LoadBossAttData()
+    {
+        string path = Path.Combine(Application.dataPath, "Resources/CSV/BS_ATT.csv");
+        if (!File.Exists(path)) return;
+
+        bossAttDataList.Clear();
+        string[] lines = File.ReadAllLines(path);
+
+        for (int i = 2; i < lines.Length; i++)
+        {
+            string line = lines[i].Trim();
+            if (string.IsNullOrEmpty(line)) continue;
+
+            try
+            {
+                string[] values = SplitCSVLine(line);
+                if (values.Length >= 12)
+                {
+                    BossAttData data = new BossAttData
+                    {
+                        BOSS_ATT_ID = CSVHelper.ToInt(values[0]),
+                        BOSS_NAME = values[1].Trim(),
+                        PHASE = CSVHelper.ToInt(values[2]),
                         NORMAL_ATT = CSVHelper.ToInt(values[3]),
                         NORMAL_DEF_ATT = CSVHelper.ToInt(values[4]),
                         LONG_ATT = CSVHelper.ToInt(values[5]),
-                        LONG_DEF_ATT = CSVHelper.ToInt(values[6]),
-                        SPECIAL_ATT = CSVHelper.ToInt(values[7]),
-                        SPECIAL_DEF_ATT = CSVHelper.ToInt(values[8]),
-                        STUN = CSVHelper.ToFloat(values[9]),
-                        STUN_RECOVERY = CSVHelper.ToInt(values[10]),
-                        DEF = CSVHelper.ToInt(values[11]),
-                        STUN_DEF = CSVHelper.ToInt(values[12]),
-                        HP = CSVHelper.ToFloat(values[13]),
-                        PT_ID = CSVHelper.ToInt(values[14])
+                        LONG_DEF_ATT = CSVHelper.ToInt(values[11]), // 마지막 LONG_DEF_ATT 사용
+                        SPECIAL_ATT = CSVHelper.ToInt(values[10]),
+                        SPECIAL_DEF_ATT = CSVHelper.ToInt(values[11])
                     };
-                    bossDataList.Add(data);
+                    bossAttDataList.Add(data);
                 }
             }
             catch (System.Exception)

@@ -9,7 +9,8 @@ public class HealthUIManager : MonoBehaviour
     
     [Header("Entity Reference")]
     [SerializeField] private LivingEntity targetEntity;
-    
+    [SerializeField] private Transform bossPrefabsParent; // BossPrefabs 부모 오브젝트 (Monster UI용)
+
     [Header("UI Type")]
     [SerializeField] private bool isPlayerUI = true;
     
@@ -24,10 +25,50 @@ public class HealthUIManager : MonoBehaviour
     
     void Start()
     {
+        // Auto-find target entity for monster UI
+        if (!isPlayerUI && targetEntity == null && bossPrefabsParent != null)
+        {
+            FindActiveMonster();
+        }
+
         if (targetEntity != null)
         {
             InitializeHealthBar();
             SubscribeToEntityEvents();
+        }
+        else if (!isPlayerUI)
+        {
+            // Monster UI가 타겟을 찾지 못했으면 Update에서 계속 찾기
+            Debug.LogWarning("[HealthUIManager] Monster target not found. Will retry in Update.");
+        }
+    }
+
+    void Update()
+    {
+        // Monster UI가 타겟이 없으면 계속 찾기
+        if (!isPlayerUI && targetEntity == null && bossPrefabsParent != null)
+        {
+            FindActiveMonster();
+        }
+    }
+
+    void FindActiveMonster()
+    {
+        if (bossPrefabsParent == null) return;
+
+        // BossPrefabs의 자식 중 활성화된 몬스터 찾기
+        foreach (Transform child in bossPrefabsParent)
+        {
+            if (child.gameObject.activeSelf)
+            {
+                MonsterManager monster = child.GetComponent<MonsterManager>();
+                if (monster != null)
+                {
+                    SetTargetEntity(monster);
+                    Debug.Log($"[HealthUIManager] Found active monster: {child.name}");
+                    return;
+                }
+            }
         }
     }
     
@@ -182,11 +223,12 @@ public class HealthUIManager : MonoBehaviour
         {
             UnsubscribeFromEvents();
         }
-        
+
         targetEntity = entity;
-        
+
         if (targetEntity != null)
         {
+            InitializeHealthBar();
             SubscribeToEntityEvents();
             UpdateHealthBar();
         }

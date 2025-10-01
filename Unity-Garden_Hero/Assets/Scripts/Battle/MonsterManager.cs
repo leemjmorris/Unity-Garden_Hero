@@ -6,11 +6,12 @@ using System.Collections.Generic;
 public class MonsterManager : LivingEntity
 {
     [Header("Monster CSV Settings")]
-    [SerializeField] private int phaseId = 80000001; // 늑대 전사 페이즈 ID
+    [SerializeField] private bool autoDetectFromPrefabName = true; // Prefab 이름으로 자동 감지
+    [SerializeField] private int phaseId = 0; // 수동 설정용 (autoDetectFromPrefabName = false일 때)
     [SerializeField] private int currentPhaseIndex = 0; // 현재 페이즈 인덱스 (0부터 시작)
 
     [Header("Monster Info (Auto Loaded)")]
-    [SerializeField] private string monsterName = "늑대 전사";
+    [SerializeField] private string monsterName = "";
     [SerializeField] private int currentBossId;
     [SerializeField] private int totalPhases;
 
@@ -55,10 +56,18 @@ public class MonsterManager : LivingEntity
     // CSV 데이터 캐시
     private PhaseData currentPhaseData;
     private BossData currentBossData;
+    private BossAttData currentBossAttData;
     private bool csvDataLoaded = false;
 
     // GameManager 참조
     private GameManager gameManager;
+
+    // Animator 파라미터 캐시 (성능 최적화 및 존재 여부 확인)
+    private bool hasRandomAttParam = false;
+    private bool hasIsDealingTimeParam = false;
+    private bool hasIsVictoryParam = false;
+    private bool hasGetHitTrigger = false;
+    private bool hasOnDeathTrigger = false;
 
     void Start()
     {
@@ -68,6 +77,12 @@ public class MonsterManager : LivingEntity
         {
             animator = GetComponent<Animator>();
         }
+
+        // Auto-assign default animator controller if missing
+        AssignDefaultAnimatorControllerIfNeeded();
+
+        // Check animator parameters
+        CheckAnimatorParameters();
 
         LoadCSVData();
 
@@ -87,6 +102,53 @@ public class MonsterManager : LivingEntity
         }
     }
 
+    void AssignDefaultAnimatorControllerIfNeeded()
+    {
+        // This function is kept for backward compatibility but does nothing now
+        // Each boss should have its own Animator Controller with proper animation clips
+        // MonsterManager will safely handle missing parameters through CheckAnimatorParameters()
+    }
+
+    void CheckAnimatorParameters()
+    {
+        if (animator == null)
+        {
+            Debug.LogWarning($"[MonsterManager] {gameObject.name} has no Animator component");
+            return;
+        }
+
+        if (animator.runtimeAnimatorController == null)
+        {
+            Debug.LogWarning($"[MonsterManager] {gameObject.name} has no Animator Controller");
+            return;
+        }
+
+        // Check which parameters exist in the animator
+        foreach (AnimatorControllerParameter param in animator.parameters)
+        {
+            switch (param.name)
+            {
+                case "randomAtt":
+                    hasRandomAttParam = true;
+                    break;
+                case "isDealingTime":
+                    hasIsDealingTimeParam = true;
+                    break;
+                case "isVictory":
+                    hasIsVictoryParam = true;
+                    break;
+                case "GetHit":
+                    hasGetHitTrigger = true;
+                    break;
+                case "OnDeath":
+                    hasOnDeathTrigger = true;
+                    break;
+            }
+        }
+
+        Debug.Log($"[MonsterManager] {gameObject.name} Animator params - randomAtt:{hasRandomAttParam}, isDealingTime:{hasIsDealingTimeParam}, isVictory:{hasIsVictoryParam}, GetHit:{hasGetHitTrigger}, OnDeath:{hasOnDeathTrigger}");
+    }
+
     void LoadCSVData()
     {
         if (CSVManager.Instance == null)
@@ -99,6 +161,39 @@ public class MonsterManager : LivingEntity
         if (csvDataAsset?.phaseDataList == null || csvDataAsset?.bossDataList == null)
         {
             csvStatus = "CSV data asset or lists are null";
+            return;
+        }
+
+        // Auto-detect Phase ID from prefab name if enabled
+        if (autoDetectFromPrefabName)
+        {
+            string prefabName = gameObject.name.Replace("(Clone)", "").Trim();
+            Debug.Log($"[MonsterManager] Attempting auto-detect for prefab: '{prefabName}'");
+
+            int detectedPhaseId = FindPhaseIdByPrefabName(prefabName);
+
+            if (detectedPhaseId > 0)
+            {
+                phaseId = detectedPhaseId;
+                csvStatus = $"✓ Auto-detected Phase ID: {phaseId} from prefab: {prefabName}";
+                Debug.Log($"[MonsterManager] {csvStatus}");
+            }
+            else
+            {
+                csvStatus = $"✗ Failed to auto-detect from '{prefabName}'. Manual phaseId: {phaseId}";
+                Debug.LogWarning($"[MonsterManager] {csvStatus}");
+
+                if (phaseId <= 0)
+                {
+                    Debug.LogError($"[MonsterManager] No valid Phase ID! Enable autoDetect or set phaseId manually.");
+                    return;
+                }
+            }
+        }
+        else if (phaseId <= 0)
+        {
+            csvStatus = "✗ Auto-detect disabled and no manual phaseId set!";
+            Debug.LogError($"[MonsterManager] {csvStatus}");
             return;
         }
 
@@ -121,6 +216,57 @@ public class MonsterManager : LivingEntity
 
         // Invoke initial phase event
         OnPhaseChanged?.Invoke(currentPhaseIndex + 1);
+    }
+
+    int FindPhaseIdByPrefabName(string prefabName)
+    {
+        var csvDataAsset = CSVManager.Instance.GetCSVDataAsset();
+        if (csvDataAsset?.bossDataList == null || csvDataAsset?.phaseDataList == null)
+        {
+            Debug.LogError("[MonsterManager] CSV data not loaded!");
+            return -1;
+        }
+
+        Debug.Log($"[MonsterManager] Searching for prefab '{prefabName}' in {csvDataAsset.bossDataList.Count} boss entries...");
+
+        // 1. Find matching BossData by BOSS_PREFABS field
+        BossData matchingBoss = null;
+        foreach (var boss in csvDataAsset.bossDataList)
+        {
+            Debug.Log($"[MonsterManager] Checking BOSS_ID {boss.BOSS_ID}: BOSS_PREFABS='{boss.BOSS_PREFABS}' vs '{prefabName}'");
+
+            if (!string.IsNullOrEmpty(boss.BOSS_PREFABS) &&
+                boss.BOSS_PREFABS.Equals(prefabName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                matchingBoss = boss;
+                Debug.Log($"[MonsterManager] ✓ Found match! BOSS_ID: {boss.BOSS_ID}, Name: {boss.BOSS_NAME}");
+                break;
+            }
+        }
+
+        if (matchingBoss == null)
+        {
+            Debug.LogWarning($"[MonsterManager] No boss found with BOSS_PREFABS = '{prefabName}'");
+            return -1;
+        }
+
+        // 2. Find PhaseData that contains this BOSS_ID
+        int bossId = matchingBoss.BOSS_ID;
+        Debug.Log($"[MonsterManager] Looking for Phase containing BOSS_ID {bossId}...");
+
+        foreach (var phase in csvDataAsset.phaseDataList)
+        {
+            if (phase.BOSS_ID_1 == bossId || phase.BOSS_ID_2 == bossId ||
+                phase.BOSS_ID_3 == bossId || phase.BOSS_ID_4 == bossId ||
+                phase.BOSS_ID_5 == bossId)
+            {
+                Debug.Log($"[MonsterManager] ✓ Found PHASE_ID: {phase.PHASE_ID}");
+                return phase.PHASE_ID;
+            }
+        }
+
+        Debug.LogWarning($"[MonsterManager] No Phase found containing BOSS_ID {bossId}");
+        return -1;
     }
 
     PhaseData GetPhaseData(int phaseId)
@@ -187,6 +333,13 @@ public class MonsterManager : LivingEntity
             return;
         }
 
+        // Load BossAttData using BOSS_ATT_ID
+        currentBossAttData = GetBossAttData(currentBossData.BOSS_ATT_ID);
+        if (currentBossAttData == null)
+        {
+            csvStatus = $"Boss attack data not found for ATT_ID: {currentBossData.BOSS_ATT_ID}";
+            return;
+        }
     }
 
     BossData GetBossData(int bossId)
@@ -204,16 +357,22 @@ public class MonsterManager : LivingEntity
         return null;
     }
 
+    BossAttData GetBossAttData(int bossAttId)
+    {
+        var csvDataAsset = CSVManager.Instance.GetCSVDataAsset();
+        return csvDataAsset.GetBossAttData(bossAttId);
+    }
+
     void InitializeFromCSV()
     {
-        if (currentBossData == null) return;
+        if (currentBossData == null || currentBossAttData == null) return;
 
         // 기본 정보 설정
         monsterName = currentBossData.BOSS_NAME;
 
         // LivingEntity 초기화
         int bossLevel = currentBossData.PHASE;
-        int bossAttack = Mathf.RoundToInt(currentBossData.NORMAL_ATT);
+        int bossAttack = currentBossAttData.NORMAL_ATT; // BS_ATT의 NORMAL_ATT를 기본 공격력으로 사용
         int bossDefense = currentBossData.DEF;
         int bossHealth = Mathf.RoundToInt(currentBossData.HP);
 
@@ -225,13 +384,13 @@ public class MonsterManager : LivingEntity
         stunRecovery = currentBossData.STUN_RECOVERY;
         stunDefense = currentBossData.STUN_DEF;
 
-        // 공격 배율 설정
-        normalAttMultiplier = currentBossData.NORMAL_ATT;
-        normalDefAttMultiplier = currentBossData.NORMAL_DEF_ATT;
-        longAttMultiplier = currentBossData.LONG_ATT;
-        longDefAttMultiplier = currentBossData.LONG_DEF_ATT;
-        specialAttMultiplier = currentBossData.SPECIAL_ATT;
-        specialDefAttMultiplier = currentBossData.SPECIAL_DEF_ATT;
+        // 공격 배율 설정 (BS_ATT.csv에서 로드)
+        normalAttMultiplier = currentBossAttData.NORMAL_ATT;
+        normalDefAttMultiplier = currentBossAttData.NORMAL_DEF_ATT;
+        longAttMultiplier = currentBossAttData.LONG_ATT;
+        longDefAttMultiplier = currentBossAttData.LONG_DEF_ATT;
+        specialAttMultiplier = currentBossAttData.SPECIAL_ATT;
+        specialDefAttMultiplier = currentBossAttData.SPECIAL_DEF_ATT;
 
         OnStunChanged?.Invoke(currentStun);
         UpdateStunVisual();
@@ -264,11 +423,16 @@ public class MonsterManager : LivingEntity
 
         int finalDamage = Mathf.RoundToInt(playerAttack * damageMultiplier * judgmentMultiplier);
 
+        Debug.Log($"[MonsterManager] TakeNoteHit - Phase:{currentPhaseIndex+1}, NoteType:{noteType}, Judgment:{judgment}, PlayerATK:{playerAttack}, Multiplier:{damageMultiplier}x{judgmentMultiplier}, FinalDmg:{finalDamage}, CurrentStun:{currentStun}/{maxStun}, StunDef:{stunDefense}");
+
         if (currentStun > 0)
         {
             // STUN에 데미지 적용 (STUN_DEF 고려)
             float stunDamage = Mathf.Max(1, finalDamage - stunDefense);
+            float oldStun = currentStun;
             currentStun = Mathf.Max(0, currentStun - stunDamage);
+
+            Debug.Log($"[MonsterManager] Stun Damage Applied: {stunDamage} (finalDmg:{finalDamage} - stunDef:{stunDefense}) | Stun: {oldStun} → {currentStun}");
 
             OnStunChanged?.Invoke(currentStun);
 
@@ -282,6 +446,7 @@ public class MonsterManager : LivingEntity
             {
                 UpdateStunVisual();
                 OnStunBroken?.Invoke();
+                Debug.Log("[MonsterManager] STUN BROKEN! Invoking OnStunBroken event.");
             }
             else
             {
@@ -430,7 +595,7 @@ public class MonsterManager : LivingEntity
         }
 
         // LMJ: Trigger death animation
-        if (animator != null)
+        if (animator != null && hasOnDeathTrigger)
         {
             animator.SetTrigger("OnDeath");
 
@@ -510,11 +675,20 @@ public class MonsterManager : LivingEntity
         // IMPORTANT: Reset dead flag to allow the new phase to take damage
         isDead = false;
 
-        // LMJ: Clear any existing notes when transitioning phases
+        // LMJ: CRITICAL - Clear any existing notes when transitioning phases
         RhythmGameSystem rhythmSystem = FindFirstObjectByType<RhythmGameSystem>();
         if (rhythmSystem != null)
         {
             rhythmSystem.ClearAllNotes();
+            Debug.Log($"[MonsterManager] Cleared all notes for phase transition to Phase {currentPhaseIndex + 1}");
+        }
+
+        // LMJ: Stop pattern manager before clearing
+        RhythmPatternManager patternMgr = FindFirstObjectByType<RhythmPatternManager>();
+        if (patternMgr != null)
+        {
+            patternMgr.StopAllCoroutines();
+            Debug.Log("[MonsterManager] Stopped pattern generation for phase transition");
         }
 
         // LMJ: Reset DodgeSystem swipe block state when entering new phase
@@ -560,7 +734,7 @@ public class MonsterManager : LivingEntity
             OnStunRestored?.Invoke();
 
             // Stop dizzy animation for new phase
-            if (animator != null)
+            if (animator != null && hasIsDealingTimeParam)
             {
                 animator.SetBool("isDealingTime", false);
             }
@@ -600,10 +774,14 @@ public class MonsterManager : LivingEntity
     IEnumerator DelayedRestartNotes(RhythmPatternManager patternManager)
     {
         // Wait a small amount to ensure phase transition is complete
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.2f);
 
-        patternManager.AddNextPatternSetFromCurrentTime();
-        patternManager.RestartPatternGeneration();
+        if (patternManager != null)
+        {
+            patternManager.AddNextPatternSetFromCurrentTime();
+            patternManager.RestartPatternGeneration();
+            Debug.Log($"[MonsterManager] Restarted pattern generation for Phase {currentPhaseIndex + 1}");
+        }
     }
 
     void UpdateStunVisual()
@@ -653,12 +831,11 @@ public class MonsterManager : LivingEntity
 
     void PlayRandomAttackAnimation()
     {
-        if (animator == null) return;
+        if (animator == null || !hasRandomAttParam) return;
 
         // Set random attack parameter (0, 1, or 2 for Attack01, Attack02, Attack03)
         int randomAttack = Random.Range(0, 3);
         animator.SetInteger("randomAtt", randomAttack);
-
 
         // Reset the parameter after a short delay to allow transition back to idle
         StartCoroutine(ResetAttackParameter());
@@ -669,7 +846,7 @@ public class MonsterManager : LivingEntity
         // Wait for a short time to ensure the animation transition has started
         yield return new WaitForSeconds(0.1f);
 
-        if (animator != null)
+        if (animator != null && hasRandomAttParam)
         {
             animator.SetInteger("randomAtt", -1);
         }
@@ -681,7 +858,7 @@ public class MonsterManager : LivingEntity
         currentStun = 0;
         UpdateStunVisual();
 
-        if (animator != null)
+        if (animator != null && hasIsDealingTimeParam)
         {
             animator.SetBool("isDealingTime", true);
         }
@@ -689,7 +866,7 @@ public class MonsterManager : LivingEntity
 
     public void StopDizzyAnimation()
     {
-        if (animator != null)
+        if (animator != null && hasIsDealingTimeParam)
         {
             animator.SetBool("isDealingTime", false);
         }
@@ -697,7 +874,7 @@ public class MonsterManager : LivingEntity
 
     public void PlayGetHitAnimation()
     {
-        if (animator != null)
+        if (animator != null && hasGetHitTrigger)
         {
             // Reset the trigger first to ensure it can be triggered again immediately
             animator.ResetTrigger("GetHit");
@@ -708,7 +885,7 @@ public class MonsterManager : LivingEntity
 
     public void PlayVictoryAnimation()
     {
-        if (animator != null)
+        if (animator != null && hasIsVictoryParam)
         {
             // Stop any ongoing attack animations
             if (attackAnimationCoroutine != null)
@@ -726,7 +903,7 @@ public class MonsterManager : LivingEntity
 
     private System.Collections.IEnumerator EnsureVictoryLoop()
     {
-        while (animator != null && animator.GetBool("isVictory"))
+        while (animator != null && hasIsVictoryParam && animator.GetBool("isVictory"))
         {
             // Wait a bit and check if we're still in victory state
             yield return new WaitForSeconds(0.5f);
@@ -737,7 +914,7 @@ public class MonsterManager : LivingEntity
                 !animator.GetCurrentAnimatorStateInfo(0).IsName("Celebration"))
             {
                 // Re-trigger victory if we somehow left the victory state
-                if (animator.GetBool("isVictory"))
+                if (hasIsVictoryParam && animator.GetBool("isVictory"))
                 {
                     animator.SetBool("isVictory", false);
                     yield return null; // Wait one frame
