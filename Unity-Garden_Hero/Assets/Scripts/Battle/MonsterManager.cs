@@ -338,8 +338,15 @@ public class MonsterManager : LivingEntity
         if (currentBossAttData == null)
         {
             csvStatus = $"Boss attack data not found for ATT_ID: {currentBossData.BOSS_ATT_ID}";
+            Debug.LogError($"[MonsterManager] BS_ATT data not found for BOSS_ATT_ID: {currentBossData.BOSS_ATT_ID}. Make sure to reload CSV data in CSVDataAsset (Right-click → Load All CSV Data)");
             return;
         }
+
+        Debug.Log($"[MonsterManager] BS_ATT data loaded successfully for {currentBossData.BOSS_NAME} Phase {currentBossData.PHASE}:\n" +
+                  $"  BOSS_ATT_ID: {currentBossAttData.BOSS_ATT_ID}\n" +
+                  $"  NORMAL_ATT: {currentBossAttData.NORMAL_ATT}\n" +
+                  $"  LONG_ATT: {currentBossAttData.LONG_ATT}\n" +
+                  $"  SPECIAL_ATT: {currentBossAttData.SPECIAL_ATT}");
     }
 
     BossData GetBossData(int bossId)
@@ -519,7 +526,6 @@ public class MonsterManager : LivingEntity
 
     protected override void OnDeath()
     {
-
         // Stop attack animations
         if (attackAnimationCoroutine != null)
         {
@@ -604,14 +610,32 @@ public class MonsterManager : LivingEntity
 
             // LMJ: Wait for animation to complete
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-            while (!stateInfo.IsName("Die") && !stateInfo.IsName("Death"))
+            int maxWaitFrames = 300; // 5초 타임아웃 (60fps 기준)
+            int frameCount = 0;
+
+            while (!stateInfo.IsName("Die") && !stateInfo.IsName("Death") && !stateInfo.IsName("Died") &&
+                   !stateInfo.IsName("die") && !stateInfo.IsName("death") && !stateInfo.IsName("died"))
             {
                 yield return null;
                 stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                frameCount++;
+
+                if (frameCount >= maxWaitFrames)
+                {
+                    break;
+                }
             }
 
-            // Wait for the death animation to finish
-            yield return new WaitForSeconds(stateInfo.length);
+            if (frameCount < maxWaitFrames)
+            {
+                // Wait for the death animation to finish
+                yield return new WaitForSeconds(stateInfo.length);
+            }
+            else
+            {
+                // Fallback: just wait a short time
+                yield return new WaitForSeconds(1f);
+            }
         }
         else
         {

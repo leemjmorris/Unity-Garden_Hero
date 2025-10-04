@@ -248,9 +248,9 @@ public class CSVDataAsset : ScriptableObject
                         DEF = CSVHelper.ToInt(values[5]),
                         STUN_DEF = CSVHelper.ToInt(values[6]),
                         HP = CSVHelper.ToFloat(values[7]),
-                        PT_ID = CSVHelper.ToInt(values[8]),
-                        BOSS_PREFABS = values[9].Trim(),
-                        BOSS_ATT_ID = CSVHelper.ToInt(values[10])
+                        BOSS_ATT_ID = CSVHelper.ToInt(values[8]),  // Fixed: values[8] is BOSS_ATT_ID
+                        PT_ID = CSVHelper.ToInt(values[9]),        // Fixed: values[9] is PT_ID
+                        BOSS_PREFABS = values[10].Trim()           // Fixed: values[10] is BOSS_PREFABS
                     };
                     bossDataList.Add(data);
                 }
@@ -277,7 +277,7 @@ public class CSVDataAsset : ScriptableObject
             try
             {
                 string[] values = SplitCSVLine(line);
-                if (values.Length >= 12)
+                if (values.Length >= 9)
                 {
                     BossAttData data = new BossAttData
                     {
@@ -287,15 +287,16 @@ public class CSVDataAsset : ScriptableObject
                         NORMAL_ATT = CSVHelper.ToInt(values[3]),
                         NORMAL_DEF_ATT = CSVHelper.ToInt(values[4]),
                         LONG_ATT = CSVHelper.ToInt(values[5]),
-                        LONG_DEF_ATT = CSVHelper.ToInt(values[11]), // 마지막 LONG_DEF_ATT 사용
-                        SPECIAL_ATT = CSVHelper.ToInt(values[10]),
-                        SPECIAL_DEF_ATT = CSVHelper.ToInt(values[11])
+                        LONG_DEF_ATT = CSVHelper.ToInt(values[6]),
+                        SPECIAL_ATT = CSVHelper.ToInt(values[7]),
+                        SPECIAL_DEF_ATT = CSVHelper.ToInt(values[8])
                     };
                     bossAttDataList.Add(data);
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                Debug.LogWarning($"[CSVDataAsset] Failed to parse BS_ATT line {i}: {ex.Message}");
             }
         }
     }

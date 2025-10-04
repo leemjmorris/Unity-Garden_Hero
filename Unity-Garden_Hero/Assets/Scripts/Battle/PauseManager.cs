@@ -32,6 +32,7 @@ public class PauseManager : MonoBehaviour
     [SerializeField] private TouchInputManager touchInputManager;
 
     private bool isPaused = false;
+    private GameState stateBeforePause = GameState.Playing; // LMJ: Store state before pausing to restore it later
     private float currentSpeedMultiplier = 4.0f; // Default: 4x (noteSpeed = 800)
     private const float MIN_SPEED = 1.0f;
     private const float MAX_SPEED = 8.0f;
@@ -107,6 +108,13 @@ public class PauseManager : MonoBehaviour
 
     public void OpenPauseMenu()
     {
+        // LMJ: Store current state before pausing so we can restore it later
+        if (gameManager != null)
+        {
+            stateBeforePause = gameManager.GetCurrentState();
+            Debug.Log($"[PauseManager] Storing state before pause: {stateBeforePause}");
+        }
+
         // Reset all input states to prevent ghost inputs
         ResetInputStates();
 
@@ -137,10 +145,11 @@ public class PauseManager : MonoBehaviour
             pausePanel.SetActive(false);
         }
 
-        // Resume GameState to Playing
+        // LMJ: Restore previous state (Playing or DealingTime) instead of always going to Playing
         if (gameManager != null)
         {
-            gameManager.SetGameState(GameState.Playing);
+            gameManager.SetGameState(stateBeforePause);
+            Debug.Log($"[PauseManager] Restored state to: {stateBeforePause}");
         }
 
         Time.timeScale = 1f;

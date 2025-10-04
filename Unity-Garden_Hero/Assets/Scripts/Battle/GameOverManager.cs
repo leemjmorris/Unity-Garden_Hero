@@ -13,6 +13,16 @@ public class GameOverManager : MonoBehaviour
     [SerializeField] private Button defeatRestartButton;
     [SerializeField] private Button defeatQuitButton;
 
+    [Header("Judgment Stats UI (Victory)")]
+    [SerializeField] private TextMeshProUGUI victoryPerfectText;
+    [SerializeField] private TextMeshProUGUI victoryGoodText;
+    [SerializeField] private TextMeshProUGUI victoryMissText;
+
+    [Header("Judgment Stats UI (Defeat)")]
+    [SerializeField] private TextMeshProUGUI defeatPerfectText;
+    [SerializeField] private TextMeshProUGUI defeatGoodText;
+    [SerializeField] private TextMeshProUGUI defeatMissText;
+
     [Header("Manager References")]
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private MonsterManager monsterManager;
@@ -204,6 +214,7 @@ public class GameOverManager : MonoBehaviour
     {
         if (victoryCanvas != null)
         {
+            UpdateJudgmentStats(true);
             StartCoroutine(FadeInCanvas(victoryCanvas));
         }
     }
@@ -212,7 +223,36 @@ public class GameOverManager : MonoBehaviour
     {
         if (defeatCanvas != null)
         {
+            UpdateJudgmentStats(false);
             StartCoroutine(FadeInCanvas(defeatCanvas));
+        }
+    }
+
+    void UpdateJudgmentStats(bool isVictory)
+    {
+        if (JudgmentStatsManager.Instance == null) return;
+
+        int perfectCount = JudgmentStatsManager.Instance.GetPerfectCount();
+        int goodCount = JudgmentStatsManager.Instance.GetGoodCount();
+        int missCount = JudgmentStatsManager.Instance.GetMissCount();
+
+        if (isVictory)
+        {
+            if (victoryPerfectText != null)
+                victoryPerfectText.text = $"Perfect : {perfectCount:D3}";
+            if (victoryGoodText != null)
+                victoryGoodText.text = $"Good : {goodCount:D3}";
+            if (victoryMissText != null)
+                victoryMissText.text = $"Miss : {missCount:D3}";
+        }
+        else
+        {
+            if (defeatPerfectText != null)
+                defeatPerfectText.text = $"Perfect : {perfectCount:D3}";
+            if (defeatGoodText != null)
+                defeatGoodText.text = $"Good : {goodCount:D3}";
+            if (defeatMissText != null)
+                defeatMissText.text = $"Miss : {missCount:D3}";
         }
     }
 

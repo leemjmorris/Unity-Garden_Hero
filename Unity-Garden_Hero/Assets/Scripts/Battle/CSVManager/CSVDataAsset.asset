@@ -16,7 +16,7 @@ MonoBehaviour:
   - BOSS_ID: 20100001
     BOSS_NAME: "\uB291\uB300 \uC804\uC0AC"
     PHASE: 1
-    STUN: 250
+    STUN: 500
     STUN_RECOVERY: 7
     DEF: 1
     STUN_DEF: 0
@@ -27,7 +27,7 @@ MonoBehaviour:
   - BOSS_ID: 20200002
     BOSS_NAME: "\uB291\uB300 \uC804\uC0AC"
     PHASE: 2
-    STUN: 250
+    STUN: 500
     STUN_RECOVERY: 5
     DEF: 2
     STUN_DEF: 0
@@ -42,7 +42,7 @@ MonoBehaviour:
     STUN_RECOVERY: 7
     DEF: 0
     STUN_DEF: 0
-    HP: 6000
+    HP: 15000
     PT_ID: 70000002
     BOSS_PREFABS: BossTypeRat
     BOSS_ATT_ID: 100000003
@@ -50,10 +50,10 @@ MonoBehaviour:
     BOSS_NAME: "\uB4E4\uC950 \uC804\uC0AC"
     PHASE: 2
     STUN: 400
-    STUN_RECOVERY: 5
-    DEF: 2
+    STUN_RECOVERY: 7
+    DEF: 1
     STUN_DEF: 0
-    HP: 5000
+    HP: 15000
     PT_ID: 70000002
     BOSS_PREFABS: BossTypeRat
     BOSS_ATT_ID: 100000004
@@ -61,43 +61,43 @@ MonoBehaviour:
     BOSS_NAME: "\uB4E4\uC950 \uC804\uC0AC"
     PHASE: 3
     STUN: 300
-    STUN_RECOVERY: 5
-    DEF: 2
+    STUN_RECOVERY: 6
+    DEF: 1
     STUN_DEF: 0
-    HP: 5000
+    HP: 15000
     PT_ID: 70000002
     BOSS_PREFABS: BossTypeRat
     BOSS_ATT_ID: 100000005
   - BOSS_ID: 20100006
     BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
     PHASE: 1
-    STUN: 700
+    STUN: 900
     STUN_RECOVERY: 5
-    DEF: 3
+    DEF: 2
     STUN_DEF: 0
-    HP: 7000
+    HP: 40000
     PT_ID: 70000003
     BOSS_PREFABS: BossTypeLizzard
     BOSS_ATT_ID: 100000006
   - BOSS_ID: 20200007
     BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
     PHASE: 2
-    STUN: 700
-    STUN_RECOVERY: 4
+    STUN: 900
+    STUN_RECOVERY: 5
     DEF: 2
     STUN_DEF: 0
-    HP: 7000
+    HP: 40000
     PT_ID: 70000003
     BOSS_PREFABS: BossTypeLizzard
     BOSS_ATT_ID: 100000007
   - BOSS_ID: 20300008
     BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
     PHASE: 3
-    STUN: 600
-    STUN_RECOVERY: 3
+    STUN: 700
+    STUN_RECOVERY: 4
     DEF: 2
     STUN_DEF: 0
-    HP: 6000
+    HP: 30000
     PT_ID: 70000003
     BOSS_PREFABS: BossTypeLizzard
     BOSS_ATT_ID: 100000008
@@ -108,7 +108,7 @@ MonoBehaviour:
     STUN_RECOVERY: 10
     DEF: 0
     STUN_DEF: 0
-    HP: 5000
+    HP: 20000
     PT_ID: 70000004
     BOSS_PREFABS: BossTypeDummy
     BOSS_ATT_ID: 100000009
@@ -119,8 +119,8 @@ MonoBehaviour:
     STUN_RECOVERY: 10
     DEF: 0
     STUN_DEF: 0
-    HP: 5000
-    PT_ID: 70000004
+    HP: 30000
+    PT_ID: 70000005
     BOSS_PREFABS: BossTypeDummy
     BOSS_ATT_ID: 100000010
   bossAttDataList:
@@ -130,8 +130,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000002
     BOSS_NAME: "\uB291\uB300 \uC804\uC0AC"
@@ -139,8 +139,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000003
     BOSS_NAME: "\uB4E4\uC950 \uC804\uC0AC"
@@ -148,8 +148,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000004
     BOSS_NAME: "\uB4E4\uC950 \uC804\uC0AC"
@@ -157,8 +157,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000005
     BOSS_NAME: "\uB4E4\uC950 \uC804\uC0AC"
@@ -166,8 +166,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000006
     BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
@@ -175,8 +175,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000007
     BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
@@ -184,8 +184,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000008
     BOSS_NAME: "\uB9AC\uC790\uB4DC \uC6CC\uB9AC\uC5B4"
@@ -193,8 +193,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000009
     BOSS_NAME: "\uD5C8\uC218\uC544\uBE44"
@@ -202,8 +202,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   - BOSS_ATT_ID: 100000010
     BOSS_NAME: "\uD5C8\uC218\uC544\uBE44"
@@ -211,8 +211,8 @@ MonoBehaviour:
     NORMAL_ATT: 35
     NORMAL_DEF_ATT: 1
     LONG_ATT: 75
-    LONG_DEF_ATT: 0
-    SPECIAL_ATT: 1
+    LONG_DEF_ATT: 25
+    SPECIAL_ATT: 0
     SPECIAL_DEF_ATT: 0
   consumableDataList:
   - ITME_ID: 60010001
@@ -695,7 +695,7 @@ MonoBehaviour:
     BOSS_ID_5: 0
   - PHASE_ID: 80000004
     BOSS_ID_1: 20100009
-    BOSS_ID_2: 20100010
+    BOSS_ID_2: 20200010
     BOSS_ID_3: 0
     BOSS_ID_4: 0
     BOSS_ID_5: 0
@@ -744,15 +744,26 @@ MonoBehaviour:
     PT_8: NULL
     PT_9: NULL
     PT_10: NULL
+  - PT_ID: 70000005
+    PT_1: dummy_dodge2
+    PT_2: dummy_long1
+    PT_3: dummy_long2
+    PT_4: dummy_nomal1
+    PT_5: dummy_nomal2
+    PT_6: dummy_mix1
+    PT_7: dummy_mix2
+    PT_8: dummy_mix3
+    PT_9: NULL
+    PT_10: NULL
   stageDataList:
   - STAGE_ID: 90000001
-    PHASE_ID: 80000001
-  - STAGE_ID: 90000002
-    PHASE_ID: 80000002
-  - STAGE_ID: 90000003
-    PHASE_ID: 80000003
-  - STAGE_ID: 90000004
     PHASE_ID: 80000004
+  - STAGE_ID: 90000002
+    PHASE_ID: 80000001
+  - STAGE_ID: 90000003
+    PHASE_ID: 80000002
+  - STAGE_ID: 90000004
+    PHASE_ID: 80000003
   statDataList:
   - STAT_ID: 10100001
     STAT_LV: 1

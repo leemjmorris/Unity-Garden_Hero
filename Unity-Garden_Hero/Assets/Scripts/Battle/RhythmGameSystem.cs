@@ -404,6 +404,15 @@ public partial class RhythmGameSystem : MonoBehaviour
         {
             if (note == null) continue;
 
+            // Update Long Note size dynamically based on current noteSpeed
+            if (note.noteType == "Long")
+            {
+                RectTransform noteRect = note.GetComponent<RectTransform>();
+                float duration = note.GetHoldEndTime() - note.hitTime;
+                float longNoteHeight = duration * noteSpeed;
+                noteRect.sizeDelta = new Vector2(noteRect.sizeDelta.x, longNoteHeight);
+            }
+
             // Skip moving notes that are being held - they should stay at judgment line
             if (note.IsHolding())
             {
@@ -888,6 +897,12 @@ public partial class RhythmGameSystem : MonoBehaviour
     void ShowJudgment(string direction, JudgmentResult result)
     {
         Debug.Log($"[RhythmGameSystem] ShowJudgment called: direction={direction}, result={result}");
+
+        // Record judgment stats
+        if (JudgmentStatsManager.Instance != null)
+        {
+            JudgmentStatsManager.Instance.RecordJudgment(result);
+        }
 
         // LMJ: Use JudgmentTextManager if available, otherwise fallback to old system
         if (judgmentTextManager != null)

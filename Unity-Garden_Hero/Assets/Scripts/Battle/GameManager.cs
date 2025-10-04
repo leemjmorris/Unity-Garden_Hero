@@ -63,6 +63,12 @@ public class GameManager : MonoBehaviour
         FindAndSetupMonster();
 
         SetupUI();
+
+        // Reset judgment stats for new stage
+        if (JudgmentStatsManager.Instance != null)
+        {
+            JudgmentStatsManager.Instance.ResetStats();
+        }
     }
 
     void Update()
